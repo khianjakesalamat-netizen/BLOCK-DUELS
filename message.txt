@@ -1,0 +1,515 @@
+--LEAKED BY AGGREDIRE. ON /noxaduels
+--LEAKED BY AGGREDIRE. ON /noxaduels
+--LEAKED BY AGGREDIRE. ON /noxaduels
+--LEAKED BY AGGREDIRE. ON /noxaduels
+
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local HttpService = game:GetService("HttpService")
+local LocalPlayer = Players.LocalPlayer
+
+-- ============================================
+-- CONFIG (save / load)
+-- ============================================
+local CONFIG_FILE = "AspectAntiBat.json"
+
+local config = {
+    antiBat = false,
+    infJump = false,
+    posX    = nil,
+    posY    = nil,
+}
+
+local canSave = (typeof(writefile) == "function")
+    and (typeof(readfile) == "function")
+    and (typeof(isfile) == "function")
+
+local function saveConfig()
+    if not canSave then return end
+    pcall(function()
+        writefile(CONFIG_FILE, HttpService:JSONEncode(config))
+    end)
+end
+
+local function loadConfig()
+    if not canSave then return end
+    pcall(function()
+        if not isfile(CONFIG_FILE) then return end
+        local data = HttpService:JSONDecode(readfile(CONFIG_FILE))
+        if type(data) ~= "table" then return end
+        config.antiBat = data.antiBat == true
+        config.infJump = data.infJump == true
+        config.posX    = tonumber(data.posX)
+        config.posY    = tonumber(data.posY)
+    end)
+end
+
+loadConfig()
+
+-- ============================================
+-- LOGICA: ANTI BAT
+-- ============================================
+local AntiBatConn = nil
+local Speed = 10000
+local Angle = 0
+local Direction = 1
+
+local function startAntiBat()
+    local char = LocalPlayer.Character
+    if not char then return end
+
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    if AntiBatConn then
+        AntiBatConn:Disconnect()
+    end
+
+    AntiBatConn = RunService.Heartbeat:Connect(function()
+        if not root or not root.Parent then return end
+
+        local origXZ = Vector3.new(root.Velocity.X, 0, root.Velocity.Z)
+
+        Speed = Speed + (50 * Direction)
+        if Speed >= 20000 then
+            Speed = 20000
+            Direction = -1
+        elseif Speed <= 10000 then
+            Speed = 10000
+            Direction = 1
+        end
+
+        Angle = Angle + (math.random() * 0.5)
+
+        local radius = Speed + math.random(-5000, 5000)
+        local newX = math.cos(Angle) * radius
+        local newZ = math.sin(Angle) * radius
+
+        root.Velocity = Vector3.new(newX, root.Velocity.Y, newZ)
+
+        RunService.RenderStepped:Wait()
+
+        root.Velocity = Vector3.new(origXZ.X, root.Velocity.Y, origXZ.Z)
+    end)
+end
+
+local function stopAntiBat()
+    if AntiBatConn then
+        AntiBatConn:Disconnect()
+        AntiBatConn = nil
+    end
+    Speed = 10000
+    Angle = 0
+    Direction = 1
+end
+
+local function setAntiBat(on)
+    config.antiBat = on and true or false
+    if config.antiBat then startAntiBat() else stopAntiBat() end
+    saveConfig()
+end
+
+-- ============================================
+-- LOGICA: INFINITE JUMP
+-- ============================================
+local JUMP_POWER = 55
+local jumpHeld   = false
+
+local function applyJump()
+    if not config.infJump then return end
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hum or hum.Health <= 0 then return end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    root.Velocity = Vector3.new(root.Velocity.X, JUMP_POWER, root.Velocity.Z)
+end
+
+UIS.JumpRequest:Connect(applyJump)
+
+UIS.InputBegan:Connect(function(input, processed)
+    if processed then return end
+    if input.KeyCode == Enum.KeyCode.Space then jumpHeld = true end
+end)
+
+UIS.InputEnded:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.Space then jumpHeld = false end
+end)
+
+RunService.Heartbeat:Connect(function()
+    if config.infJump and jumpHeld then applyJump() end
+end)
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+    jumpHeld = false
+    if config.antiBat then
+        char:WaitForChild("HumanoidRootPart", 10)
+        task.wait(0.2)
+        startAntiBat()
+    end
+end)
+
+-- ============================================
+-- GUI
+-- ============================================
+local AspectAntiBatGui = Instance.new("ScreenGui")
+AspectAntiBatGui.Name = "AspectAntiBatGui"
+AspectAntiBatGui.IgnoreGuiInset = true
+AspectAntiBatGui.ResetOnSpawn = false
+AspectAntiBatGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+AspectAntiBatGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+local Main = Instance.new("Frame")
+Main.Name = "Main"
+Main.ClipsDescendants = true
+if config.posX and config.posY then
+    Main.Position = UDim2.new(0, config.posX, 0, config.posY)
+else
+    Main.Position = UDim2.new(0.5, -130, 0.5, -93)
+end
+Main.Size = UDim2.new(0, 260, 0, 186)
+Main.BackgroundColor3 = Color3.fromRGB(10, 10, 14)
+Main.BorderSizePixel = 0
+Main.Active = true
+Main.Parent = AspectAntiBatGui
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.Name = "UICorner"
+    UICorner.CornerRadius = UDim.new(0, 14)
+    UICorner.Parent = Main
+
+    local UIStroke = Instance.new("UIStroke")
+    UIStroke.Name = "UIStroke"
+    UIStroke.Color = Color3.fromRGB(147, 51, 234)
+    UIStroke.Thickness = 1.4
+    UIStroke.Transparency = 0.35
+    UIStroke.Parent = Main
+
+    local ImageLabel = Instance.new("ImageLabel")
+    ImageLabel.Name = "ImageLabel"
+    ImageLabel.Size = UDim2.new(1, 0, 1, 0)
+    ImageLabel.BackgroundTransparency = 1
+    ImageLabel.Image = "rbxassetid://95345940842407"
+    ImageLabel.ImageTransparency = 0.06
+    ImageLabel.ScaleType = Enum.ScaleType.Crop
+    ImageLabel.Parent = Main
+
+        local UICorner2 = Instance.new("UICorner")
+        UICorner2.Name = "UICorner"
+        UICorner2.CornerRadius = UDim.new(0, 14)
+        UICorner2.Parent = ImageLabel
+
+    local Frame = Instance.new("Frame")
+    Frame.Name = "Frame"
+    Frame.ZIndex = 2
+    Frame.Size = UDim2.new(1, 0, 1, 0)
+    Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Frame.BackgroundTransparency = 0.45
+    Frame.BorderSizePixel = 0
+    Frame.Parent = Main
+
+        local UICorner3 = Instance.new("UICorner")
+        UICorner3.Name = "UICorner"
+        UICorner3.CornerRadius = UDim.new(0, 14)
+        UICorner3.Parent = Frame
+
+    local HeaderImage = Instance.new("ImageLabel")
+    HeaderImage.Name = "HeaderImage"
+    HeaderImage.ZIndex = 5
+    HeaderImage.Position = UDim2.new(0, 20, 0, 0)
+    HeaderImage.Size = UDim2.new(0, 220, 0, 48)
+    HeaderImage.BackgroundTransparency = 1
+    HeaderImage.Image = "rbxassetid://109469814162273"
+    HeaderImage.Parent = Main
+
+    local Frame2 = Instance.new("Frame")
+    Frame2.Name = "Frame"
+    Frame2.ZIndex = 5
+    Frame2.Position = UDim2.new(0, 14, 0, 49)
+    Frame2.Size = UDim2.new(1, -28, 0, 1)
+    Frame2.BackgroundColor3 = Color3.fromRGB(147, 51, 234)
+    Frame2.BackgroundTransparency = 0.55
+    Frame2.BorderSizePixel = 0
+    Frame2.Parent = Main
+
+    -- ============ ANTI BAT ============
+    local Anti_Bat = Instance.new("Frame")
+    Anti_Bat.Name = "Anti Bat"
+    Anti_Bat.ZIndex = 5
+    Anti_Bat.Position = UDim2.new(0, 14, 0, 58)
+    Anti_Bat.Size = UDim2.new(1, -28, 0, 44)
+    Anti_Bat.BackgroundColor3 = Color3.fromRGB(6, 6, 9)
+    Anti_Bat.BackgroundTransparency = 0.28
+    Anti_Bat.BorderSizePixel = 0
+    Anti_Bat.Parent = Main
+
+        local UICorner4 = Instance.new("UICorner")
+        UICorner4.Name = "UICorner"
+        UICorner4.CornerRadius = UDim.new(0, 10)
+        UICorner4.Parent = Anti_Bat
+
+        local UIStroke2 = Instance.new("UIStroke")
+        UIStroke2.Name = "UIStroke"
+        UIStroke2.Color = Color3.fromRGB(60, 60, 72)
+        UIStroke2.Thickness = 1.2
+        UIStroke2.Transparency = 0.4
+        UIStroke2.Parent = Anti_Bat
+
+        local TextLabel = Instance.new("TextLabel")
+        TextLabel.Name = "TextLabel"
+        TextLabel.ZIndex = 6
+        TextLabel.Position = UDim2.new(0, 12, 0, 0)
+        TextLabel.Size = UDim2.new(1, -90, 1, 0)
+        TextLabel.BackgroundTransparency = 1
+        TextLabel.Text = "Anti Bat"
+        TextLabel.TextColor3 = Color3.fromRGB(240, 240, 250)
+        TextLabel.TextSize = 13
+        TextLabel.Font = Enum.Font.GothamMedium
+        TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+        TextLabel.Parent = Anti_Bat
+
+        local Track = Instance.new("Frame")
+        Track.Name = "Track"
+        Track.ZIndex = 7
+        Track.Position = UDim2.new(1, -58, 0.5, -12)
+        Track.Size = UDim2.new(0, 46, 0, 24)
+        Track.BackgroundColor3 = Color3.fromRGB(55, 55, 68)
+        Track.BorderSizePixel = 0
+        Track.Parent = Anti_Bat
+
+            local UICorner5 = Instance.new("UICorner")
+            UICorner5.Name = "UICorner"
+            UICorner5.CornerRadius = UDim.new(1, 0)
+            UICorner5.Parent = Track
+
+            local Knob = Instance.new("Frame")
+            Knob.Name = "Knob"
+            Knob.ZIndex = 8
+            Knob.Position = UDim2.new(0, 3, 0.5, -9)
+            Knob.Size = UDim2.new(0, 18, 0, 18)
+            Knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            Knob.BorderSizePixel = 0
+            Knob.Parent = Track
+
+                local UICorner6 = Instance.new("UICorner")
+                UICorner6.Name = "UICorner"
+                UICorner6.CornerRadius = UDim.new(1, 0)
+                UICorner6.Parent = Knob
+
+                local UIStroke3 = Instance.new("UIStroke")
+                UIStroke3.Name = "UIStroke"
+                UIStroke3.Transparency = 0.6
+                UIStroke3.Parent = Knob
+
+            local TextButton = Instance.new("TextButton")
+            TextButton.Name = "TextButton"
+            TextButton.ZIndex = 9
+            TextButton.Size = UDim2.new(1, 0, 1, 0)
+            TextButton.BackgroundTransparency = 1
+            TextButton.Text = ""
+            TextButton.Parent = Track
+
+    -- ============ INFINITE JUMP ============
+    local Infinite_Jump = Instance.new("Frame")
+    Infinite_Jump.Name = "Infinite Jump"
+    Infinite_Jump.ZIndex = 5
+    Infinite_Jump.Position = UDim2.new(0, 14, 0, 110)
+    Infinite_Jump.Size = UDim2.new(1, -28, 0, 44)
+    Infinite_Jump.BackgroundColor3 = Color3.fromRGB(6, 6, 9)
+    Infinite_Jump.BackgroundTransparency = 0.28
+    Infinite_Jump.BorderSizePixel = 0
+    Infinite_Jump.Parent = Main
+
+        local UICorner7 = Instance.new("UICorner")
+        UICorner7.Name = "UICorner"
+        UICorner7.CornerRadius = UDim.new(0, 10)
+        UICorner7.Parent = Infinite_Jump
+
+        local UIStroke4 = Instance.new("UIStroke")
+        UIStroke4.Name = "UIStroke"
+        UIStroke4.Color = Color3.fromRGB(60, 60, 72)
+        UIStroke4.Thickness = 1.2
+        UIStroke4.Transparency = 0.4
+        UIStroke4.Parent = Infinite_Jump
+
+        local TextLabel2 = Instance.new("TextLabel")
+        TextLabel2.Name = "TextLabel"
+        TextLabel2.ZIndex = 6
+        TextLabel2.Position = UDim2.new(0, 12, 0, 0)
+        TextLabel2.Size = UDim2.new(1, -90, 1, 0)
+        TextLabel2.BackgroundTransparency = 1
+        TextLabel2.Text = "Infinite Jump"
+        TextLabel2.TextColor3 = Color3.fromRGB(240, 240, 250)
+        TextLabel2.TextSize = 13
+        TextLabel2.Font = Enum.Font.GothamMedium
+        TextLabel2.TextXAlignment = Enum.TextXAlignment.Left
+        TextLabel2.Parent = Infinite_Jump
+
+        local Track2 = Instance.new("Frame")
+        Track2.Name = "Track"
+        Track2.ZIndex = 7
+        Track2.Position = UDim2.new(1, -58, 0.5, -12)
+        Track2.Size = UDim2.new(0, 46, 0, 24)
+        Track2.BackgroundColor3 = Color3.fromRGB(55, 55, 68)
+        Track2.BorderSizePixel = 0
+        Track2.Parent = Infinite_Jump
+
+            local UICorner8 = Instance.new("UICorner")
+            UICorner8.Name = "UICorner"
+            UICorner8.CornerRadius = UDim.new(1, 0)
+            UICorner8.Parent = Track2
+
+            local Knob2 = Instance.new("Frame")
+            Knob2.Name = "Knob"
+            Knob2.ZIndex = 8
+            Knob2.Position = UDim2.new(0, 3, 0.5, -9)
+            Knob2.Size = UDim2.new(0, 18, 0, 18)
+            Knob2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            Knob2.BorderSizePixel = 0
+            Knob2.Parent = Track2
+
+                local UICorner9 = Instance.new("UICorner")
+                UICorner9.Name = "UICorner"
+                UICorner9.CornerRadius = UDim.new(1, 0)
+                UICorner9.Parent = Knob2
+
+                local UIStroke5 = Instance.new("UIStroke")
+                UIStroke5.Name = "UIStroke"
+                UIStroke5.Transparency = 0.6
+                UIStroke5.Parent = Knob2
+
+            local TextButton2 = Instance.new("TextButton")
+            TextButton2.Name = "TextButton"
+            TextButton2.ZIndex = 9
+            TextButton2.Size = UDim2.new(1, 0, 1, 0)
+            TextButton2.BackgroundTransparency = 1
+            TextButton2.Text = ""
+            TextButton2.Parent = Track2
+
+    local Discord = Instance.new("TextLabel")
+    Discord.Name = "Discord"
+    Discord.ZIndex = 6
+    Discord.Position = UDim2.new(0, 0, 0, 160)
+    Discord.Size = UDim2.new(1, 0, 0, 18)
+    Discord.BackgroundTransparency = 1
+    Discord.Text = "discord.gg/aspectt"
+    Discord.TextColor3 = Color3.fromRGB(180, 140, 255)
+    Discord.TextSize = 11
+    Discord.Font = Enum.Font.GothamBold
+    Discord.Parent = Main
+
+-- ============================================
+-- DRAG SYSTEM + SALVATAGGIO POSIZIONE
+-- ============================================
+do
+    local dragging = false
+    local dragStart, startPos, dragInput
+
+    local function updateDrag(input)
+        local delta = input.Position - dragStart
+        Main.Position = UDim2.new(
+            startPos.X.Scale, startPos.X.Offset + delta.X,
+            startPos.Y.Scale, startPos.Y.Offset + delta.Y
+        )
+    end
+
+    Main.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = Main.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                    -- salva posizione
+                    config.posX = Main.Position.X.Offset
+                    config.posY = Main.Position.Y.Offset
+                    Main.Position = UDim2.new(0, config.posX, 0, config.posY)
+                    saveConfig()
+                end
+            end)
+        end
+    end)
+
+    Main.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UIS.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            updateDrag(input)
+        end
+    end)
+end
+
+-- ============================================
+-- TOGGLE ANIMATION HELPER
+-- ============================================
+local TWEEN_INFO = TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local COLOR_ON = Color3.fromRGB(147, 51, 234)
+local COLOR_OFF = Color3.fromRGB(55, 55, 68)
+local KNOB_ON = UDim2.new(1, -21, 0.5, -9)
+local KNOB_OFF = UDim2.new(0, 3, 0.5, -9)
+
+local function setToggle(track, knob, state)
+    TweenService:Create(track, TWEEN_INFO, {
+        BackgroundColor3 = state and COLOR_ON or COLOR_OFF
+    }):Play()
+    TweenService:Create(knob, TWEEN_INFO, {
+        Position = state and KNOB_ON or KNOB_OFF
+    }):Play()
+end
+
+-- ============================================
+-- STATO DEI TOGGLE
+-- ============================================
+local AntiBatEnabled = config.antiBat
+local InfiniteJumpEnabled = config.infJump
+
+-- applica lo stato visivo iniziale
+setToggle(Track, Knob, AntiBatEnabled)
+setToggle(Track2, Knob2, InfiniteJumpEnabled)
+
+-- ============================================
+-- CLICK HANDLER
+-- ============================================
+TextButton.MouseButton1Click:Connect(function()
+    AntiBatEnabled = not AntiBatEnabled
+    setToggle(Track, Knob, AntiBatEnabled)
+    setAntiBat(AntiBatEnabled)
+end)
+
+TextButton2.MouseButton1Click:Connect(function()
+    InfiniteJumpEnabled = not InfiniteJumpEnabled
+    setToggle(Track2, Knob2, InfiniteJumpEnabled)
+    config.infJump = InfiniteJumpEnabled
+    if not InfiniteJumpEnabled then jumpHeld = false end
+    saveConfig()
+end)
+
+-- ============================================
+-- DISCORD CLICK (copia negli appunti)
+-- ============================================
+Discord.Active = true
+Discord.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        pcall(function()
+            if setclipboard then
+                setclipboard("discord.gg/aspectt")
+            end
+        end)
+    end
+end)
+
+-- ============================================
+-- APPLICA STATO SALVATO ALL'AVVIO
+-- ============================================
+if config.antiBat then startAntiBat() end
