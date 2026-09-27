@@ -1,0 +1,613 @@
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local TS = game:GetService("TweenService")
+local LP = Players.LocalPlayer or Players:WaitForChild("LocalPlayer", 10)
+if not LP then return end
+local pg = LP:WaitForChild("PlayerGui")
+
+pcall(function()
+	local old = pg:FindFirstChild("OrvynAntiBat")
+	if old then old:Destroy() end
+	pcall(function()
+		local o2 = game:GetService("CoreGui"):FindFirstChild("OrvynAntiBat")
+		if o2 then o2:Destroy() end
+	end)
+end)
+
+local function parentGui(gui)
+	local function tryParent(target)
+		pcall(function() gui.Parent = target end)
+		return gui.Parent ~= nil
+	end
+	if tryParent(pg) then return true end
+	pcall(function()
+		if typeof(gethui) == "function" then
+			local h = gethui()
+			if h and tryParent(h) then return true end
+		end
+	end)
+	if tryParent(game:GetService("CoreGui")) then return true end
+	return false
+end
+
+local AntiBatEnabled = false
+local InfiniteJumpEnabled = false
+local AntiBatConn = nil
+local AntiRagdollConn = nil
+local guiScale = 0.915
+local isMobileLayout = false
+local keybind = Enum.KeyCode.V
+local listeningKey = false
+
+local BG_ASSETS = {
+	"rbxassetid://107328909628204",
+	"rbxassetid://102877336629662",
+	"rbxassetid://114138477258742",
+}
+
+local function startAntiBat()
+	local char = LP.Character
+	if not char then return end
+	local root = char:FindFirstChild("HumanoidRootPart")
+	if not root then return end
+	if AntiBatConn then AntiBatConn:Disconnect() end
+	AntiBatConn = RunService.Heartbeat:Connect(function()
+		if not AntiBatEnabled then return end
+		if not root or not root.Parent then return end
+		local origXZ = Vector3.new(root.Velocity.X, 0, root.Velocity.Z)
+		root.Velocity = Vector3.new(4000, root.Velocity.Y, 4000)
+		RunService.RenderStepped:Wait()
+		if root and root.Parent then
+			root.Velocity = Vector3.new(origXZ.X, root.Velocity.Y, origXZ.Z)
+		end
+	end)
+end
+
+local function stopAntiBat()
+	if AntiBatConn then
+		AntiBatConn:Disconnect()
+		AntiBatConn = nil
+	end
+end
+
+UIS.JumpRequest:Connect(function()
+	if not InfiniteJumpEnabled then return end
+	local char = LP.Character
+	if not char then return end
+	local root = char:FindFirstChild("HumanoidRootPart")
+	if root then
+		root.Velocity = Vector3.new(root.Velocity.X, 57, root.Velocity.Z)
+	end
+end)
+
+local function startAntiRagdoll()
+	if AntiRagdollConn then return end
+	AntiRagdollConn = RunService.Heartbeat:Connect(function()
+		local char = LP.Character
+		if not char then return end
+		local hum2 = char:FindFirstChildOfClass("Humanoid")
+		local root = char:FindFirstChild("HumanoidRootPart")
+		if hum2 then
+			local st = hum2:GetState()
+			if st == Enum.HumanoidStateType.Physics or st == Enum.HumanoidStateType.Ragdoll or st == Enum.HumanoidStateType.FallingDown then
+				hum2:ChangeState(Enum.HumanoidStateType.Running)
+				workspace.CurrentCamera.CameraSubject = hum2
+				pcall(function()
+					local pm = LP.PlayerScripts:FindFirstChild("PlayerModule")
+					if pm then require(pm:FindFirstChild("ControlModule")):Enable() end
+				end)
+				if root then
+					root.Velocity = Vector3.new(0, 0, 0)
+					root.RotVelocity = Vector3.new(0, 0, 0)
+				end
+			end
+		end
+		for _, obj in ipairs(char:GetDescendants()) do
+			if obj:IsA("Motor6D") and not obj.Enabled then
+				obj.Enabled = true
+			end
+		end
+	end)
+end
+
+local OrvynAntiBat = Instance.new("ScreenGui")
+OrvynAntiBat.Name = "OrvynAntiBat"
+OrvynAntiBat.ResetOnSpawn = false
+OrvynAntiBat.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+OrvynAntiBat.IgnoreGuiInset = true
+
+local Frame = Instance.new("Frame")
+Frame.Name = "Main"
+Frame.Active = true
+Frame.ClipsDescendants = true
+Frame.Position = UDim2.new(0.5, -180, 0.5, -127)
+Frame.Size = UDim2.new(0, 340, 0, 210)
+Frame.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
+Frame.BorderSizePixel = 0
+Frame.Parent = OrvynAntiBat
+
+local uiScaleObj = Instance.new("UIScale")
+uiScaleObj.Name = "UIScale"
+uiScaleObj.Scale = guiScale
+uiScaleObj.Parent = Frame
+
+do
+	local _o = Instance.new("UICorner")
+	_o.CornerRadius = UDim.new(0, 16)
+	_o.Parent = Frame
+end
+
+local ImageLabel = Instance.new("ImageLabel")
+ImageLabel.Name = "BG"
+ImageLabel.Size = UDim2.new(1, 0, 1, 0)
+ImageLabel.BackgroundTransparency = 1
+ImageLabel.Image = BG_ASSETS[1]
+ImageLabel.ImageTransparency = 0.35
+ImageLabel.ScaleType = Enum.ScaleType.Crop
+ImageLabel.Parent = Frame
+do
+	local _o = Instance.new("UICorner")
+	_o.CornerRadius = UDim.new(0, 16)
+	_o.Parent = ImageLabel
+end
+
+local Frame2 = Instance.new("Frame")
+Frame2.Size = UDim2.new(1, 0, 1, 0)
+Frame2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Frame2.BackgroundTransparency = 0.45
+Frame2.BorderSizePixel = 0
+Frame2.Parent = Frame
+do
+	local _o = Instance.new("UICorner")
+	_o.CornerRadius = UDim.new(0, 16)
+	_o.Parent = Frame2
+end
+
+local Title = Instance.new("TextLabel")
+Title.ZIndex = 5
+Title.Position = UDim2.new(0, 14, 0, 10)
+Title.Size = UDim2.new(0, 200, 0, 40)
+Title.BackgroundTransparency = 1
+Title.Text = "ORVYN ANTI BAT"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 16
+Title.Font = Enum.Font.GothamBlack
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.TextYAlignment = Enum.TextYAlignment.Top
+Title.Parent = Frame
+
+local BgBtn = Instance.new("TextButton")
+BgBtn.Name = "BgBtn"
+BgBtn.ZIndex = 5
+BgBtn.Position = UDim2.new(1, -120, 0, 14)
+BgBtn.Size = UDim2.new(0, 50, 0, 26)
+BgBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+BgBtn.BackgroundTransparency = 0.25
+BgBtn.Text = "BG"
+BgBtn.TextColor3 = Color3.fromRGB(220, 220, 230)
+BgBtn.TextSize = 12
+BgBtn.Font = Enum.Font.GothamBold
+BgBtn.AutoButtonColor = false
+BgBtn.Parent = Frame
+do
+	local _o = Instance.new("UICorner")
+	_o.CornerRadius = UDim.new(0, 10)
+	_o.Parent = BgBtn
+end
+
+local MobileBtn = Instance.new("TextButton")
+MobileBtn.Name = "MobileBtn"
+MobileBtn.ZIndex = 5
+MobileBtn.Position = UDim2.new(1, -64, 0, 14)
+MobileBtn.Size = UDim2.new(0, 50, 0, 26)
+MobileBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+MobileBtn.BackgroundTransparency = 0.25
+MobileBtn.Text = "MOBILE"
+MobileBtn.TextColor3 = Color3.fromRGB(220, 220, 230)
+MobileBtn.TextSize = 11
+MobileBtn.Font = Enum.Font.GothamBold
+MobileBtn.AutoButtonColor = false
+MobileBtn.Parent = Frame
+do
+	local _o = Instance.new("UICorner")
+	_o.CornerRadius = UDim.new(0, 10)
+	_o.Parent = MobileBtn
+end
+
+local function makeToggleRow(y, labelText)
+	local row = Instance.new("Frame")
+	row.ZIndex = 5
+	row.Position = UDim2.new(0, 14, 0, y)
+	row.Size = UDim2.new(1, -28, 0, 42)
+	row.BackgroundColor3 = Color3.fromRGB(20, 20, 24)
+	row.BackgroundTransparency = 0.25
+	row.Parent = Frame
+	do
+		local _o = Instance.new("UICorner")
+		_o.CornerRadius = UDim.new(0, 12)
+		_o.Parent = row
+	end
+
+	local lbl = Instance.new("TextLabel")
+	lbl.ZIndex = 6
+	lbl.Position = UDim2.new(0, 14, 0, 0)
+	lbl.Size = UDim2.new(0, 100, 1, 0)
+	lbl.BackgroundTransparency = 1
+	lbl.Text = labelText
+	lbl.TextColor3 = Color3.fromRGB(240, 240, 245)
+	lbl.TextSize = 15
+	lbl.Font = Enum.Font.GothamBold
+	lbl.TextXAlignment = Enum.TextXAlignment.Left
+	lbl.Parent = row
+
+	local pill = Instance.new("Frame")
+	pill.ZIndex = 6
+	pill.Position = UDim2.new(1, -56, 0.5, -12)
+	pill.Size = UDim2.new(0, 44, 0, 24)
+	pill.BackgroundColor3 = Color3.fromRGB(50, 50, 58)
+	pill.Parent = row
+	do
+		local _o = Instance.new("UICorner")
+		_o.CornerRadius = UDim.new(1, 0)
+		_o.Parent = pill
+	end
+
+	local knob = Instance.new("Frame")
+	knob.ZIndex = 7
+	knob.Position = UDim2.new(0, 3, 0.5, -9)
+	knob.Size = UDim2.new(0, 18, 0, 18)
+	knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	knob.Parent = pill
+	do
+		local _o = Instance.new("UICorner")
+		_o.CornerRadius = UDim.new(1, 0)
+		_o.Parent = knob
+	end
+
+	local btn = Instance.new("TextButton")
+	btn.ZIndex = 8
+	btn.Size = UDim2.new(1, 0, 1, 0)
+	btn.BackgroundTransparency = 1
+	btn.Text = ""
+	btn.Parent = pill
+
+	return row, pill, knob, btn, lbl
+end
+
+local antiRow, antiPill, antiKnob, antiBtn = makeToggleRow(62, "Anti-Bat")
+local jumpRow, jumpPill, jumpKnob, jumpBtn = makeToggleRow(114, "Inf Jump")
+
+local KeyBtn = Instance.new("TextButton")
+KeyBtn.Name = "KeyBtn"
+KeyBtn.ZIndex = 6
+KeyBtn.Position = UDim2.new(0, 110, 0.5, -13)
+KeyBtn.Size = UDim2.new(0, 36, 0, 26)
+KeyBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
+KeyBtn.Text = "V"
+KeyBtn.TextColor3 = Color3.fromRGB(230, 230, 240)
+KeyBtn.TextSize = 13
+KeyBtn.Font = Enum.Font.GothamBold
+KeyBtn.AutoButtonColor = false
+KeyBtn.Parent = antiRow
+do
+	local _o = Instance.new("UICorner")
+	_o.Parent = KeyBtn
+end
+
+local ScaleLabel = Instance.new("TextLabel")
+ScaleLabel.ZIndex = 5
+ScaleLabel.Position = UDim2.new(0, 14, 1, -36)
+ScaleLabel.Size = UDim2.new(0, 100, 0, 14)
+ScaleLabel.BackgroundTransparency = 1
+ScaleLabel.Text = "GUI SIZE"
+ScaleLabel.TextColor3 = Color3.fromRGB(160, 160, 170)
+ScaleLabel.TextSize = 10
+ScaleLabel.Font = Enum.Font.GothamBold
+ScaleLabel.TextXAlignment = Enum.TextXAlignment.Left
+ScaleLabel.Parent = Frame
+
+local ScaleValue = Instance.new("TextLabel")
+ScaleValue.ZIndex = 5
+ScaleValue.Position = UDim2.new(1, -59, 1, -36)
+ScaleValue.Size = UDim2.new(0, 45, 0, 14)
+ScaleValue.BackgroundTransparency = 1
+ScaleValue.Text = string.format("%.2fx", guiScale)
+ScaleValue.TextColor3 = Color3.fromRGB(160, 160, 170)
+ScaleValue.TextSize = 10
+ScaleValue.Font = Enum.Font.GothamBold
+ScaleValue.TextXAlignment = Enum.TextXAlignment.Right
+ScaleValue.Parent = Frame
+
+local SliderTrack = Instance.new("Frame")
+SliderTrack.Name = "SliderTrack"
+SliderTrack.Active = true
+SliderTrack.ZIndex = 5
+SliderTrack.Position = UDim2.new(0, 14, 1, -18)
+SliderTrack.Size = UDim2.new(1, -28, 0, 4)
+SliderTrack.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+SliderTrack.BorderSizePixel = 0
+SliderTrack.Parent = Frame
+do
+	local _o = Instance.new("UICorner")
+	_o.CornerRadius = UDim.new(1, 0)
+	_o.Parent = SliderTrack
+end
+do
+	local _o = Instance.new("UIStroke")
+	_o.Color = Color3.fromRGB(255, 255, 255)
+	_o.Transparency = 0.4
+	_o.Parent = SliderTrack
+end
+
+local SliderFill = Instance.new("Frame")
+SliderFill.ZIndex = 6
+SliderFill.Size = UDim2.new(0.12, 0, 1, 0)
+SliderFill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+SliderFill.BorderSizePixel = 0
+SliderFill.Parent = SliderTrack
+do
+	local _o = Instance.new("UICorner")
+	_o.CornerRadius = UDim.new(1, 0)
+	_o.Parent = SliderFill
+end
+
+local SliderKnob = Instance.new("TextButton")
+SliderKnob.ZIndex = 7
+SliderKnob.AnchorPoint = Vector2.new(0.5, 0.5)
+SliderKnob.Position = UDim2.new(0.12, 0, 0.5, 0)
+SliderKnob.Size = UDim2.new(0, 14, 0, 14)
+SliderKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+SliderKnob.BorderSizePixel = 0
+SliderKnob.Text = ""
+SliderKnob.AutoButtonColor = false
+SliderKnob.Parent = SliderTrack
+do
+	local _o = Instance.new("UICorner")
+	_o.CornerRadius = UDim.new(1, 0)
+	_o.Parent = SliderKnob
+end
+
+local Dim = Instance.new("TextButton")
+Dim.Visible = false
+Dim.ZIndex = 50
+Dim.Size = UDim2.new(1, 0, 1, 0)
+Dim.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Dim.BackgroundTransparency = 0.5
+Dim.Text = ""
+Dim.AutoButtonColor = false
+Dim.Parent = OrvynAntiBat
+
+local BgPanel = Instance.new("Frame")
+BgPanel.Visible = false
+BgPanel.ZIndex = 51
+BgPanel.Position = UDim2.new(0.5, -130, 0.5, -90)
+BgPanel.Size = UDim2.new(0, 260, 0, 180)
+BgPanel.BackgroundColor3 = Color3.fromRGB(14, 14, 18)
+BgPanel.Parent = OrvynAntiBat
+do
+	local _o = Instance.new("UICorner")
+	_o.CornerRadius = UDim.new(0, 16)
+	_o.Parent = BgPanel
+end
+
+local BgTitle = Instance.new("TextLabel")
+BgTitle.ZIndex = 52
+BgTitle.Position = UDim2.new(0, 12, 0, 8)
+BgTitle.Size = UDim2.new(1, -40, 0, 28)
+BgTitle.BackgroundTransparency = 1
+BgTitle.Text = "CHANGE IMAGE"
+BgTitle.TextColor3 = Color3.fromRGB(220, 220, 230)
+BgTitle.TextSize = 14
+BgTitle.Font = Enum.Font.GothamBold
+BgTitle.TextXAlignment = Enum.TextXAlignment.Left
+BgTitle.Parent = BgPanel
+
+local BgClose = Instance.new("TextButton")
+BgClose.ZIndex = 52
+BgClose.Position = UDim2.new(1, -32, 0, 10)
+BgClose.Size = UDim2.new(0, 24, 0, 24)
+BgClose.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+BgClose.Text = "X"
+BgClose.TextColor3 = Color3.fromRGB(200, 200, 210)
+BgClose.TextSize = 12
+BgClose.Font = Enum.Font.GothamBold
+BgClose.AutoButtonColor = false
+BgClose.Parent = BgPanel
+do
+	local _o = Instance.new("UICorner")
+	_o.Parent = BgClose
+end
+
+local BgGrid = Instance.new("Frame")
+BgGrid.ZIndex = 52
+BgGrid.Position = UDim2.new(0, 12, 0, 46)
+BgGrid.Size = UDim2.new(1, -24, 0, 110)
+BgGrid.BackgroundTransparency = 1
+BgGrid.Parent = BgPanel
+do
+	local _o = Instance.new("UIGridLayout")
+	_o.CellPadding = UDim2.new(0, 8, 0, 0)
+	_o.CellSize = UDim2.new(0, 70, 0, 100)
+	_o.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	_o.Parent = BgGrid
+end
+
+local bgButtons = {}
+for i, asset in ipairs(BG_ASSETS) do
+	local ib = Instance.new("ImageButton")
+	ib.ZIndex = 53
+	ib.BackgroundColor3 = Color3.fromRGB(20, 20, 24)
+	ib.Image = asset
+	ib.ScaleType = Enum.ScaleType.Crop
+	ib.AutoButtonColor = false
+	ib.Parent = BgGrid
+	do
+		local _o = Instance.new("UICorner")
+		_o.CornerRadius = UDim.new(0, 10)
+		_o.Parent = ib
+	end
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = i == 1 and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(40, 40, 48)
+	stroke.Thickness = 2
+	stroke.Parent = ib
+	bgButtons[i] = { btn = ib, stroke = stroke, asset = asset }
+	ib.MouseButton1Click:Connect(function()
+		ImageLabel.Image = asset
+		for j, b in ipairs(bgButtons) do
+			b.stroke.Color = (j == i) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(40, 40, 48)
+		end
+	end)
+end
+
+local function setToggleVisual(pill, knob, on)
+	TS:Create(knob, TweenInfo.new(0.15), {
+		Position = on and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9),
+		BackgroundColor3 = on and Color3.fromRGB(0, 255, 140) or Color3.fromRGB(255, 255, 255),
+	}):Play()
+	TS:Create(pill, TweenInfo.new(0.15), {
+		BackgroundColor3 = on and Color3.fromRGB(0, 90, 60) or Color3.fromRGB(50, 50, 58),
+	}):Play()
+end
+
+local function setAntiBat(on)
+	AntiBatEnabled = on
+	setToggleVisual(antiPill, antiKnob, on)
+	if on then startAntiBat() else stopAntiBat() end
+end
+
+local function setInfJump(on)
+	InfiniteJumpEnabled = on
+	setToggleVisual(jumpPill, jumpKnob, on)
+end
+
+antiBtn.MouseButton1Click:Connect(function()
+	setAntiBat(not AntiBatEnabled)
+end)
+
+jumpBtn.MouseButton1Click:Connect(function()
+	setInfJump(not InfiniteJumpEnabled)
+end)
+
+KeyBtn.MouseButton1Click:Connect(function()
+	listeningKey = true
+	KeyBtn.Text = "..."
+end)
+
+UIS.InputBegan:Connect(function(input, gp)
+	if listeningKey then
+		if input.UserInputType == Enum.UserInputType.Keyboard then
+			keybind = input.KeyCode
+			listeningKey = false
+			KeyBtn.Text = keybind.Name
+		end
+		return
+	end
+	if gp then return end
+	if input.KeyCode == keybind then
+		setAntiBat(not AntiBatEnabled)
+	end
+end)
+
+local function openBg()
+	Dim.Visible = true
+	BgPanel.Visible = true
+end
+local function closeBg()
+	Dim.Visible = false
+	BgPanel.Visible = false
+end
+BgBtn.MouseButton1Click:Connect(openBg)
+BgClose.MouseButton1Click:Connect(closeBg)
+Dim.MouseButton1Click:Connect(closeBg)
+
+MobileBtn.MouseButton1Click:Connect(function()
+	isMobileLayout = not isMobileLayout
+	if isMobileLayout then
+		MobileBtn.Text = "PC"
+		MobileBtn.BackgroundColor3 = Color3.fromRGB(0, 90, 180)
+		Frame.Size = UDim2.new(0, 300, 0, 220)
+	else
+		MobileBtn.Text = "MOBILE"
+		MobileBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+		Frame.Size = UDim2.new(0, 340, 0, 210)
+	end
+end)
+
+local SCALE_MIN, SCALE_MAX = 0.55, 1.35
+local function applyScale(alpha)
+	alpha = math.clamp(alpha, 0, 1)
+	guiScale = SCALE_MIN + (SCALE_MAX - SCALE_MIN) * alpha
+	uiScaleObj.Scale = guiScale
+	ScaleValue.Text = string.format("%.2fx", guiScale)
+	SliderFill.Size = UDim2.new(alpha, 0, 1, 0)
+	SliderKnob.Position = UDim2.new(alpha, 0, 0.5, 0)
+end
+applyScale((guiScale - SCALE_MIN) / (SCALE_MAX - SCALE_MIN))
+
+local sliding = false
+local function updateSliderFromInput(pos)
+	local abs = SliderTrack.AbsolutePosition
+	local size = SliderTrack.AbsoluteSize
+	if size.X <= 0 then return end
+	local a = (pos.X - abs.X) / size.X
+	applyScale(a)
+end
+
+SliderKnob.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		sliding = true
+	end
+end)
+SliderTrack.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		sliding = true
+		updateSliderFromInput(input.Position)
+	end
+end)
+UIS.InputChanged:Connect(function(input)
+	if not sliding then return end
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		updateSliderFromInput(input.Position)
+	end
+end)
+UIS.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		sliding = false
+	end
+end)
+
+do
+	local dragging, start, startPos
+	Frame.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			start = input.Position
+			startPos = Frame.Position
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then dragging = false end
+			end)
+		end
+	end)
+	UIS.InputChanged:Connect(function(input)
+		if not dragging then return end
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			local d = input.Position - start
+			Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+		end
+	end)
+end
+
+LP.CharacterAdded:Connect(function()
+	if AntiBatEnabled then
+		task.wait(0.3)
+		startAntiBat()
+	end
+	task.wait(0.5)
+	startAntiRagdoll()
+end)
+
+startAntiRagdoll()
+setAntiBat(false)
+setInfJump(false)
+parentGui(OrvynAntiBat)
