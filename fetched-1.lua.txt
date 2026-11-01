@@ -1,0 +1,1233 @@
+local _5e341e
+local function _721f79(msg)
+  warn(string.char(91,75,105,110,103,109,111,114,93,32) .. tostring(msg))
+  return false
+end
+local _b84510=(function()
+return (function()
+local _9={}
+for _fa5=0,255 do _9[_fa5]=string.char(_fa5) end
+local _44d={}
+do
+  local _ke4="-ObjvnH7_YCER9Z4IPoc6Spg2XhJxeLGry0mTKqFlBzauMdwtAQ83WUNDs1if5kV"
+  for _fa5=1,#_ke4 do _44d[string.byte(_ke4,_fa5)]=_fa5-1 end
+end
+local function _93(s)
+  local _u6w,_xo4,_k34,_o6g={},0,0,0
+  for _fa5=1,#s do
+    local _qq4=_44d[string.byte(s,_fa5)]
+    if _qq4 then
+      _k34=_k34*64+_qq4
+      _o6g=_o6g+6
+      if _o6g>=8 then
+        _o6g=_o6g-8
+        local _i2x=2^_o6g
+        _xo4=_xo4+1
+        _u6w[_xo4]=_9[math.floor(_k34/_i2x)%256]
+        _k34=_k34%_i2x
+      end
+    end
+  end
+  return table.concat(_u6w)
+end
+local _d89b={}
+do
+  local _wb8="&\179S/\221P\177\019\138\200\245\022\251\198\020$\208\239`\149f\234U\240sLWN\012R\185@\139\016\217bKGJ\144\027I\243>\191\2223\011\003\156\207g\205BV\161\188\136\0216\169\255\174id\218a\201Y\173!\254\248FH\\0\023\158\237\223\219\180\206D\250\132\211\r8\008=\203\162\006\024^l4\026n\140\230\171Q\025\181z\165\231[\168\204#;\133\153\005{'o\195Z_\031\229c\190\128 \0301T\225\1317\196j\242\175\130\157\152\252e\187\n\"\1599\192\202\163\1342C\129r\007\166\018\224\220~.\197\148\155O5(\186m\182\009\246|\017\236q<X\143\154\151]\146*%\141\238\212:\183\235\000\015\214\178\226\170\249\253\216-,\244tk\189\176+\160\014\029EM\228\167\209\001\193\137\232\127up\210\145\142\184\194\227\164\215?\028}\199Aw\135)\150hx\172\147\247\004\002v\213\233\241y"
+  for _fa5=1,256 do _d89b[string.byte(_wb8,_fa5)]=_fa5-1 end
+end
+local function _3d8(S)
+  local _6ar,_m5c=919562438,194
+  local _u6w,_xo4,_fpd={},0,0
+  local P=744343 A=106815609 L=9524383
+  local K={110,120,171,149,246,94,120,39,212,10,133,201,148,241,5,100,221,90,248,32,166,49,140,202,236,69,210,154,29,101,169,237}
+  for _fa5=1,#S do
+    _6ar=(P*_6ar+A)%4294967296
+    local _gb4=string.byte(S,_fa5)
+    local _4km=(_6ar%256+K[((_fa5-1)%32)+1]+((_fa5*113+L)%256)+_m5c)%256
+    _m5c=_gb4
+    local _ep8=(_d89b[_gb4]-_4km)%256
+    _fpd=(_fpd*33+_ep8)%4294967296
+    _xo4=_xo4+1
+    _u6w[_xo4]=_9[_ep8]
+  end
+  return table.concat(_u6w),_fpd
+end
+local function _bf(_vx, _gz, ...)
+local _ij = table.unpack or unpack
+local _wr, _ht, _su, _dw = type, select, error, tostring
+local _ox, _zy, _ka, _vb, _gd = getmetatable, rawget, getrawmetatable, pcall, next
+local _re = math.floor
+local _cg, _nh = coroutine and coroutine.wrap, coroutine and coroutine.yield
+local function _tk(...) return { n = _ht('#', ...), ... } end
+local _mr, _xs = getfenv, setfenv
+local _yi
+if _wr(setmetatable) == 'function' then
+local _bq, _yp = _vb(setmetatable, {}, {__mode='kv'})
+if _bq and _wr(_yp) == 'table' then _yi = _yp end
+end
+local function _xh(_pj,_al,_lm)
+return _cg(function()
+for _iv1 in _pj,_al,_lm do _nh(_iv1) end
+end)
+end
+local _em
+_em = function(_ds, _oe, _ap, _gz, _tv)
+while true do
+local f945my, _bx, f8v035 = _ds.f945my, _ds.k, _ds.f8v035
+local _lb = {}
+local _uh = _ds.f1rq07
+for _sq = 1, _uh do _lb[_sq] = _oe[_sq] end
+local _lx, _wy = {}, 0
+if _ds.fk45e then
+local _dh = _oe.n or #_oe
+for _sq = _uh + 1, _dh do _wy = _wy + 1; _lx[_wy] = _oe[_sq] end
+end
+local _ha = _ds.f4crlx + 8
+local _sb = 1
+while true do
+local _dd = f945my[_sb]
+local _pj = f945my[_sb + 1]
+if _dd == 17 then
+_lb[_pj] = _lb[f945my[_sb + 2]]
+_sb = _sb + 4
+elseif _dd == 5 then
+_lb[_pj] = _bx[f945my[_sb + 2]]
+_sb = _sb + 4
+elseif _dd == 37 then
+_lb[_pj] = _gz[_bx[f945my[_sb + 2]]]
+_sb = _sb + 4
+elseif _dd == 36 then
+local _al = f945my[_sb + 2]
+local _zu = _lb[_al]
+if _al >= 4096 then _zu = _bx[_al - 4096] end
+local _lm = f945my[_sb + 3]
+if _lm >= 4096 then _lm = _bx[_lm - 4096] else _lm = _lb[_lm] end
+_lb[_pj] = _zu[_lm]
+_sb = _sb + 4
+elseif _dd == 3 then
+local _al = f945my[_sb + 2]
+local _hp = _lb[_pj]
+local n = (_al == 0) and (_ha - _pj) or (_al - 1)
+if _wr(_mr) == 'function' and _hp == _mr and (n == 0 or (n >= 1 and _lb[_pj + 1] == 1)) then
+_hp = function() return _gz end
+elseif _wr(_xs) == 'function' and _hp == _xs and n >= 2 and _lb[_pj + 1] == 1 and _wr(_lb[_pj + 2]) == 'table' then
+_hp = function(_, _qo)
+_xs(_tv, _qo)
+_gz = _qo
+return _tv
+end
+end
+local _fn = {n=n}
+for _sq = 1, n do _fn[_sq] = _lb[_pj + _sq] end
+local _ul = _yi and _yi[_hp]
+if _ul then
+if _wr(_mr) == 'function' then
+local _bq, _qo = _vb(_mr, _hp)
+if _bq and _wr(_qo) == 'table' then _gz = _qo end
+end
+_ds, _oe, _ap, _tv = _ul[1], _fn, _ul[2], _hp
+break
+end
+return _hp(_ij(_fn, 1, n))
+elseif _dd == 16 then
+local _al, _lm = f945my[_sb + 2], f945my[_sb + 3]
+local _hp = _lb[_pj]
+local n = (_al == 0) and (_ha - _pj) or (_al - 1)
+if _wr(_mr) == 'function' and _hp == _mr and (n == 0 or (n >= 1 and _lb[_pj + 1] == 1)) then
+_hp = function() return _gz end
+elseif _wr(_xs) == 'function' and _hp == _xs and n >= 2 and _lb[_pj + 1] == 1 and _wr(_lb[_pj + 2]) == 'table' then
+_hp = function(_, _qo)
+_xs(_tv, _qo)
+_gz = _qo
+return _tv
+end
+end
+if _lm == 2 then
+if n == 0 then _lb[_pj] = _hp()
+elseif n == 1 then _lb[_pj] = _hp(_lb[_pj + 1])
+elseif n == 2 then _lb[_pj] = _hp(_lb[_pj + 1], _lb[_pj + 2])
+elseif n == 3 then _lb[_pj] = _hp(_lb[_pj + 1], _lb[_pj + 2], _lb[_pj + 3])
+else
+local _zu = {}
+for _sq = 1, n do _zu[_sq] = _lb[_pj + _sq] end
+_lb[_pj] = _hp(_ij(_zu, 1, n))
+end
+elseif _lm == 1 then
+if n == 0 then _hp()
+elseif n == 1 then _hp(_lb[_pj + 1])
+elseif n == 2 then _hp(_lb[_pj + 1], _lb[_pj + 2])
+elseif n == 3 then _hp(_lb[_pj + 1], _lb[_pj + 2], _lb[_pj + 3])
+else
+local _zu = {}
+for _sq = 1, n do _zu[_sq] = _lb[_pj + _sq] end
+_hp(_ij(_zu, 1, n))
+end
+else
+local _kh
+if n == 0 then _kh = _tk(_hp())
+elseif n == 1 then _kh = _tk(_hp(_lb[_pj + 1]))
+elseif n == 2 then _kh = _tk(_hp(_lb[_pj + 1], _lb[_pj + 2]))
+elseif n == 3 then _kh = _tk(_hp(_lb[_pj + 1], _lb[_pj + 2], _lb[_pj + 3]))
+elseif n == 4 then _kh = _tk(_hp(_lb[_pj + 1], _lb[_pj + 2], _lb[_pj + 3], _lb[_pj + 4]))
+else
+local _zu = {}
+for _sq = 1, n do _zu[_sq] = _lb[_pj + _sq] end
+_kh = _tk(_hp(_ij(_zu, 1, n)))
+end
+if _lm == 0 then
+local _gk = _kh.n
+for _sq = 1, _gk do _lb[_pj + _sq - 1] = _kh[_sq] end
+if _gk == 0 then _lb[_pj] = nil end
+_ha = _pj + _gk - 1
+else
+local _vi = _lm - 1
+for _sq = 1, _vi do _lb[_pj + _sq - 1] = _kh[_sq] end
+end
+end
+_sb = _sb + 4
+elseif _dd == 32 then
+local _al, _lm = f945my[_sb + 2], f945my[_sb + 3]
+if _al >= 4096 then _al = _bx[_al - 4096] else _al = _lb[_al] end
+if _lm >= 4096 then _lm = _bx[_lm - 4096] else _lm = _lb[_lm] end
+_lb[_pj] = _al + _lm
+_sb = _sb + 4
+elseif _dd == 6 then
+if _lb[_pj] then _sb = _sb + 4 else _sb = _sb + f945my[_sb + 2] * 4 end
+elseif _dd == 35 then
+_sb = _sb + _pj * 4
+elseif _dd == 7 then
+local _zu = _lb[_pj]
+local _al, _lm = f945my[_sb + 2], f945my[_sb + 3]
+if _al >= 4096 then _al = _bx[_al - 4096] else _al = _lb[_al] end
+if _lm >= 4096 then _lm = _bx[_lm - 4096] else _lm = _lb[_lm] end
+_zu[_al] = _lm
+_sb = _sb + 4
+elseif _dd == 14 then
+_lb[_pj] = f945my[_sb + 2]
+_sb = _sb + 4
+elseif _dd == 29 then
+if _lb[_pj] then _sb = _sb + f945my[_sb + 2] * 4 else _sb = _sb + 4 end
+elseif _dd == 9 then
+local _al = f945my[_sb + 2]
+if _al == 0 then
+local n = _ha - _pj + 1
+if n <= 0 then return end
+local _zu = {}
+for _sq = 1, n do _zu[_sq] = _lb[_pj + _sq - 1] end
+return _ij(_zu, 1, n)
+end
+local n = _al - 1
+if n <= 0 then return end
+local _zu = {}
+for _sq = 1, n do _zu[_sq] = _lb[_pj + _sq - 1] end
+return _ij(_zu, 1, n)
+elseif _dd == 10 then
+local _al = f945my[_sb + 2]
+for _sq = _pj, _pj + _al - 1 do _lb[_sq] = nil end
+_sb = _sb + 4
+elseif _dd == 30 or _dd == 26 or _dd == 21 or _dd == 24 or _dd == 34 or _dd == 18 then
+local _al, _lm = f945my[_sb + 2], f945my[_sb + 3]
+if _al >= 4096 then _al = _bx[_al - 4096] else _al = _lb[_al] end
+if _lm >= 4096 then _lm = _bx[_lm - 4096] else _lm = _lb[_lm] end
+if _dd == 30 then _lb[_pj] = (_al == _lm)
+elseif _dd == 26 then _lb[_pj] = (_al ~= _lm)
+elseif _dd == 21 then _lb[_pj] = (_al < _lm)
+elseif _dd == 24 then _lb[_pj] = (_al <= _lm)
+elseif _dd == 34 then _lb[_pj] = (_al > _lm)
+else _lb[_pj] = (_al >= _lm) end
+_sb = _sb + 4
+elseif _dd == 15 or _dd == 19 or _dd == 45 or _dd == 39 or _dd == 13 then
+local _al, _lm = f945my[_sb + 2], f945my[_sb + 3]
+if _al >= 4096 then _al = _bx[_al - 4096] else _al = _lb[_al] end
+if _lm >= 4096 then _lm = _bx[_lm - 4096] else _lm = _lb[_lm] end
+if _dd == 15 then _lb[_pj] = _al - _lm
+elseif _dd == 19 then _lb[_pj] = _al * _lm
+elseif _dd == 45 then _lb[_pj] = _al / _lm
+elseif _dd == 39 then _lb[_pj] = _al % _lm
+else _lb[_pj] = _al ^ _lm end
+_sb = _sb + 4
+elseif _dd == 38 then
+_lb[_pj] = (f945my[_sb + 2] ~= 0)
+_sb = _sb + 4
+elseif _dd == 12 then
+_lb[_pj] = {}
+_sb = _sb + 4
+elseif _dd == 8 then
+local _zu = _lb[_pj]
+local _al, _lm = f945my[_sb + 2], f945my[_sb + 3]
+if _al == 0 then _al = _ha - _pj end
+local _zf = _lm - 1
+for _sq = 1, _al do _zu[_zf + _sq] = _lb[_pj + _sq] end
+_sb = _sb + 4
+elseif _dd == 41 then
+local _al = _lb[f945my[_sb + 2]]
+local _lm = f945my[_sb + 3]
+if _lm >= 4096 then _lm = _bx[_lm - 4096] else _lm = _lb[_lm] end
+_lb[_pj] = _al[_lm]
+if _lb[_pj] == nil then _su(string.char(97,116,116,101,109,112,116,32,116,111,32,99,97,108,108,32,109,105,115,115,105,110,103,32,109,101,116,104,111,100,32,39) .. _lm .. string.char(39,32,111,102,32) .. _wr(_al), 0) end
+_lb[_pj + 1] = _al
+_sb = _sb + 4
+elseif _dd == 11 then
+local _al, _lm = f945my[_sb + 2], f945my[_sb + 3]
+local _ot = _lb[_lm]
+for _sq = _lm - 1, _al, -1 do _ot = _lb[_sq] .. _ot end
+_lb[_pj] = _ot
+_sb = _sb + 4
+elseif _dd == 2 then
+local _jr = f8v035[f945my[_sb + 2]]
+local ft68k = {}
+local _no = _jr.ft68k
+for _sq = 1, #_no do
+local _yp = _no[_sq]
+if _yp.f5yajm then ft68k[_sq] = _lb[_yp.f2xa3e] else ft68k[_sq] = _ap[_yp.f2xa3e] end
+end
+local _qo = _gz
+local _ul = {_jr, ft68k}
+local _jk
+_jk = function(...)
+if _wr(_mr) == 'function' then
+local _bq, _yp = _vb(_mr, _jk)
+if _bq and _wr(_yp) == 'table' then _qo = _yp end
+end
+return _em(_ul[1], _tk(...), _ul[2], _qo, _jk)
+end
+if _wr(_xs) == 'function' then _vb(_xs, _jk, _gz) end
+if _yi then _yi[_jk] = _ul end
+_lb[_pj] = _jk
+_sb = _sb + 4
+elseif _dd == 20 then
+local _al = f945my[_sb + 2]
+if _al == 0 then
+for _sq = 1, _wy do _lb[_pj + _sq - 1] = _lx[_sq] end
+_ha = _pj + _wy - 1
+else
+local n = _al - 1
+for _sq = 1, n do _lb[_pj + _sq - 1] = _lx[_sq] end
+end
+_sb = _sb + 4
+elseif _dd == 23 then
+_lb[_pj] = _ap[f945my[_sb + 2]][1]
+_sb = _sb + 4
+elseif _dd == 25 then
+_ap[_pj][1] = _lb[f945my[_sb + 2]]
+_sb = _sb + 4
+elseif _dd == 40 then
+_lb[_pj] = {}
+_sb = _sb + 4
+elseif _dd == 1 then
+_lb[_pj] = _lb[f945my[_sb + 2]][1]
+_sb = _sb + 4
+elseif _dd == 44 then
+local _zu = _lb[_pj]
+_zu[1] = _lb[f945my[_sb + 2]]
+_sb = _sb + 4
+elseif _dd == 22 then
+local _zu = _lb[_pj]
+local n = f945my[_sb + 3] - 1
+local _sq = f945my[_sb + 2]
+while _sq <= _ha do n = n + 1; _zu[n] = _lb[_sq]; _sq = _sq + 1 end
+_sb = _sb + 4
+elseif _dd == 27 then
+for _sq = 0, 2 do
+local v = _lb[_pj + _sq]
+if _wr(v) ~= 'number' then
+local _py, _aa = false, nil
+if _wr(v) == 'string' then _py, _aa = _vb(function() return v + 0 end) end
+if not _py then
+local _yp = (_sq == 0 and string.char(105,110,105,116,105,97,108,32,118,97,108,117,101) or _sq == 1 and string.char(108,105,109,105,116) or string.char(115,116,101,112))
+_su(string.char(105,110,118,97,108,105,100,32,39,102,111,114,39,32) .. _yp .. string.char(32,40,110,117,109,98,101,114,32,101,120,112,101,99,116,101,100,44,32,103,111,116,32) .. _wr(v) .. ')', 0)
+end
+_lb[_pj + _sq] = _aa
+end
+end
+_sb = _sb + 4
+elseif _dd == 28 then
+local _hp = _lb[_pj]
+if _wr(_hp) ~= 'function' then
+local _zu = _ox(_hp)
+local getter = _ka
+if _wr(getter) ~= 'function' then getter = _gz['getrawmetatable'] end
+if _zu ~= nil and _wr(getter) == 'function' then
+local ok, actual = _vb(getter, _hp)
+if ok and _wr(actual) == 'table' then _zu = actual end
+end
+local _al, _lm
+if _wr(_zu) == 'table' then _al = _zy(_zu, '__iter'); _lm = _zy(_zu, '__call') end
+if _al ~= nil then
+_lb[_pj], _lb[_pj + 1], _lb[_pj + 2] = _al(_hp)
+elseif _zu ~= nil and _wr(_zu) ~= 'table' then
+if f945my[_sb + 2] > 1 then _su('E43', 0) end
+_lb[_pj], _lb[_pj + 1], _lb[_pj + 2] = _xh(_hp, _lb[_pj + 1], _lb[_pj + 2]), nil, nil
+elseif _wr(_hp) == 'table' and (_zu == nil or (_wr(_zu) == 'table' and _lm == nil)) then
+_lb[_pj], _lb[_pj + 1], _lb[_pj + 2] = _gd, _hp, nil
+elseif _zu == nil or (_wr(_zu) == 'table' and _lm == nil) then
+_su(string.char(97,116,116,101,109,112,116,32,116,111,32,105,116,101,114,97,116,101,32,111,118,101,114,32,97,32) .. _wr(_hp) .. string.char(32,118,97,108,117,101), 0)
+end
+end
+_sb = _sb + 4
+elseif _dd == 43 then
+_gz[_bx[_pj]] = _lb[f945my[_sb + 2]]
+_sb = _sb + 4
+elseif _dd == 4 then
+local _al = f945my[_sb + 2]
+if _al >= 4096 then _al = _bx[_al - 4096] else _al = _lb[_al] end
+_lb[_pj] = -_al
+_sb = _sb + 4
+elseif _dd == 42 then
+local _al = f945my[_sb + 2]
+if _al >= 4096 then _al = _bx[_al - 4096] else _al = _lb[_al] end
+_lb[_pj] = not _al
+_sb = _sb + 4
+elseif _dd == 33 then
+local _al = f945my[_sb + 2]
+if _al >= 4096 then _al = _bx[_al - 4096] else _al = _lb[_al] end
+_lb[_pj] = #_al
+_sb = _sb + 4
+elseif _dd == 31 then
+local _al, _lm = f945my[_sb + 2], f945my[_sb + 3]
+if _al >= 4096 then _al = _bx[_al - 4096] else _al = _lb[_al] end
+if _lm >= 4096 then _lm = _bx[_lm - 4096] else _lm = _lb[_lm] end
+_lb[_pj] = _re(_al / _lm)
+_sb = _sb + 4
+else
+_su(('E'..kmToString(_dd)), 0)
+end
+end
+end
+end
+local _ex = function() end
+if _wr(_xs) == 'function' then _vb(_xs, _ex, _gz) end
+return _em(_vx, _tk(...), {}, _gz, _ex)
+end
+local function _mg(_ot, _et, _ra)
+_et = _et or 1
+local function KMVX8(_pj,_lm)
+_pj=_pj%256 _lm=_lm%256
+local r,_ds=0,1
+for _=1,8 do
+local _kw,w=_pj%2,_lm%2
+if _kw~=w then r=r+_ds end
+_pj=(_pj-_kw)/2 _lm=(_lm-w)/2 _ds=_ds*2
+end
+return r
+end
+_ra = _ra or 2048
+local function _uw()
+local _al = string.byte(_ot, _et)
+_et = _et + 1
+_ra = (_ra * 678 + 7423) % 65521
+local _bx = _ra % 256
+local v = _al - _bx
+if v < 0 then v = v + 256 end
+return v
+end
+local function _fy()
+local n, _cc = 0, 1
+while true do
+local _al = _uw()
+n = n + (_al % 128) * _cc
+if _al < 128 then break end
+_cc = _cc * 128
+end
+return n
+end
+local function _qz()
+local n = _fy()
+if n % 2 == 1 then return -math.floor((n + 1) / 2) end
+return math.floor(n / 2)
+end
+local function _bb()
+local _ds = {}
+_ds.f1rq07 = _fy()
+_ds.fk45e = (_uw() == 1)
+_ds.f4crlx = _fy()
+local _fj = _fy()
+_ds.ft68k = {}
+for _sq = 1, _fj do
+local f5yajm = (_uw() == 1)
+_ds.ft68k[_sq] = { f5yajm = f5yajm, f2xa3e = _fy() }
+end
+local _ye = _fy()
+_ds.k = {}
+for _sq = 1, _ye do
+local _tc = _uw()
+if _tc == 0 then _ds.k[_sq] = nil
+elseif _tc == 1 then _ds.k[_sq] = false
+elseif _tc == 2 then _ds.k[_sq] = true
+elseif _tc == 5 then
+_ds.k[_sq] = _qz()
+elseif _tc == 3 or _tc == 4 or _tc == 6 then
+local _rl = _fy()
+local _iq = {}
+local m = 41
+for j = 1, _rl do
+_iq[j] = string.char(KMVX8(_uw(), m))
+m = (m * 57 + 94) % 256
+end
+if _tc == 3 then _ds.k[_sq] = tonumber(table.concat(_iq))
+elseif _tc == 6 then
+local intlib = integer
+if type(intlib) ~= 'table' or type(intlib.fromstring) ~= 'function' then error('E6', 0) end
+_ds.k[_sq] = intlib.fromstring(table.concat(_iq))
+if _ds.k[_sq] == nil then error('E6', 0) end
+else _ds.k[_sq] = table.concat(_iq) end
+else
+_ds.k[_sq] = nil
+end
+end
+local _nd = _fy()
+local _bm, _qk = _fy(), _fy()
+_ds.f945my = {}
+if _nd > 0 then
+local _mn = {}
+for _sq = 1, _nd do
+_mn[_sq * 4 - 3] = _fy()
+_mn[_sq * 4 - 2] = _qz()
+_mn[_sq * 4 - 1] = _qz()
+_mn[_sq * 4] = _qz()
+end
+local _my = {}
+for _sq = 0, _nd - 1 do _my[((_sq * _bm) + _qk) % _nd] = _sq end
+for _sq = 1, _nd do
+local _tr = _my[_sq - 1] + 1
+local q = _sq * 4
+local _yp = _tr * 4
+_ds.f945my[_yp - 3] = _mn[q - 3]
+_ds.f945my[_yp - 2] = _mn[q - 2]
+_ds.f945my[_yp - 1] = _mn[q - 1]
+_ds.f945my[_yp] = _mn[q]
+end
+end
+local _if = _fy()
+_ds.f8v035 = {}
+for _sq = 1, _if do _ds.f8v035[_sq] = _bb() end
+return _ds
+end
+local _jr = _bb()
+return _jr, _et, _ra
+end
+local _4={
+("mezaM-_jDBLr8U-06gs-zjRIZAwhK8U6uqIOdwIUJCaxPI6khOG-RkRwGva7OpdHmcxY0gL_hXR7rlqS-_Ut4aL7bJ35uqw8cJ_irphXQwwzLPJ0QuaIlwHqKBBqWboVSfVDeSnLLl07-n-AtvO-DFNF-9dQ-dpJqVDFYkOMlEneHBuG866kzV8MN8rAmArRTD2A732ZSHK6M135SWCGqCWlkylDpPNDgURh5xi7GqBBcIIYCP_Su9RwLZH1yGCPc6kRtcIamdcBoUaKOlvYkypges5UYYbUenyZioesz4zVGMfS5xFzbxDLvffx6VjTNpo3OXf4i7Q-Yi-D7U8zOZLuc9eAeREht-wajblR8Ai1zurcAaO-1WfLk7a02mdGT1k9I_fCTkNFMNkrxrHXpdiBOyuWpgbVgZIYOeKngyei2F2pUzd_28lh47r_0GIIciIgLkctG70_JNg0m5wWQCwWoEn5wdppzCMfCgnKPMuZkjwjg3Q-C5z3MpikwZaaDHhBNGw3jp_nbFYtxChHy7glo8puhwKSFtM8OC6XNJj_UGRJgdJDOdcftAZLXrJiK8FZ6FA9T_uD4Yh1TidCViXj8MjLtqCnLj9ePUZrkZaayUZU825uCTdDK61vBfxbIGPdeS5R7rQirQ2C2vWGjvkXyuTpxNH9QFPlYIvsLQmRpx1geMdwZn86Jzd9AYkcZI8bQQkQDu4gEmermLXf02SuVNM7PcaOEKTsuIHHDibjTB1Kv1IV-p2a1v9Ebmmf6e4t_gfJxb-tpKwyv3KPNzA2Ks5nyGgsL6R7JNBl225LxWyk38EqfNc6CX4-uFttfvk93wl15GL9ixg4nCna0DUMK68q9sXr4dKZsjx0PKJ3idEHgbvuIkrVkoplqpsS-wPZquGRntkBc4MUs_3RRQ_2x_6hHGWbgay03-EXYDzhnNapEohCC2lNBdxnB33lBmW2ehAYX_ScGZbnF-ehlwfzEhEE6NTFxcgPnLXQHgSq2qBxsxv2O297xfyGIrpK2fp5RNHV2ySX4e3kyVs3VLCR8cDUd88nXB_c_WUwR6lfSqKy1L3PeYh4PU_341orIcUvboWz1Lv7kXRy6DUVLPdQnQG2ECqJS-K_Mqi8hwd8V4_57p1g1DDa5Ve4r3WiBVaO6en5aPBZiduQHEo0gQvmfSZUdO_8R1y2zJQENwDuotwmXxMCZh8Q8f-0BXSTarvgR976OkSWjb_LUOR0veiNZqBJ1Z7AMol6vfKiNqgoGmegee1kEyESzROZx-Zja2caRG9tARbcLKexnfW2rvQap5bVqeVdYOVkH2RgWv-PgKP7FDktbeDrKFFsWSMek9A-6vAMyP1aXucUrUM-KDls0RNkTD-7imWT5VD26bo5HTIb-J-yQc9voLBQ3sZwInkjWVOfXBbj_Qrv5u1TqoR8DBzWQoH5He4ILn1aC5E9YRcxsP-I3H1tYKSwzOXfoSA3nDXAtWBGsgXo64kdgDCELMgIm2H5WOIu9yTBLOfoM2cz1auuUD7bI-Xhc4ObZm7TBXXofFWFTBj70etSr_ayt3kpdJJwdrCPnpDP3zFBJ7FCaGOIXs2yJIo016mNNmDG5SUKJ0QGJp6p_c-PXJ8oPOvBdBu3S0rAzNnHo-ufPWKnBwsr2pz22PYulKYQloenhVI0qxrY9o1bUeRDiM48LWXyHjb2zWzfbd-50Fzywcq1bxuBZMoq_9TKcTbmdYlgmlBCy17Mku8u4mb4FVLX8imXvQmlS5tbNldPnzGMbQAO9__3GeDexDW38FTmurpYn1a0wml0n1RTHZRlxi8xJYv8rGYMnFSUB-ezb3XJyQI-aJaCU37L01JWTqHf9X9sbftwbHLnAHZGKvSHhkbuOp738pyNhLPHj1dVJ0pJbZ-Up6ni5tyKU6_19Riw4ai_KtHX-gLIGoQHQO4I9Goma0aoG4kDw6wcvdorJs2yOb3Bj35I4-YzxF2G26wRBl0H8NvfyHjo-C-kOJWpTpvAkTh02CPnvr-UGtrcjS9g_tFE08ia5xMI0VXCpPn27CvwQtHUBORKl_3stqxcu3gGeu7wGlFjJlEGkU7YAZVhUDITgXoWPBrsd3puv9BDRKwA3NLnulJ-hp2co3v5c6l68fKxg7w-g1V2rMDEw2CDZ7YI3Kod1nr6tGs-V1Fjzb7lxLe6tu1qk__Z8X58U90Gqm_N6yyxr1HEXEBsy8Id_YnpoNhVQmSdY-Im4agKtn7KnRk__u-vBtzQnmKDd6yVbmgLC1XJjWRffT_tW5zeZlzWkEUg_TGz9Y5PNsyW-5FSqDLWjOSL3wFVJfyekqX6rGPRSdqfGlSRqSc5K7okno-_fHD3q3Lylr4Sdt8C6Tv9-ZV-drl-15o0rJAnEtC0CVmyfly1zI5hnF9zhm0lUDOLc3SqqRdYswPix4S-F6NTbD17rJr6RwKsQbNdxCZ6VMTRyB49AcCOPt_6eRfdA7w-t8tSZTnRGL9O_XVB7UyQAcy3ccsqNKGRz9FWCvI2Sfzmu5xk3WgFRQDKjIbXSHZI9tsw8q2NGdIcS34WCsJPXxB91keVvtAiSIbp0dPf-BcV811XPbzBKyGEYHD-D9_LSrexCzLmnquNq7G_oVC5nBZj2jBAHMQy3zjDn8o9-W6JPGA7mlV18U9Q4SNvGtrD_RdxyBWiGLyU8Sa0KAVdFn7lYDknUpOIqnxiINm9M_Arb7rP8KbLjoiaV-E5ZnSmo5UeAUzfJyg4OvsfqTlP3o-UBVijrSrqkLLBawFew3HEJsuBXUHZyxEkbIAX8lpV14PHXJJh4yyJkYm7ZnSmJXQ7UY0W61ToKz2YLr6y9-8R4xwr16L7h0KxajbYGw3gtzrEV8o5KFAri2gOaIEgFpPP0kiYDYfin5T6Fzb0jQtDlHbUtAlsvJJjbCZn-gmkRXCHNmv2g_X2sM0-apvAhvuuodJo7BY9wE1qjlnTHTMjKorKl84G01tPnt2OOpknzd43MAtdfU7ELW3emGGdZoTU0harD9LUxT0awQpkMopRBErPwAM8m1dl4kY9NkNaENsb9JL8tekV__--LoInYPhhjRrYmWY6zd8aMVI5Pl-tLFDTcT9LU1CV9o5Gxj0Lrd7R9OBfxvb8zLHRKx7u_Y-QzHOJSoJXkrCVJDXmy5_WJc-YgjhcgkTlHWiOkPvBJK2-RPDomQGRXqWzsk2OyHvcicHj3jm6W_plOCviz9noFjUHISydCs_lp8eCo-PrEPERN5wwzPiJANOAFNKNfLHmSF5HEMeejxh4AIRqaOCAR8dFPAEd6ywklhE2iFYjk_RLzTBOvgz4THbRtzTmCQrwwUKzarBLzJGxwTCLWrxUnp3giXeqcfWN-TkOyzbsfsQ4SqabVpnRcjkVQ4wLpGkmFrqXgklARYmHhiBmu_t1UyjcciKgFEqq_eJx0445NqefwMU5BZ5GeBqtrdUCCWVuY_JeyBEuxg38nFld4TmdQoTIZAeBE7EeMjP_isfVeDb62pPMTSQx_GzcjiwRsJXIYljtCDec6l-WtRHc-N8HG3gCigi6TcXsrNsxaTjjr7HkGPkn5KJ7RsmvOGHEHbgI1DcMk8qlY2I_8K8EWNO_MCWmxIrbRR1p2IxSt7Az2Do5q-uIQ1aH3r6bmt0iiku058zfzPzc6_odHcgT8JN0uZ4ioJNS9IMOf9XiXaVKanaGkr8OtlQJ_UaW31k76zGpe43erI3tFtqQcUV1yrPTg4jDKFts3CYMd1C_YX3WkirEHPTeLnzaGWM1feWtm4Mfbc68yVLFi-HHZFv6XZ4K5afy8WKV9L38t1ZvLlj9tqNusBOS4bVdrU9OqiTm5Vo6kiouLMSJajlKFkVh8nNR_gyJJ8c-TxOYRselHoqF7TXwfRdDpOf1AMgEv6b17J6n6ZQhVju4iq9ZvOD-gk63RlTwY_Ze1pV720sLgED-FNfaaP7aTrzhrAWIalrUgiXjU3g14gQlpA_oJmzF1M4R3614XRIxt6g6-qb0aHDeM5VDFQQp2MTBEJZ6nQBS_FjDMHy-tEwYUprsLhdr7upuvmYOUDk-1yTBn2rC2UfloEqqR3sBpLc4XGz-ObVzHaf-v6AMpIurptESJ1TL2Z6wxaMvw0A9VVX5w-uZQp-qOSoYR8HQOS92QlJhwaUfL4_7gy-m2uh2VPrhAIHPZeSww-59idjxqohKE6zda1lVhKpDsnuapTzxEUgvWAhEpY3Wn9CB-ltfaWPGcAROD4Gqshuw-CiOxWuBsdK9J1IuBFlu-LzcbilVmamjO7Ktu2vW9DL2eJWJCYMKlPKGl0pCYI1vsQfMYBhuGmnV0_LejupP7T9iuUU5935Geo_Etx1CzeFAxLMv-pNfItdaju7kQX92D0FTyhq8YmwxCqy5hCHm5gNNOr2CmBqSgoFa5Vsj1P-m22PLH51xKDzSb_yY2otGQkVPmv0yo4oJwF8da7DfUsi09mlUEPThjkjpl6Ro4-m50NejquYFw9bx_kXKeRgJTuTr_lYfdikmsDSKj7G0vtu8TRfDD-O3BJ3nMCLJZc9Asb7NPZ1rQ1lc_4CC-SbMTv_iS5fMYPB-KdRPL3fNCsHrz9Gp9PhpkPaL9P8sYoaPnUKirdLKeDDdrXgKzETYP_-bAqzuGjrSC39yU244Jrq6PtCk8eJMajPrORKcIwFyPConjAj463Ey2sk17q2gf4SwxxpEoIaSFjGBlnji4nBuiIP05Tmj6FodbhLI1iUORjKF5zyfRVOC6d1PrW_urXU2fNvPlIKT_9z7L_UQgvzltozm6mcQTxVP2joeI9uRvdx-3Qw20CZ8ZbUKExFoeTYu1ywfPluhu7NHkexoxX1W773zFzhaewxIzylHPyctkB9fURJQd2qw45-uUgoEx1vPlLBGrqgjNXqjUqclsE2Mt9hT4oxvytnovg7vmsJlNQ8tghmNG6kkveLwFMHiJ8TWPLGywenm1ubBE13kQ_z3FObt_huWKAvL3noMIKNrsDDPxsOmWcquS4Mi4UaVsZid_zfEkQeJD0BicoZVBitGZIwwgYwQtLWJPtL0K8IG_9VuEkBz3KjOcmREZ22l9XApYyBBoU_OcBOUTReS8nzVw2yKWK6GuJD57qLxI-bEppN56wcthBIaOQec5no78dB-n2uNubCrXWLDES97rTAc0EIRVM2cBZXxdvAvZbUw8V1cLmNM1lkHlVw4UyDXGJ7cyloM2nYVqYSjFMzCfkashD0q-Ak7XVDZa9bettT3axnrDmLTbTG_LbrjlSUq0IIsTqcXq2JuF1V6ziUyZTjjVRRy6Y54FYPPCQLnTwDd1gp2cefQjloaGByKSKGyaGwjORiufR_9KLsw9S-Iib6fFd_lbHxCi9b_fw-vNCRYbxe1nJ2bTHBw-M3eQ2NmPGkPLW6s8bqPjkam1LGOgaOlcG0gg9pP1xAZmNV7jeM9lR6I9IzcrzVjvx5554iyBc2yXI881JPU_lLL5KTw9OfNGayRfWQeAWpXVoeMHUkFhj1tF4DVpLkZud9Y8831ATyjl4re7EdweXcWmPkM4fgWsjK81OKXKKsWs5qSpsINa2Yd-qXzMSSkGdZR9ux7adQM55GZnOEQ3f2QKG5DFvMPx2IoliuJuakuOguErO3jrvuSUzS9IWoZjPlGj0iFCFwA32Uio4YKsk".."MvwJZIk083Cr1JYFE1z8gBZYifaClfhjKhmRX6v-GPty-6eqwNHsLucQNCQMaWEsexXGyLIobn-5iqygd84nwJ-dnUE0e-slxfFX2yoAS_oPTONgzBhtnOTXravYoG_3oLICRaWP0zfcETiJYXnrNmTdMGGD330XQEoJAIbq5lObfXCvxBxPocmr9kRU4ZYzLKUwDsOy_U6Uw0FJTHGul7OHndSWtF5zGL1MRZgUV24-QbVCF8Jbou3duDzzFtmL7R-PqNdzuLZqEBjpkrsTx3bRZfi90FM9TQHpm_RNf78TlT8pcnbmbqwE2cUF8PM77GDTe20c2KIxyy_VEQCQ3Lt1YLCJlO10ftS9IVVeRKkwJj8nXIRWnx0AzX3wEIe8MkLb_FQ4XwqNWyoj8fq8GD2Hf8Axi4_LaLG9NqrDN1TI0XeibHYE8BSR5mwV-mR-rLLEaxsAj_ZF7CfHCZC_yLO5jJZcGded5SEQigKJB2Gkxmu6PfKY0CjHVBNJKp-fs3MLp-3h_7jIlFaf8RCUDPnIy1pRB88zsT5L24hOy3SFSOL2Zj5U181KYgmGjArbH5I5M9_vNAf_QLUNsdTB1PMdZv6TMFTZ8MofbYZscqHN3-qPH9gyefIi95bWhOf-IDScaVcCMwXv0cLbt2UX6lD8Kky9Tfxl3ILewuIhe7xP1fr67fqFwxJv5mGPB8pWPsnbMpN_Nh4bQJS8lMRs1nNTlZSrJF-STpdURrEeDHbhHXH_hSsKKQyS-Av2LKyEi1OJdgiR7UihDgVIAmpreFPyB2_T0f3vU8w7qpOqkdLhpedatk7dT30q2lrBXQJwwA18FM867_LwklFrMMQHmIaCw9MFBJDACagBIJcPY61ocVhK7MrVbQab_FXCxLFw45PMZNUs5uh8B-dREmNqP1qP2eQDc0lbUTWCCLqkoA8TXSXWH7GIyxKdTZYpeo2j5oCb1UAvcnOtFuHehAXo8bw893McE9jlSy4EqzDXUAscgmyQa-tOAtPtTu69f0GPFVWzqDr3Q8ugI027Yutbye66Qc3KGmBK0lk8"),
+"RaaZDJW7n8lt-kYFGGqmwGXHLk2YBABdQzm52G2BTgZLOA6UGbgahKVncTsCz9Nq_jud45YsG0O1lIBBPrguW0KE99tOr2E55DnWQ3-upJD8f-HnvTwfh3zUa3eRI55oj9Oct_EEysqIqynsgemGM_u76tWlqEbx8iRuHSqF74ask_zNM9_K45UR72-87NMSVSc-X3Pv6tZU2ONWogm-iRHSaf5Rk7qk3sprboRvqXpoqCxWBSzc3-TOgA15YpZmpVYOxo9oZmJQ7Xf4m26GrVZLPckULUTdH8YFoZ9EPhyfw8oQzxi5TJAmzn_3ScalMHIRpPynQOXy8ZUl0xBEct5w44HAcVOwHvKJtbC69RF4zSI0KRFY_nu9pXSwRe4R5ZoOXbvWXZ2-9oXy3ciHxRoSruitMfBVc8P1hYtDvYuiJlUTp5xwUhBlwj4vxuSntQCKLcK0ilcVoIb_fG3Ffk_N3jWj8MLuRKkZWcEIVGGzHEwewON_wtZBqSPAyebSyTKS2WR0Xq182AqjqX5hP2WbacLHAe_qNp6xwS5K4GY-_-pGth3IurP4pH10HbNpDswTOnfeGPG53rxgN-y2oAcFjQc0VDRj926YPZyQDTyFeky17zvlztpU15MaN5SyEytX9pSW3hsvqX8cGa9LO54O9Uxa0dkkvbA_PaOKN3odPAXeyS8xRhPPGrWlHsY0ZSSXPtDYH5QjMztUIhiUoxoUml4x0fvoVD-etzjq_ukm0FMx3rNc8fWKtvFetmqBblp8TY1O8MX3Dp1YkiZcnOunDyjrC4D-yzKExFKf-XyD-4aICbY8iFVk2402emp17sHNkk6_kMrBU2HtBvnJrvhY_52L0UVySho7reYDQX8z6NM1blvah0vtopc9HrNo_Iu_DmDcdeu9_V-Kvwn1d6R_RJ6Rx6yvwLsmVQwF5k5dpVRY0y9vqO19lZWgtD2FWHbnXjtHLjtV9xSdg6XuoFceAWd5GzEUMjUWeDud2BjRwhN8k-18sHS5cZsXEfz-GExjZyThgYrevybg-uRgriv1leMuTxiu3dmRrf0U8ns2ogbxG0fHIV21QMPaElAQKcNYD3b0Iobc6X-yWEhe36ILy85XpekDMLuBpOdhTk1cFVJmVPQ5mmU_MjjVSSXrkz09xASy5x3GmdZISppxU0l3M4Rqj3lxPPo_1_Sz6VjNloyTcpCO9a5C2L1kMJDV2YsU0NLvI6QMnvAq8OtxstQJEDoBmApME4fY3_TbOVw6bm_ZdKQT3Q4woQWD3y-x3Al-yJ7Iya0n4Jd-AJXR4CId6mcb6eEsyo5iUEUmQCZHvFpz7xFrjkyT-y0g95ZZfdpzIf3RVD8myszvqsbg6XnaRKTqm-dncwp3K8-Vk4iSGvp7td5dKVZkmc-BfbhWOcbEwwr7FZnUKve_Ke015RGAr9sTE0uTXmq-EDIJF8--i66qNVojVSLfa83gwhmCbW84NJc0l-pGkeexTZCB-7j00Z7WgdvMmuoj80z5eaUgAM0KE7YpxvrinYUYwCaWgW9KFj1rFhQeLiaSOX3tkE9uyySDNUIa7zXyhLJqSSH2Rlwi71Nuy32YzieMQ0ws37aAjQ7hb3qA_IOV4FtebWBdZ9FeGMNAQDpFJjUK3ii_V7iA0d0zRS1mInH_3rTsLMl9yChNpHOTtQvphh42dNidCabmE4zhBkt9B8_kC7mrLFKtEyRnp0sdMPViWovPyA5MUKYY30_4-d4XKlnpElkCM_DrupoqxXHXYZnFbW2MsqZODVWpAw5_Yq2jMvATbwU3wW-ZwlS2NonPikHKSC8ncFiuGxzy0KGDwDQFGUhUlsxOddhUad66ztrXuGWOuA_foj2QLmRqO9HxgMek2Yu_Hjlb-hosqy_LP6lISgN8Z3dMWaWsw2nNBLO077jJr7HyOaJ2K64bZRSTAxlrtG_FL3IpgjvD9GwBYnsEanqG11irnpn5nhh_L3dVbKQH5-HpFTwL72ArjrC4ZR8yIpPz7ES7R1Rlir5TBfDxOD5Yz5dlmSEmD33LODYlsrnQz6YsdARQnhYUwQiY8vtdHWkOhlLus8gtNPH4ogNCtssk39xmd1UzDWgT1RgOx_4Bz7I6uIVyxa-ckluMgPNo9gQCmcCZJk0YqHTXR2xJXbFwH3Qd4-eG_5XwV617T4Svh0sgyT4wLe9xU5F0QkbsHf6dqAD1naqIWS9MMqt5U8JDyCOcvMf3Fm1gDw5b5zGKrCW7Xj9xYU-lRQwQFEk-JizxnEGQtRe9dDd1eUDpqNcoD9TIJbTAgLEC7iaQmmvGTFuhF3WAFlRF3IRvNil_kxdE5NkzI6y-5xGGPoIW7TRUj6O3TK_PlgnvwcFGlBXC_ennF0firHKw6tpKQNBzctUVsXlRWGH1kewO6KlKgD3Hpi5tWOOZd-qbPqEUe_qXXyL5AXwpCavliADPy0SFFYpC60lQDrclJwL5Mu-oO2XBUwGVEjNc0rZ-WOokV9R0fUGPVRu9Nyn-7YRfZ7xH8KjlqTqErCGuN6i0FkAjxhNR4GHbqHzZ5y82RWkGVtJyhr7TmxfaMpPwNAc_tV_9ROm_qS0HT2Te8UkwhRN5r1Toa5RnfVqC-cxQKYW1gDbryC_ccSO7pnM4R5B7UMpZV3yF8PvVfNAgx8PEMfEM-E21FV4IRij0y09B-2iWb_xz4jM3_9GmBgjc5pcr1G0V0pEapUJEvRyKGQoZScZt1P4Kbe4ydrDzY8t3OB3oQDpBREzLrpBB5SPSxGI67EMYIBI6OCPGG5_3WP8wzlTnC7hW3Vy6EISmoeOpxPs1x0B_n8sKGXzefYx54003NM5cbQK87aY00Tfa9x0UHZTIKAIE9WT4hj3nzwh1gG3-JA8TfaR3cDZsCAPwEG2I3S_J8f2YbGlI1VRhyI4AM-_BUPVUmPsF9_PHviNrP1N2tEmPrwN6JCFVrZmADg-vpEOSJfJYLrzMzIRnpUhul7svpRUDxw34W60ajVqXZ9qDYyAFAeFFe42SebrMOSrTHpumFN5BknSfi1P9Wg8cbF0EKMqCbH0XddbIhaRNJXnZpJ2k23zWw_MRtqzJ04zgGwmsJd3vbQP2SJehQWTS7KJxN07oV6sD6rbquVTL68Npv6c0UuxqXki2qsFLE7-hbRxks2Mp6X5OVXJl2G4LCs_195dFWPRLct4e8rFn3gcN786Yl-RKBnidFQU6-diiLW_8yVCPdMUzmUNzHXkgODQ_wNUxCmzRA8PUHiXdqa9OSxaEpcaAYhUhGkf_hL0DuWq-mTDpToFHo-WLswj5Jq5hYtFgsz4NCPWg80tBvY_8Lkk0qrl6qN7QNj3-qKPDpnXUn5Ld-iD1JZ_38fACTD_QcJRsYpCuzHp1Sn-o0dt9-7kdUj-OnlZk5BAajKewxqH_gyAGSvhRCqFBAN0ktl03WQBI7XPYEHWmXV962FtJwmvBNT13ltFYMytbbyfQ3dbjEnsC0BSIr9i62B_UMTodTWMdctfMu7D-o4SegLMz-IVP6Sl2HGAi-y1Av4s5d70pS3yTcfw_1WNS5e_glG8Bem8xY9-B6YPqjCeFW7e2K7VBiaSxhsolgKPHdlj0EU8WiTXeKD3_xmf_gJxnedYNiq3Roy40l58e1dIxY90kJpFdjEO7QBLTxgj6Mx9g5L7-LlqoCwrVJ0qnmbxIf0z09DsiC4K14rMEhWmdHcNMJ2LX1gVgBc438JV-C6WejvtTuvdkxtjMvF0x7cDHBOqw5rYIsP9n5KuSakDwvoh-2gr20pMKO90pX77ALZNHZWVSjRSIpxUuebP0P4ER0-cN9iqqvlRQ0-4BhLtNtS7VrOkVsx_SdJtrs1JMlziKSySkEdqCR7Ih3Eir8tCIKsLhGAw8Eqj7xuXnHa49Uu2uwJ32SnUdC8XEr9sw30j4HMDbX7PwP2MlqoXE4pwDyaWZwKDLxKgNlQ5cbVsy5euZB-8OXUpSh1KMG4tXtwMaejVJLE39lxmSiuekjeMtL-63ypGDNdXb6oVL_Itfrrltwk5K1hQmJG6kNYNBrysg_8rURmLCMS5p0plIFqarXnCScgdJDcWJeC95OwXGlH1iaexREk8dalFPd5UfaSWb5-hDkjbT3oNLXNG18HI0mJLs92ffM9osAsvF-zPgpRdmkKmSPgG0CwU9QuAP6l5fv7GyyJg7YK5b2cRaBVCJGpmMOF9WCRD3hbEQDpz-y_yU5yWH7xhWlNk42M3KGmY48ybFt1ncKKEwVYneXRsaZfm-_rHZmW8C_IbvvXo-vOnDDbbxCjvIpw0xLzMKtodZ9MPg3CN0q-e7v8XCAtavpqoJA_KiE3QYoXH22ttRhNW2MPj_VUIxhB_jy7ysGluGGLTeK0FBpzbLzBoXed8Fo2G56YibiAqLF9Np_qG48xpfm3CE7KlFDOHw_tVQrzBRO6BrMbJy8XTpciZkSuWbh-BojSgcmcpiOfMiFRJQ0GtQi4TdWJesQ2dkMTs18mZsD3Km_UcNE_-wi0a6QX0v-jS46pCChrpWkohuOwEBhgLz3HBCFW336UahoM5OsbwV_emXGWUrMR_LC7yDNGH7mlRdr9ZqnG0q5Jm8zRmWbVI9zrCxQ5JTrIaza2aQGaq0tEJpuT7-WZqBDa5cFO8R7-Qs3oPVJKNITRCE0wFCf-pl6lGY99VK0tHCVe3V2-xnaVx9JZv85K8g4oOT6fnZ7NYxXq9JkoVad-exo558HRj6y6Wk2ghF8zNSwEDbEsp1ITAF2K5lkV24QNAiy2pusrP--lBVLOqyi2K_S5fS_JaUW2kFCG1gyuZehJfFvIB3ThensaiEdn0AohkwVckAmCARRzQPKAlooC2W2HTjmVHhmKWVuHQVZki327qJa1zxpd9itW2Gaa-yowo8uZje0ZbN-r15t3FiiIuKcIa0IpurdpuNLjXoM0spe5TkoRCB0NPNgRNFk7yxeusZrp83IO9pa0rEUZ7iHtzLKazYfkcTa8tWTI9kQW7v3MqwAI_GrEhiVchU_tZ6pWR9epY4W_F9HiXIpGwCkQtmYDzrINnaLWhee7NQn3uxVSQ1stS0m-Oy6WWDXfaIP_UawnnbktxAo0xFwxcmDUxza-h4J99a8k_7i84GLk6BoI7qDNEMZwSxQYVH4dbYpie1CoPUQ4IBTF6l7c-37S4kVU4JDzRyFu8y0nKdkyHPX_PKffDzGL4YoEu258ST08c8kgQHHjb7wlLpSHajy96MwBkbjgiOP2FCUED0of2akHTkEve6EZ1Q84vKBuX7HBiIJUj5hz48D-GkSp372b_uOuQrNoQctE_LB3VxHo26STlUiF7cy2rdb905DEpumFMpl-UjTMoDf1JY_icnFxp43ab9xcXSOIbe9Mk2fmCzzEbUJK3nE0dJTt3uXNeXKg05dIyvDw-qwvIMNzspAu2nEMopVl_OGqWbrxPXQ1rcK6j-SaHwJSH1mpgcMSFvZDnun8kx-V6FmGV5KRZ4j3P_L1FK-njvqSFDm7uDm_FUQcB7CCnejigFTMnO3j3W_N9BJAL-YokUmuTCH4eVoILrg_avhTsX5YV3oSMuMF7v-Ph8mxIMucM28I5fTGpPXWhT0V9H4BZdbcl-0mE32H03VuIbtcgxgZjVopC7cnu9uC_1ww8s6Lnr8PsdsCVw_5tiumJE4KEv-wDM7WjLKzs8dbA8J67Orj7bKlYaaiR9JLn-mecILh-3lR0gO_dKZuAUJwCXk2C84gK3EIjfLWC59XL_zl2XGzS9yF76NCQpKuT60xpelFDPZqbrYCu5rTl9e90AmUWZOAQbdveZvgubt9qWj2L9S8bam63eXkR7xRT4MJT_4SLhPLJ4kwGQ8epbS3JR_4u6AavW7IuWLKJTVDZzeXj88nVIZ6oB19vNKx-FzP4llb4ctq-kMyt3PLTHPbv2IzCr6mjQbnt4LohGUH9DzGWlVK_c-vyC6vSB5918_5PYoWpQBdawPF0PI-iKH1w3tvITjNekTJsB7EM004WjKrmy4A96ymage83G-_IR3izTNGrgJJNlZ9moEjVMQMLkIqjKm-mp3Mm5M1b58hs4ZEzfgJCW2vC4oJ75LkUPLpKEtllgZieaVon9Nm0qlkLwsM-PCl4GLiZpKHHvEu5_Ah6Wjf5dphTgS1AxfawCtbZRQLOzLTAg1K_0tvgMrMACPhOgHm2V0vXl-y9OUDPGKe-QLzTo0rYBTIqxCt8xkjifR8-_NAm_6tTM55eP00OY7TP7C33nG53QGiFhvm-_eKkUcBqNcaKZKERpnbWtdy_3EHpV_v5LCuxOZhvVeCYpt47axYw4zUi8NOkPgbpjSUoKcKDJyUQD5M010GFIGLc71Uwxx9ccOez_YC0WJF5C_4WjjqJlaiJW9oCayM5ua9t8GArz9hZ1CKD3v3Ci_VAn4cSKmpksjqidqZm5fWVbL5gI-AM0LeQPeY5LLJGaupxI2mloksdhcTvKCoMa2_ZfgAnRIf8xsweedkLiuAM8RhhYD51QHyDcAMYpmXLonlUt8VbDBaeGu4OeZP6XLrPW8Uu1ivmzOOZQ51MpE_qpjy6HO6VvHNFYQFuACDi6V76C7kCBIuMBJXEgXcIR-NmXhRYMrYLwTGXm4rFz92S0idEg3CMDQueZ2G20FZEJKznTzMDeJWhwHfF0pUheStKUF9k4-DqquGlKXRXO6i6sHTHkl1tDjBtsT9UtBLPke_rAzhHZSkShb1QPnLFj30c98n",
+"nmsjW16Aj8B2yfaKt2XyMLoOGEUW2cRpjFXLokZ-kVTXoB0vG-5lSdphEOtf9KCJ8DUQQ17bfrlf_oNuZMzT_rT2HSlgbClzPWtlut3Jm3QTexCj09zT7Lkg9w7qXWza321FP3XDSV3-6rUjtrilIN7iee40sORjK0LOwVn6m8Yv_REVRTsPrwTLAxFvFGHc1TM-ZjZTrwCBWnqr2LzMJI-4D9CuLJY0yRJox-697boic4XvP1gSOmMzr-rObKcTExkR2JyXtEYYPh6WtJtmnnwGeDkkyeovhrM1ozNkqEtmt9aRB_7CP5MXR_PI4O-YnhyB_Etc31ytyd4XxoUUwWCLK_pWxO7tMpqmMLQci6MG18B-mBhmptZgnvvdMZwAJ9HB5Cd6lJZrCmX465SYyL9qSFeOu8sPh1WpWdIF5RGhM4Nj_DD7fvWyv9xTNNHqRnJ3yZARy7dI4Rfz07vpOM2OBPV4HosVAtlXLjjS72Pc4BzpdjmItsMBn6t1c74_eyh1EgkPzFCX6sQXpBeKYBI0szxqffd1WR7GSVpF11a4LfSh07M6tELdfHgE5vzNGhiR0LV5xKoghLZ0W-x9oA4pBwBOStKGx-gzTofOkFwBdZrr7ZdNEZEM_9Zpk4zYQNl5UztHYiJSY-iNU18QvM5hlSJTvdDnYMgrHUqkpo3DSFNqkcLRd_x7tcYo42z9FWpYPKiMb2Kv8g6ncD3puNFvTd3RcKM033iMaAa-oC7ZsYxati0-PkUaRHXYf8a1hU8ysP1S7Hz4O5MGUvCsQAYr2STie2PNKNvfIxHdU4SPoqs5_1SJ3laLp6mVeI01cF7BPIvwcP-KeRTCQwsBxnvo7Bt7_MquMKEJoo6jHFNV-q-AFyLNft22zB3UrQnUslvBUj2ku7FLVGbHzWQZ2SbDaqGNBdOQ99BdyA1CckjcUV05K6pl98G7NfMSftGuM0aekOYzQKb16-zziQNutq5rbbIvtW_hFk1QPlokViaVSmRouKOAaNQQbYHve0gdVJw-OqQBl17TigITcFRtOzuWUI-o-qh_52C2tD4Ct8pilU48e5xlcrXKwBY5aNIJQlfg3TL1wiI4IMPaYuGZtH9mHzmiwNWidtyFUjbFijVZ8zOuYBS3naoRTX2kgAn6l6FBhD2x0BvFOdoB4AnxqSGGvyErqC5o8D-_bQ3mLbVqezJeqG7ao77QcxrgC66LwdFCCNBKaghDvR-O-tdrEhVenSQuU4HWmILMsxcIYkytEArq5ouKbzBoN_Vm-YeD0izn9CTc89N965JoDKrbCDiYXouDZW3FiVZW4NnAkYmWQcu747Uk1HVtw5xr5CB3KSCfOjp8C5IKRlX6b93ZMxAuN6oZBaXUu_c9P2HkJD-cdPHxH0zcI1W0WGK2h6x3gpfhVvY4g6g7IfIO-rPsQxE9uX-eioV6IxwlOxGF2nSS3dSek8snOvYU0ha_YQtfRvEKyAR9QkCmj2QSunj52Wyk6xEeA0ZQf30GL16eouBQVSYO2HoOLTlMrOei45KSkue_73WFZrLaEwd-w0ofguMx_GrWbOh_rmh_E3RZmnP8WJuVyt3Y8fiB67JDyT2ZAeWR35EJGmjXU7uOPBDU32HP1743uTd3sHmzyO9vPcqT2xWFT1YUWrDl_-RnoY_Ewv-CrlvZv1v-27Xj5OZLusRRKFKqX4OP8_nH_N6RDYlMDyFwMJTjMJUtRbUeTYQ16WhMfav-yBAECrwfeoT8-noOHT1jple4R1HE3XUUk1zqKwP2snj2y79VFAENtvZ6v5J1e0glPDN9Va1dNkzpKDDWwRcPrpKUnzsgyTEoBUp8XMTfFxtR1djnIOG8MoRjFSmGgH0CZJvVXIvOUd6C4kpLc2umdik275if-up6mAp9YMXicrlC67NUXl9tBSRdlz2uNnWJPgMvxjJx4lPyh_v1HZlBswx2f_TQBdSY7yB9hEAXTBi-45gAjKeW_cYTZsdifNEZ8b5fdxRZOw0CulpFzeROEog3a7qXa1ElLj-nlyV5nj_hU6wisAovq5dVcUX8QMpCh8sTBqwiYEM9_PxYk_MK-HJgVl3CtLRfCnzGs4xRjHXOThBMOA25NO6pKcJPSurznh_fpUD_QJPQHzMjhjlUcJyxgHzCN0cggDeBGRz53J_aKoZwmG-t4RnRF7Q_Qf2tsvVjh5DnU3bcDxps9IoXIZsDwBSBOnC0V_rlAwfE4po5vc46_w18PXfT7ETRvfbYCw7AI__zuKsFQwGC2xHdJ2ufoSFSyJQKx-11C_8aS1lHa44xi8UFSHhK3xrppAmIpdoFbsE2OMtRB3EhSUvqAlK9hY0yA9ylp6pSYItw8Q6et-fZnWURFceJxGhrJ38evfLOVdVqUBlqB9G0SS82ZOVOYkC6BE7c-0AsjzfL2mudaY4HgvY4Au1BH0cUDVjZuWNDC1gRqhrJO_1rXEKt1vPye3TjeNMWwXXooCaeG8v1JzrKYfRyHnORR6aMIf6Yv1U6nx5LcsJdA1GfxBRIxZjSnL73KzsfOR2JnVyd1HR-WmtCCdKmyaOr2iPHT8UGXmCSzuwXybmkOIn6pLu7rgZjNX3uESXPpMuSB-vL88F90kEgXFDgfdpSbGgqkYTg8PYw6_SR_LG1fQqAsa9K2CYC8nPT2TCwEHtkye9b7dv7fl1WYQdkyU1Wx_Jsh_UoWTrlpiPg2Qx1QQv9HPR1cHZFdVU_frlHhp2ShhR2o_3-BNclGz4sPha9Anm8u8PGYh8YiFpwgBk3fX1eIQrTS9iOyG0NdnO0xj5_FH4MAayC02xdICO0f3Z93i5lBwPHkD9BfaUbBAbLAfAbWOGgMWeioiHEAutgQsMApdXriEzBmBNwkOHzgv6m_M_qYsj93_ai-XDjblE9mmjFvM8VNxILcwPQNySsYtGYDzr7kPJ3Jx68-8bKsCmtqZcdbIJAhm_lawU_OulCX8QsKPFlJ5wtKJfSAyVxyWHPagzjNRHU_9vBYKWX-2yvFlHYnFuHCQ-KE-MbM4Vbb6QoydxRsMeM1qaFgEAytYgpxoui28_d4zqtg_6XjEXAJTMc7blMKOgBFeza5clEmx7oxNzaqtSM578RLnD-Xg87MkVlOW9Ab4zXL6eVeJniwcQbXDWkwCjTTk8MQmtCQ9BRaqzGmUYvo58wWs5xJCKFg_eTw8KWKaVxk8V4VjHnuqSdXc5chuT_GQTdIdxHCa1nzwVFmrzSntbPRnHk2bsVjFleFFH5HUH3MQwyK5XweBFLbIqwngNPxE17WNCdFCL_Ys5fZA27qmBlKbQ5hw48MWrSweWU6FvFM51UHwIVBxesYQXiyFcB8k6Za9qmBTBV9AZwz09G3CAH_ufcZ2qy1r-4MZ9VaCK7RaQKAMuQI2rhh4AxXUndkPYNUIiV7W-4UUsKVHU4vdAantlvsUWGn8I6SkuvZqm0FgZkhzPqpaNGazdB8fvFs6J89yARgMrdZDSLrFbV7-7cwVZBSjaqkiQsNy7onDOAV7uPMPYI0Io0JRbxs9VCoY6kG8RR9WVG9djEBj-lZRk8mH8MGJ5SCHE6sA3F1YGLjmDHbD_2UJhQuiUG5zq0JWxO2h6ADE_-5JbNvtvX092sVqLv_iLG6ol_5W8UCMCyg6F1HBG9sSI5bF8Y4C4vDVxu-K3jajV-NRVEFo4NVAN5ThcJJlR8VaP_vbqRetp9iWQbBkFm4XjLZp6lHV_FsaN1I0UEANHV65E4zn9dEiCvBasaI1MW2WfRITZFzWgi725FL9SAZdxfHMt9Mm7C-MEeHkFeesNA36nMV46ck5CcyOvIZE61MmXprOhwzx0bX8IMdNRnG-LvbnARDixle7xp8i28z0mSzP-tpZlWdYn1KJf8Sl3h9XY6n03_rsPOF92SlwYRkoU1uAluW-Zv_oobqSe2jQORF_qP1XO_ux8ac37FBgBv7YmUvtkT8V9kEk3IGc0sPrqEW0toxDir0ugxk-LjXjVMA5zSYjhNAdSizEBYbM9uzWf-9RWlMPBxea2uXAMTDKjvgUDKx9eprsklYlwRdBec-dGDp978BiiVv2X2VF4XQmARePsr3MtSaHMHunuXsCBjh3GBxGSjg59llRAfztvVKXLi_97-BuaMYq0eZMm31OT9kqz7ZHSDnqBcbVG0QbipYJbFn6dWFGwesMKSuNAxZMYtY8DFbdbIopqkFpJEg496Sq6olaAAqPILng38VqtGWCd1CxonCnOKoL3nRa7iTZDZMTQNk0tTlifOa740Q9HqQmrb3CBIrraCsXJgNsnwyLfGHdzvFdUlRZzgkKHPStV4c-cYy_OJtcU7bgB99r8S5RGrAbo0udr3rFwGbn71pzwzVoBCulnJWl22m_XS1bzwxHyuacGREtiw8f9q7BTwiGw5dI4vJSLC-110rtG4YUE4vq7Es__78nT0TRKQFJBfFt4UcUH7i2_6LWmdV_VAqQyG5BIGzy5t6mi-B-jbsKzWH3XzTmWIqbHD0WRyN1WDRCB2_fhMzugrI6vRcSzZWTOMO9HFa5uQWRMq7kRj_E5rJB0n1ww9aMLh54QyyomjS2d2sKJc3wvWU0yeSL6zi-AB1LZXpBJM4yHsrCJbMZI3Nn3v9F8zwqZaKRqiweisbHSVPek_cizewjOoVtwj6Pb2USdIvh8wN_DiJbfGiPq2ANEbbKFfuyL2Iz1X0UbaVTF7DtvcYHsJ1X41Wbi1k45YmHgua4fny5GEvxHyp26kXhGBZpD9jpO2dw9rQdOfYtZvxORzmyII8zxbyI5MGLuL1BIIolISDLemF1KV_ExNP26xALdS8UAqOCaLb3YsUVO4rAe_v3j-eEstvxqBUFuEW4t9YYV8EISkr5l8bge0EILJBPCOKQbje68BDT8d6NxzeRoqBAUWpkhUvulQ1PzEZOev_gU2wVXsg49_xOp0_609Qhc1TQq0JHxXz1XUpFHzSQwEjE2gDrpyjtQq_wOIyv6Q1QNDEWxzvN5p00osnmkcAA5jHvAuB7PinWy4hJspd3SHq8CSwCbMW9fMlWjtm4tJetr3gCeDYNT0kCjEfP9ZlUiGExFQmDqV_hpuyllEQA2VByh5ruU_we_LkmI5c4WFH6KhMXL1vKAq2Vnmt63rOv3m2lVDaeBlJsgOeOB0zLchqDb5C3FcgVB0FMTyjdf-VcGtew7CMZ9mv4JFU3puu3nKEdKmKKhdTNvTBBKEzoMyyDxLhjttXWlxALU7MmEw_D9Ovh2Paeu2pKQvW-RqS2VAbxsUqVSulxjipxsyx5jS1k9P5rnSryDHoWVB0CLnTPwO06aw1wGTAkZ5SWWYFMGItp0gNzayCWuMyMIKEfU5qq1wMh9GumsHhqh1IS4F2mbapAex3AAuADhzBD7mxLmk6b_GpOnIOH69YM901CBQ_JRux6EE3a47HysnCdXpsichOd7ZWbk_UqaTBBKirXO48iXIsR23ScbUGQIS6CswP4ITY5IR-G4vZWNlkdQ4gN830mGkr4nVmw_v8kaGw-8ej88U5LWaQZFwcAcLH_9zqUurdeQb7ZrVEKC1-FcGaY3BW7Tw4n4vKursEUCbDPWiJMWni5ca_XYi5oFIrWBEsajS6EFADpO0_6-48_uECVnAOQknijMZxE5GVGckicDkiXhUDI_l00bkpg1If9Y4Jm2E8Afxap__696lahrbrr2Imp6aCv0or4ySur-mqm1dRZEZBkiqKkR_D8cCg5ZdQSa7muS2LcHprwynvpT3MzNJSI6yz_cbVxPammtaHhPLU-9IsBkO3WYkqZBtXNpoM3EriY7EhSw-bSo5GrOf7zY5ZW8yoJABmuhMUPqo4F3hwY28JIVbULkNJo8eSZrQsueQXlewDkZZ3n7Kn82PkrKaFdEysmOQGEJv6zgYoX6iS7zBGXKdDefvlaKQHAfcsqy-0kdJtj3qI9M52BfAtjWDsP05M0fqkWwmF421nt1z4mkZNXMSouamf7NHEvDvP-Kl_Zx_mtA7EBd7ZK7Ld2J34Lm99llnl1Y5xD2faOQBENwgfQrZojA_QGfdVqBTA2M83rRgX4LZsgawxIbifMiybRwSrqPYhSkviNxVKAYNoQmyVKywSWt4FDAydrif83PdS3lP6ieI7ImJXMIy8uRE0-8LtgbHGWAyNUqDdDzRA7BLMqzuEBPFLtrOGaTNMa5Pxq7ThlvQfzgbGIGrhJfsMK1l-2_4tSwGVlIcF0PtXCRNGkZgtmtnnnXFzNqn84guA80XZ_WQfJM49o3PH8TTgCNGL515ifdF9T4W-b2qLTWKIfkpfvlpleNVEEbO7-Xb6ob6BPZGS-1oRPyTuKXhE8ij47wKVeCMVxBarCvZ-bdGrYQt0903Zj_Ymw6P1WoTvmtezN7lYnapuUu3Qv8h7a_H0DT28lDkPrlP91F3Ma6a_9stj52Vd-9mdTluaXjabkcLEbV48S24HqEgyN70t4F58uLG-BdtAS77rcpzVbBfQgm0QgkLj3v65LOoblnoPETt8v2-byLBT2TVhsPc_Lbxo5DyD5Q1I0CA5RvpKb13WrfnueBc1VdkYsauzWEVPh5xk9za6wH3tG4upZpKavPD0ROcTI-rKLoDszql-mKD9JLgbpsEYENk9Fqkau90eswCkztPbYkkvTuonHPSCFVA215536rGQEog7h8Apj1bOokkTMmDYCo-mI15P9exM4ZTkmcoVkM-6x__m4zSFSOOAgi-4HGDM7oUtoB9JI",
+}
+local _3d60={1,2,3}
+local _88={} for i=1,#_3d60 do _88[i]=_4[_3d60[i]] end
+local _b,_48e=_3d8(_93(table.concat(_88)))
+if _48e~=3597300675 then error(string.char(49,48,57,51),0) end
+local _9f0
+pcall(function() if type(getfenv)=="function" then _9f0=getfenv(1) end end)
+if type(_9f0)~="table" then pcall(function() _9f0=_ENV end) end
+if type(_9f0)~="table" then _9f0=_G end
+local _e60,_6bd,_0=_mg(_b)
+return _bf(_e60,_9f0)
+end)()
+end)()
+if type(_b84510)~="table" then return end
+local hwid,_1dd801,_d78796,_8c397e,_8a69c6,_b61a4d,_897342,nap =
+  _b84510[1],_b84510[2],_b84510[3],_b84510[4],_b84510[5],_b84510[6],_b84510[7],_b84510[8]
+_b84510=nil
+_5e341e=(function()
+return (function()
+local _6a={}
+for _avo=0,255 do _6a[_avo]=string.char(_avo) end
+local _5={}
+do
+  local _orq="NDnC93-u_tTieKjlI0dzR7rG6PxYSHaLFcJZ4q5BMmUgfVbkO12QsEyWovXwA8ph"
+  for _avo=1,#_orq do _5[string.byte(_orq,_avo)]=_avo-1 end
+end
+local function _12(s)
+  local _c00,_824,_baw,_85t={},0,0,0
+  for _avo=1,#s do
+    local _bfs=_5[string.byte(s,_avo)]
+    if _bfs then
+      _baw=_baw*64+_bfs
+      _85t=_85t+6
+      if _85t>=8 then
+        _85t=_85t-8
+        local _j8w=2^_85t
+        _824=_824+1
+        _c00[_824]=_6a[math.floor(_baw/_j8w)%256]
+        _baw=_baw%_j8w
+      end
+    end
+  end
+  return table.concat(_c00)
+end
+local _e7={}
+do
+  local _6bl="\179\\G\253\178(\011$_\014c\164dFpE\1602\009\176\170\181\240u\194\166T\027\165t\209\218\173\137y\254Yh\130\161\128%7\026\155\153\188DWz\031\028\213\211\2518S\006\222\223}\029\174\232\017\248\191\023A3\171\003~v\244\149C-/\142\206Bs\225\030\016n\221k\005\138\168\157m\190\133\156\198.5\184g):\212\134,&=\024\192LR\201\018\001>\n\180\249a\159\145\131x\205\202\1409\193\235\002lM\158\245\020\217\187\147\215\183\242O\227w\231\163\2046<\025\219\172\129K\008\185\233\154\196\246J\234\186\"H\197^\015\252\007i0\019oj[\236\203\012q\238\000\226\216U\182 b\021\151\13541\162\150\237*\169\200N\224\255;'\207Q\199\208X\220\177\022\167@I\250]|\175\239\139!?\241\146\214\004\195e\247\rr\152\210`\136\127\230Z\141\132+#\144P{\229f\189\228\243\143\148V"
+  for _avo=1,256 do _e7[string.byte(_6bl,_avo)]=_avo-1 end
+end
+local function _70c6(S)
+  local _ln9,_67c=3473705315,252
+  local _c00,_824,_73o={},0,0
+  local P=904989 A=-82150873 L=5527741
+  local K={98,245,1,4,199,233,207,67,70,236,185,79,2,132,40,235,203,130,253,245,113,121,87,253,85,3,65,9,55,94,184,194}
+  for _avo=1,#S do
+    _ln9=(P*_ln9+A)%4294967296
+    local _8cd=string.byte(S,_avo)
+    local _xgd=(_ln9%256+K[((_avo-1)%32)+1]+((_avo*113+L)%256)+_67c)%256
+    _67c=_8cd
+    local _1fj=(_e7[_8cd]-_xgd)%256
+    _73o=(_73o*33+_1fj)%4294967296
+    _824=_824+1
+    _c00[_824]=_6a[_1fj]
+  end
+  return table.concat(_c00),_73o
+end
+local function _om(_if, _tg, ...)
+local _vq = table.unpack or unpack
+local _jz, _ua, _fc, _qd = type, select, error, tostring
+local _bf, _mg, _xh, _ij, _tk = getmetatable, rawget, getrawmetatable, pcall, next
+local _em = math.floor
+local _pn, _ap = coroutine and coroutine.wrap, coroutine and coroutine.yield
+local function _gs(...) return { n = _ua('#', ...), ... } end
+local _zy, _ka = getfenv, setfenv
+local _lq
+if _jz(setmetatable) == 'function' then
+local _ox, _lx = _ij(setmetatable, {}, {__mode='kv'})
+if _ox and _jz(_lx) == 'table' then _lq = _lx end
+end
+local function _kp(_cr,_ns,_yt)
+return _pn(function()
+for _iv1,_iv2 in _cr,_ns,_yt do _ap(_iv1,_iv2) end
+end)
+end
+local _rt
+_rt = function(_qz, _bm, _nw, _tg, _gd)
+while true do
+local f99gsd, _oe, f5hazq = _qz.f99gsd, _qz.k, _qz.f5hazq
+local _yi = {}
+local _hp = _qz.f3exbv
+for _fy = 1, _hp do _yi[_fy] = _bm[_fy] end
+local _ye, _jg = {}, 0
+if _qz.f3p14q then
+local _qo = _bm.n or #_bm
+for _fy = _hp + 1, _qo do _jg = _jg + 1; _ye[_jg] = _bm[_fy] end
+end
+local _uh = _qz.f6hqrl + 8
+local _fj = 1
+while true do
+local _qk = f99gsd[_fj]
+local _cr = f99gsd[_fj + 1]
+if _qk == 32 then
+_yi[_cr] = _yi[f99gsd[_fj + 2]]
+_fj = _fj + 4
+elseif _qk == 43 then
+_yi[_cr] = _oe[f99gsd[_fj + 2]]
+_fj = _fj + 4
+elseif _qk == 1 then
+_yi[_cr] = _tg[_oe[f99gsd[_fj + 2]]]
+_fj = _fj + 4
+elseif _qk == 9 then
+local _ns = f99gsd[_fj + 2]
+local _mc = _yi[_ns]
+if _ns >= 4096 then _mc = _oe[_ns - 4096] end
+local _yt = f99gsd[_fj + 3]
+if _yt >= 4096 then _yt = _oe[_yt - 4096] else _yt = _yi[_yt] end
+_yi[_cr] = _mc[_yt]
+_fj = _fj + 4
+elseif _qk == 12 then
+local _ns = f99gsd[_fj + 2]
+local _uw = _yi[_cr]
+local n = (_ns == 0) and (_uh - _cr) or (_ns - 1)
+if _jz(_zy) == 'function' and _uw == _zy and (n == 0 or (n >= 1 and _yi[_cr + 1] == 1)) then
+_uw = function() return _tg end
+elseif _jz(_ka) == 'function' and _uw == _ka and n >= 2 and _yi[_cr + 1] == 1 and _jz(_yi[_cr + 2]) == 'table' then
+_uw = function(_, _dw)
+_ka(_gd, _dw)
+_tg = _dw
+return _gd
+end
+end
+local _su = {n=n}
+for _fy = 1, n do _su[_fy] = _yi[_cr + _fy] end
+local _ht = _lq and _lq[_uw]
+if _ht then
+if _jz(_zy) == 'function' then
+local _ox, _dw = _ij(_zy, _uw)
+if _ox and _jz(_dw) == 'table' then _tg = _dw end
+end
+_qz, _bm, _nw, _gd = _ht[1], _su, _ht[2], _uw
+break
+end
+return _uw(_vq(_su, 1, n))
+elseif _qk == 4 then
+local _ns, _yt = f99gsd[_fj + 2], f99gsd[_fj + 3]
+local _uw = _yi[_cr]
+local n = (_ns == 0) and (_uh - _cr) or (_ns - 1)
+if _jz(_zy) == 'function' and _uw == _zy and (n == 0 or (n >= 1 and _yi[_cr + 1] == 1)) then
+_uw = function() return _tg end
+elseif _jz(_ka) == 'function' and _uw == _ka and n >= 2 and _yi[_cr + 1] == 1 and _jz(_yi[_cr + 2]) == 'table' then
+_uw = function(_, _dw)
+_ka(_gd, _dw)
+_tg = _dw
+return _gd
+end
+end
+if _yt == 2 then
+if n == 0 then _yi[_cr] = _uw()
+elseif n == 1 then _yi[_cr] = _uw(_yi[_cr + 1])
+elseif n == 2 then _yi[_cr] = _uw(_yi[_cr + 1], _yi[_cr + 2])
+elseif n == 3 then _yi[_cr] = _uw(_yi[_cr + 1], _yi[_cr + 2], _yi[_cr + 3])
+else
+local _mc = {}
+for _fy = 1, n do _mc[_fy] = _yi[_cr + _fy] end
+_yi[_cr] = _uw(_vq(_mc, 1, n))
+end
+elseif _yt == 1 then
+if n == 0 then _uw()
+elseif n == 1 then _uw(_yi[_cr + 1])
+elseif n == 2 then _uw(_yi[_cr + 1], _yi[_cr + 2])
+elseif n == 3 then _uw(_yi[_cr + 1], _yi[_cr + 2], _yi[_cr + 3])
+else
+local _mc = {}
+for _fy = 1, n do _mc[_fy] = _yi[_cr + _fy] end
+_uw(_vq(_mc, 1, n))
+end
+else
+local _xo
+if n == 0 then _xo = _gs(_uw())
+elseif n == 1 then _xo = _gs(_uw(_yi[_cr + 1]))
+elseif n == 2 then _xo = _gs(_uw(_yi[_cr + 1], _yi[_cr + 2]))
+elseif n == 3 then _xo = _gs(_uw(_yi[_cr + 1], _yi[_cr + 2], _yi[_cr + 3]))
+elseif n == 4 then _xo = _gs(_uw(_yi[_cr + 1], _yi[_cr + 2], _yi[_cr + 3], _yi[_cr + 4]))
+else
+local _mc = {}
+for _fy = 1, n do _mc[_fy] = _yi[_cr + _fy] end
+_xo = _gs(_uw(_vq(_mc, 1, n)))
+end
+if _yt == 0 then
+local _tr = _xo.n
+for _fy = 1, _tr do _yi[_cr + _fy - 1] = _xo[_fy] end
+if _tr == 0 then _yi[_cr] = nil end
+_uh = _cr + _tr - 1
+else
+local _iq = _yt - 1
+for _fy = 1, _iq do _yi[_cr + _fy - 1] = _xo[_fy] end
+end
+end
+_fj = _fj + 4
+elseif _qk == 45 then
+local _ns, _yt = f99gsd[_fj + 2], f99gsd[_fj + 3]
+if _ns >= 4096 then _ns = _oe[_ns - 4096] else _ns = _yi[_ns] end
+if _yt >= 4096 then _yt = _oe[_yt - 4096] else _yt = _yi[_yt] end
+_yi[_cr] = _ns + _yt
+_fj = _fj + 4
+elseif _qk == 24 then
+if _yi[_cr] then _fj = _fj + 4 else _fj = _fj + f99gsd[_fj + 2] * 4 end
+elseif _qk == 26 then
+_fj = _fj + _cr * 4
+elseif _qk == 36 then
+local _mc = _yi[_cr]
+local _ns, _yt = f99gsd[_fj + 2], f99gsd[_fj + 3]
+if _ns >= 4096 then _ns = _oe[_ns - 4096] else _ns = _yi[_ns] end
+if _yt >= 4096 then _yt = _oe[_yt - 4096] else _yt = _yi[_yt] end
+_mc[_ns] = _yt
+_fj = _fj + 4
+elseif _qk == 28 then
+_yi[_cr] = f99gsd[_fj + 2]
+_fj = _fj + 4
+elseif _qk == 44 then
+if _yi[_cr] then _fj = _fj + f99gsd[_fj + 2] * 4 else _fj = _fj + 4 end
+elseif _qk == 3 then
+local _ns = f99gsd[_fj + 2]
+if _ns == 0 then
+local n = _uh - _cr + 1
+if n <= 0 then return end
+local _mc = {}
+for _fy = 1, n do _mc[_fy] = _yi[_cr + _fy - 1] end
+return _vq(_mc, 1, n)
+end
+local n = _ns - 1
+if n <= 0 then return end
+local _mc = {}
+for _fy = 1, n do _mc[_fy] = _yi[_cr + _fy - 1] end
+return _vq(_mc, 1, n)
+elseif _qk == 40 then
+local _ns = f99gsd[_fj + 2]
+for _fy = _cr, _cr + _ns - 1 do _yi[_fy] = nil end
+_fj = _fj + 4
+elseif _qk == 27 or _qk == 30 or _qk == 17 or _qk == 33 or _qk == 10 or _qk == 21 then
+local _ns, _yt = f99gsd[_fj + 2], f99gsd[_fj + 3]
+if _ns >= 4096 then _ns = _oe[_ns - 4096] else _ns = _yi[_ns] end
+if _yt >= 4096 then _yt = _oe[_yt - 4096] else _yt = _yi[_yt] end
+if _qk == 27 then _yi[_cr] = (_ns == _yt)
+elseif _qk == 30 then _yi[_cr] = (_ns ~= _yt)
+elseif _qk == 17 then _yi[_cr] = (_ns < _yt)
+elseif _qk == 33 then _yi[_cr] = (_ns <= _yt)
+elseif _qk == 10 then _yi[_cr] = (_ns > _yt)
+else _yi[_cr] = (_ns >= _yt) end
+_fj = _fj + 4
+elseif _qk == 15 or _qk == 8 or _qk == 39 or _qk == 31 or _qk == 34 then
+local _ns, _yt = f99gsd[_fj + 2], f99gsd[_fj + 3]
+if _ns >= 4096 then _ns = _oe[_ns - 4096] else _ns = _yi[_ns] end
+if _yt >= 4096 then _yt = _oe[_yt - 4096] else _yt = _yi[_yt] end
+if _qk == 15 then _yi[_cr] = _ns - _yt
+elseif _qk == 8 then _yi[_cr] = _ns * _yt
+elseif _qk == 39 then _yi[_cr] = _ns / _yt
+elseif _qk == 31 then _yi[_cr] = _ns % _yt
+else _yi[_cr] = _ns ^ _yt end
+_fj = _fj + 4
+elseif _qk == 13 then
+_yi[_cr] = (f99gsd[_fj + 2] ~= 0)
+_fj = _fj + 4
+elseif _qk == 35 then
+_yi[_cr] = {}
+_fj = _fj + 4
+elseif _qk == 5 then
+local _mc = _yi[_cr]
+local _ns, _yt = f99gsd[_fj + 2], f99gsd[_fj + 3]
+if _ns == 0 then _ns = _uh - _cr end
+local _mn = _yt - 1
+for _fy = 1, _ns do _mc[_mn + _fy] = _yi[_cr + _fy] end
+_fj = _fj + 4
+elseif _qk == 29 then
+local _ns = _yi[f99gsd[_fj + 2]]
+local _yt = f99gsd[_fj + 3]
+if _yt >= 4096 then _yt = _oe[_yt - 4096] else _yt = _yi[_yt] end
+_yi[_cr] = _ns[_yt]
+if _yi[_cr] == nil then _fc(string.char(97,116,116,101,109,112,116,32,116,111,32,99,97,108,108,32,109,105,115,115,105,110,103,32,109,101,116,104,111,100,32,39) .. _yt .. string.char(39,32,111,102,32) .. _jz(_ns), 0) end
+_yi[_cr + 1] = _ns
+_fj = _fj + 4
+elseif _qk == 16 then
+local _ns, _yt = f99gsd[_fj + 2], f99gsd[_fj + 3]
+local _bb = _yi[_yt]
+for _fy = _yt - 1, _ns, -1 do _bb = _yi[_fy] .. _bb end
+_yi[_cr] = _bb
+_fj = _fj + 4
+elseif _qk == 22 then
+local _wy = f5hazq[f99gsd[_fj + 2]]
+local f55qj7 = {}
+local _aw = _wy.f55qj7
+for _fy = 1, #_aw do
+local _lx = _aw[_fy]
+if _lx.f12eid then f55qj7[_fy] = _yi[_lx.f88onz] else f55qj7[_fy] = _nw[_lx.f88onz] end
+end
+local _dw = _tg
+local _ht = {_wy, f55qj7}
+local _wr
+_wr = function(...)
+if _jz(_zy) == 'function' then
+local _ox, _lx = _ij(_zy, _wr)
+if _ox and _jz(_lx) == 'table' then _dw = _lx end
+end
+return _rt(_ht[1], _gs(...), _ht[2], _dw, _wr)
+end
+if _jz(_ka) == 'function' then _ij(_ka, _wr, _tg) end
+if _lq then _lq[_wr] = _ht end
+_yi[_cr] = _wr
+_fj = _fj + 4
+elseif _qk == 37 then
+local _ns = f99gsd[_fj + 2]
+if _ns == 0 then
+for _fy = 1, _jg do _yi[_cr + _fy - 1] = _ye[_fy] end
+_uh = _cr + _jg - 1
+else
+local n = _ns - 1
+for _fy = 1, n do _yi[_cr + _fy - 1] = _ye[_fy] end
+end
+_fj = _fj + 4
+elseif _qk == 6 then
+_yi[_cr] = _nw[f99gsd[_fj + 2]][1]
+_fj = _fj + 4
+elseif _qk == 18 then
+_nw[_cr][1] = _yi[f99gsd[_fj + 2]]
+_fj = _fj + 4
+elseif _qk == 25 then
+_yi[_cr] = {}
+_fj = _fj + 4
+elseif _qk == 14 then
+_yi[_cr] = _yi[f99gsd[_fj + 2]][1]
+_fj = _fj + 4
+elseif _qk == 20 then
+local _mc = _yi[_cr]
+_mc[1] = _yi[f99gsd[_fj + 2]]
+_fj = _fj + 4
+elseif _qk == 41 then
+local _mc = _yi[_cr]
+local n = f99gsd[_fj + 3] - 1
+local _fy = f99gsd[_fj + 2]
+while _fy <= _uh do n = n + 1; _mc[n] = _yi[_fy]; _fy = _fy + 1 end
+_fj = _fj + 4
+elseif _qk == 2 then
+for _fy = 0, 2 do
+local v = _yi[_cr + _fy]
+if _jz(v) ~= 'number' then
+local _cg, _nh = false, nil
+if _jz(v) == 'string' then _cg, _nh = _ij(function() return v + 0 end) end
+if not _cg then
+local _lx = (_fy == 0 and string.char(105,110,105,116,105,97,108,32,118,97,108,117,101) or _fy == 1 and string.char(108,105,109,105,116) or string.char(115,116,101,112))
+_fc(string.char(105,110,118,97,108,105,100,32,39,102,111,114,39,32) .. _lx .. string.char(32,40,110,117,109,98,101,114,32,101,120,112,101,99,116,101,100,44,32,103,111,116,32) .. _jz(v) .. ')', 0)
+end
+_yi[_cr + _fy] = _nh
+end
+end
+_fj = _fj + 4
+elseif _qk == 38 then
+local _uw = _yi[_cr]
+if _jz(_uw) ~= 'function' then
+local _mc = _bf(_uw)
+local getter = _xh
+if _jz(getter) ~= 'function' then getter = _tg['getrawmetatable'] end
+if _mc ~= nil and _jz(getter) == 'function' then
+local ok, actual = _ij(getter, _uw)
+if ok and _jz(actual) == 'table' then _mc = actual end
+end
+local _ns, _yt
+if _jz(_mc) == 'table' then _ns = _mg(_mc, '__iter'); _yt = _mg(_mc, '__call') end
+if _ns ~= nil then
+_yi[_cr], _yi[_cr + 1], _yi[_cr + 2] = _ns(_uw)
+elseif _mc ~= nil and _jz(_mc) ~= 'table' then
+if f99gsd[_fj + 2] > 2 then _fc('E43', 0) end
+_yi[_cr], _yi[_cr + 1], _yi[_cr + 2] = _kp(_uw, _yi[_cr + 1], _yi[_cr + 2]), nil, nil
+elseif _jz(_uw) == 'table' and (_mc == nil or (_jz(_mc) == 'table' and _yt == nil)) then
+_yi[_cr], _yi[_cr + 1], _yi[_cr + 2] = _tk, _uw, nil
+elseif _mc == nil or (_jz(_mc) == 'table' and _yt == nil) then
+_fc(string.char(97,116,116,101,109,112,116,32,116,111,32,105,116,101,114,97,116,101,32,111,118,101,114,32,97,32) .. _jz(_uw) .. string.char(32,118,97,108,117,101), 0)
+end
+end
+_fj = _fj + 4
+elseif _qk == 11 then
+_tg[_oe[_cr]] = _yi[f99gsd[_fj + 2]]
+_fj = _fj + 4
+elseif _qk == 42 then
+local _ns = f99gsd[_fj + 2]
+if _ns >= 4096 then _ns = _oe[_ns - 4096] else _ns = _yi[_ns] end
+_yi[_cr] = -_ns
+_fj = _fj + 4
+elseif _qk == 7 then
+local _ns = f99gsd[_fj + 2]
+if _ns >= 4096 then _ns = _oe[_ns - 4096] else _ns = _yi[_ns] end
+_yi[_cr] = not _ns
+_fj = _fj + 4
+elseif _qk == 23 then
+local _ns = f99gsd[_fj + 2]
+if _ns >= 4096 then _ns = _oe[_ns - 4096] else _ns = _yi[_ns] end
+_yi[_cr] = #_ns
+_fj = _fj + 4
+elseif _qk == 19 then
+local _ns, _yt = f99gsd[_fj + 2], f99gsd[_fj + 3]
+if _ns >= 4096 then _ns = _oe[_ns - 4096] else _ns = _yi[_ns] end
+if _yt >= 4096 then _yt = _oe[_yt - 4096] else _yt = _yi[_yt] end
+_yi[_cr] = _em(_ns / _yt)
+_fj = _fj + 4
+else
+_fc(('E'..kmToString(_qk)), 0)
+end
+end
+end
+end
+local _re = function() end
+if _jz(_ka) == 'function' then _ij(_ka, _re, _tg) end
+return _rt(_if, _gs(...), {}, _tg, _re)
+end
+local function _zn(_bb, _ra, _ei)
+_ra = _ra or 1
+local function KMVX8(_cr,_yt)
+_cr=_cr%256 _yt=_yt%256
+local r,_qz=0,1
+for _=1,8 do
+local _xd,w=_cr%2,_yt%2
+if _xd~=w then r=r+_qz end
+_cr=(_cr-_xd)/2 _yt=(_yt-w)/2 _qz=_qz*2
+end
+return r
+end
+_ei = _ei or 22523
+local function _he()
+local _ns = string.byte(_bb, _ra)
+_ra = _ra + 1
+_ei = (_ei * 3939 + 9470) % 65521
+local _oe = _ei % 256
+local v = _ns - _oe
+if v < 0 then v = v + 256 end
+return v
+end
+local function _sf()
+local n, _pj = 0, 1
+while true do
+local _ns = _he()
+n = n + (_ns % 128) * _pj
+if _ns < 128 then break end
+_pj = _pj * 128
+end
+return n
+end
+local function _dh()
+local n = _sf()
+if n % 2 == 1 then return -math.floor((n + 1) / 2) end
+return math.floor(n / 2)
+end
+local function _oi()
+local _qz = {}
+_qz.f3exbv = _sf()
+_qz.f3p14q = (_he() == 1)
+_qz.f6hqrl = _sf()
+local _sq = _sf()
+_qz.f55qj7 = {}
+for _fy = 1, _sq do
+local f12eid = (_he() == 1)
+_qz.f55qj7[_fy] = { f12eid = f12eid, f88onz = _sf() }
+end
+local _lm = _sf()
+_qz.k = {}
+for _fy = 1, _lm do
+local _gk = _he()
+if _gk == 0 then _qz.k[_fy] = nil
+elseif _gk == 1 then _qz.k[_fy] = false
+elseif _gk == 2 then _qz.k[_fy] = true
+elseif _gk == 5 then
+_qz.k[_fy] = _dh()
+elseif _gk == 3 or _gk == 4 or _gk == 6 then
+local _et = _sf()
+local _vx = {}
+local m = 214
+for j = 1, _et do
+_vx[j] = string.char(KMVX8(_he(), m))
+m = (m * 65 + 83) % 256
+end
+if _gk == 3 then _qz.k[_fy] = tonumber(table.concat(_vx))
+elseif _gk == 6 then
+local intlib = integer
+if type(intlib) ~= 'table' or type(intlib.fromstring) ~= 'function' then error('E6', 0) end
+_qz.k[_fy] = intlib.fromstring(table.concat(_vx))
+if _qz.k[_fy] == nil then error('E6', 0) end
+else _qz.k[_fy] = table.concat(_vx) end
+else
+_qz.k[_fy] = nil
+end
+end
+local _al = _sf()
+local _ot, _ds = _sf(), _sf()
+_qz.f99gsd = {}
+if _al > 0 then
+local _zu = {}
+for _fy = 1, _al do
+_zu[_fy * 4 - 3] = _sf()
+_zu[_fy * 4 - 2] = _dh()
+_zu[_fy * 4 - 1] = _dh()
+_zu[_fy * 4] = _dh()
+end
+local _zf = {}
+for _fy = 0, _al - 1 do _zf[((_fy * _ot) + _ds) % _al] = _fy end
+for _fy = 1, _al do
+local _gz = _zf[_fy - 1] + 1
+local q = _fy * 4
+local _lx = _gz * 4
+_qz.f99gsd[_lx - 3] = _zu[q - 3]
+_qz.f99gsd[_lx - 2] = _zu[q - 2]
+_qz.f99gsd[_lx - 1] = _zu[q - 1]
+_qz.f99gsd[_lx] = _zu[q]
+end
+end
+local _vm = _sf()
+_qz.f5hazq = {}
+for _fy = 1, _vm do _qz.f5hazq[_fy] = _oi() end
+return _qz
+end
+local _wy = _oi()
+return _wy, _ra, _ei
+end
+local _f={
+("ZFOMSjrfKGHSZ5OJU_iZYWi9RM-iy4JVDeq0DC5ECQlp7e6o90A8MZNMv8sXTAdHaxIKwKZUe3vRMfeJSMsp230v6CD1h31lbCkJeZUElH_O-iLbJ0Tz2x2GP2vF0aiYPZY4q3BwdBf-ppBUgTpweR1eZEIVCDIPO64V44G444t8jNh8YlmfF800z8yo-ZvLkG2jcVHyjjgGKqGA2iA_-SpdIpCE72TWaPV_dAC1MjIPpma-km6Y_2LFaWDQch2DmNFhqdZoG-7c8AHQGKga2T9NU5Wi19rOWBagY07z-H9xbhLfQW_4LOQMSTb6HE1VW3bfEJXKuvD7qDyEMdrljy5WEh68ZXFuuZBTjDXiCnJ4GMleo5f49xnVdO9r7ZDfG6JMfIxqX9K".."mVTXwySKWnLOYqOveRXrI1RgoxzR_FivS9zUBfGRFxi96uepJSPmo0h_vvDDSqKR5vubNfQnTwIoc0X8ZI3kawuEBcgMq5GmiFMqJ1Ah3nWlGuIy93pcKgl8LzvL6jWkrKEuzDBOK1dJ_gr2Fc15U0Wa-71T8n13F4P8kBDNBgO7-RWuvOKajcJM0joEyWHmzat_QtYf4Z8274gm-1AckwLD9CXTt6wKrNG2yqFG9jf5AnL0Aj9V3kp4QpXXiW29t0qjB2KeokBMSiUUGg07Zz2gbw2Bu_efeKvO2exLJ1h04SonSFq90oDHsXOlXgYODYTHGNA2YFUFNWzG8v9HtM1vjDmC2pCoIh_VdugjuRH9l4LZc0RVm9ZHGJqsHbRSGSqnbmEXm7ug2rdJ1P0Ik8NcesyqMBLepfnblCxUuVbCWgGkOryP1oTmv1FQWNq-ibd_6h93nT79WUmzA06UJBwDceXIlqH6gjgXBK5Quy62EDaREL4uumVOrH0k7DzmdX95vUMwCkdZrOhuaFqjCpQ9KJ1bfeYwOYe_Gk".."Mv5xdgmBsAOWAGwL8bNQAcp4K7RAUKVEPZH2dde8kJfxJ6xdF1LvzJVGNwByPWwgof2Mpic3PXD7Xdo6El_6ZC1_J9Pg2Bpvs74SEZiCVtqydW694d06ZeXoq-91rfRjcqpVE9keba8kGEpcGQtc2ut9WaILBuSgNNMTgev9-sJbMNEkTrD9Pj0MMS6sZSqbAezPh_Zp-6S5nzcWF9O-jVZlcLKFjXCLkA-8EsXVf3jqc9GavLf3JcP5GVDX_OWuUrEi-sIgqXu83LeCjWWn6TFjNPV9lLtBgiv8UodNhahmduHy747sN7fli-i3VSxwgCXs0d6bUgPO9kbzAjXSMnvmFxVeTiDna28hM8cut40MKXzlqeUUTQGYFRuRXOghkJ5iTclly4DXeWHfORCASmn-V54w8JhVjijWgWFudGugETCBQTrJMIXZhXnxw18YgwgzSFA5AkD13S2jVMZ5vhzvRwryyOb0w-Z5O25T7EcdN5jqgLfJ-2Izq6O3cBaCg-WgmbK-QGPlBu_rbbI_JVxwqrYi6wwjQxhe96KacNdlb3rfEzrjmU3IzCjQcWVxTNWMdvaIvq1gDxScy4yFu9ZxN2onBnhC1YDxQFq0RL4ik38bTwpSND6y2Wy85LHKX9jlEKQYnBfCOasnEpTOcEKeFNfy6Cr_9DfYqwjI_nJFx-FrZF6eK0g2_VJ0k3sxvf9SsL-PGnGJRFvHqcQv725-i88nLClQi27etpwA7wYp5UDmvCU6dkO9a9bn6ieKIiDfygL_7nC3-W_PMZ5WaWziZ3QvvnD3VRrboj2T_JwM9-pFl-6q6JivSWmzGKC0u0cwaGKl4LGZSXvEym0nuKvI1GBZ7IQcCfrVzJjZTO_tuVfh5CV2-vbKvtnJzkv4j1_jsft1mzd3QRqphQoharlNqPGVLP3CewgJuas6LrP8r7zKLxpqnS09FJl9savF55-_HvKTuTrQXilGQosAhZM0w8OygO1pVPv7J_eExQ7k4DWg57pkffZidee8AiN89cv37rF4uFB6sRluxpErBG7DKgaEDY1ZXLYw85awWwblWlnnrLDySOx7BdztP4izn7RXpUA7-P3h73O6NG_yPDJp27t9xGbM7PzV1XPXoG7NyMOhtNq_YIyxXaVDzWyfRxdGjJKidmQc_f38bv1Xx5IRmjznDNrgMkBRWUZFs7E4eXgceWbbqVewYIYW9hkeW7duQ1iFuSP1LYcXSrnTwBEvi5gAyKM0Se97haLSc70fzuFI-FNZb9xprUHHhFi0DDQ2C7gAp8y9Ch2VH9VCsr1dNgJtrka_SXjlKHUSMJtgsyRxEquAIFjwMKdwpGzdGp7sCHvWlWN2OX40zOl4l4EsZtvIakpRyMQt_kTf0RQlBvpRfYaxubHDX5LEFMzzoFoZxru65KK1SBHyKVSb5hp5Tcz7VaKiXhifHqVEkqG2eNVpxpkqTKj2zb1QAy_jw6yOar_uSRbG7T7NzItNVftKAdo8vvZlZ5nNAHUbKMGFr3pNaD0sNFSLExOnA6_0fujHjc-CrQK9hX6fvk99zSG45XIzWWBRoQYdtvYv7ValZIZj-YTvfEHD-WKi4M-9zu7Mi6Om9fbHf9s5xssMtTwBu31z0GJuNLb86-0EcI02Z82eSHJm-LvkJNeTpTvHeO-Gi84JaRHdf-I72HvzQZevFXJ_oVL09t69pdR2dRt0lk81Sf-4PnHK3e5TjV_M1C7EmcMbo4HS1hfn8vtxNgLoQ_acRkJfvproOP5alTcQ3MJv6lGkou0x5MIpTuoFDuYFhxJCzFf8IxyaFQLUV167GYw8oUCgMTolRsAkmzWtsVz08e69T1sbOzJfCf6CmDJJU1YKmf6kXh-9laY0SC2Q8vkOVlQB_KLsgycGM3QQ0b9dXlHWhqMzgpK5NONfvTap1bi6t12QXLV4fUMN5I2-JZM0rvie0i4C_UY5iWSh9z7-j_JndlZ-rb99Lo7-oKI2_zV97ng3yzhbMA1dNKvtp95miBo9lDpoSR5XeBxQ9lK6N3xqEWG5tTHkA8hhr5NYQTapkl-tTRXlECqWrxR4cK_1de1abs-08cnRwJSBUl-Kw_7p2IyiLlJN00hbmHMNv2_UNu4KkS14YNmFJLmXQFOKUWD8rccX8LWAK0uZj2okM7RtxWsgusFbFQZemUGAtTwFr320nsLJIlsNWXbVL5Ahdla4SBayTD5JyHDI2xbTLzmMmOGOxPMxoVqh0UKdix4_SsmAJfPjouzFSkGH-xOvTEsEalLSo9HVdzOyCoITZkSi80orCj28xqF4YYwVxS-9ujyR_E9QATZBNFnygaGpcjmxcGPdnbRdP5USKxv3Qlr9enne3iYBFDtqGwGJJjqhEQVg3nNsgd2Pwlv-NKho2EIVkTMzf0llsZFQtf8C8riZ3-frQhUEDo_WYRTKrXYkdvWeEYcs7fm9up5jr1bnQsgeE34sQV2U1CK9E_h97DzwumXK-pEN-qiFX5Pos1cYr-CSxh0K_o_ZpeRXjy7EhGfILUx4YmNeVp_m2PTTKVQm8uhM_e10URudYTqcxFUThiJZnE5yYR-FhN_vvKW-eu-tyo-5lZ4z9d4B6P5mOLQ5rP3eQJ1jpE6VldQquYwLzVu7mqDDvmfQUsT_sCGeVBEz722FOcbJFM5rJkNZWz6eNTRywwAF8LrnQ9C4hHWXwS70y1CPBytrvLoIKkU4UoRBlUhqgiORmuIQnet0PuSDifVWytTA_B_ghPomM3mYJBf7flEq0px2u1fXTA5f02YU9QRib3b7L0WA0i4ylf2q2Gww7ZwJgYPHuNaUL0mJyjID6W0e7w73oS750KMQ3bcNlLtRKiTTLwa30j-LplSFKsMjake0sqRzpagEXW-9xLz9YNEua_YlsmaPRxL28OAo3SAz_nZnweCx1XjQsmIFga10PWf8NdYl6eRFemj1zlKN4pZrVqztXlJwYWwxbNKIgJDMKArPWzIH1OrFTxG_3csdu38ibFrDnLF3Xr65_FeTcv-Cd8fhSAb_mWihn-aJMR30A5F_107R_TLAHnUP3bGvPT4xDA25-aMH_xbNaPYGOg_AGSfazrrlwHoqk_uZXf0N90VP5E3L-_9VcsfBP-4IJAQzNZXH0U2ZxH0RcUtBra61LJx-qBYrfDKcqOfwgCXiTqowIT7_nR5LpIRufaqNhIAevcRQJ5IIKLxQdXAqPpSVMAMgLjOWiXg0jsZwVAWLD9yLKzKMnEOMGrXfKgrUWC0P_CLgAvd5rVxmMLqBb3flp27lzXYZJdlfD7mt7BQSMhaX9JrHWciP3OE4KENOJ_Huf2iOCuM_3eueSfk0Zx1KwUClP-sxwvTNxt2-6eNWs6deXs7XlkJjD76Htfaxq9hWVdYwfM91qtvMO3SdRqDijHxwn_DGQ4aZ8He_fQWwhb6CEY_I_N-6Tsbm6DfWMIjbtWJypIj_QcNfLmXVqF5jXhP5NJnwNGQG7sXy1xfw1-OX5fXJ97T-P0h3xAMBo6eb1TBgN3165RcwL7ls3htuAIlgH7F239ZEjqwgTJu5SRNHpDa2mirsH-6jXF4VkWv5-8MUT2KajCbsqZdpX86yFOyLMyfmwib9vf8EHkSnfBKyPGy_aWQLnRkKsn-2lH0XEzv8j7uctJ6XJNc3qFUrL4_WAwL5VR554SZxahD-OwbIGt6bYHcNG4FFXh2RC1FjQNAgH2ordZeTmr7c_GHKIoRSdURdn8VxCbuFFUigujo6eOdoAXPbFjmjxu_bmSKseNadAmaY3iBdW49Xq8tOy3gZe9a6y7b4bpb84tO2ppV6IXgDMh9-NEkWprDytcZtiuXw0cGWrjJ97hAtXGLn9IkKaHVgAZD2YMhcFMHuinTcUEDfd7ckolNSSEtz_-QpvLMt0EM6V3ultbPNH6aIMkBv9inNwBf8t8F7238lgz5fB5QssmD9-fCNkQPHeUueOssHNy_kdJFbhvPqNMqJHKyZpH7xU5apqVl2Qg-iYxuSS26SwZwboMIyJ_2HCVNkq7d6KILqLXlREzro3v81rKo6NSiVGE6vXsAsOHGO8Wnki7Spbw6p-uYyd9QFkRr1pWhPGg3DJmuOS6Md9tobqlXMGvCvE1EOfe5Ev8wDD85lpsHYIGv2QFK-Mx---zMvndxDGp9Ep7nEvMfrGralr-CiuEAa30Zp4OJuN2UO1iAXNpfhKVuM-K2tlhfH8rewYPU5ufcO8eSyBrRVS4IZTIe14XHIB9wO1ep5MCga1q4pZejeT5n8h9O_zOxaTc3kJHY_7QC865fuGfolfgXPvCPqV_j_6LXQNlycMn1qYUiE0Mf6VmDm1qUeNOG-MwZnnvL4orziXEBSebyDBn6L5zo3LnNKzPg4pMcSeGws-peeYV0GdjX1ln5Mmd1b_NzNEfxK9fY9yzPkcc3c8CwKjpB343-xUv5jD3SAh8EBtpMx5Ue-Bspk4bmzcwMZmXTWXY1lINL6hccFFY-YrvMl_zkcx_1-xobRl-cOEoiwMLoDSNgsXF4F8YHSUSH_IkeCh9d0w74GjVmlKJFyp1AKPvv6JmIeVl_klNjlcbWDpx9r_BJNWZHtNRquiHFR6VBWWX3JwG091EFN9ltIp9Jvzi6TwKRoCwSHcdPTDZM5zFhgHDSuDeSGoiDuvZfZtdkxPUQpyjLt6fhFioVhTWNn18uH6sA4wAP8RUrU3ighXozrzIjRkywDayCS1wDLgr3HRDZjAJ740j1M5wavwpi7XYVEnJKzEGvjaqRGNh-Y_OAZuazG_RDRrA1JWefFM2oajnETqjk__bXQXHK-jYHclQNybZhFBjm5XzazdrPO24U6Xq1EdkcSe7XwQdEo-tnV46TajY_2BesLRMYhJ4wmBBQKqg4FI-us8FWHMlOYmO58JepaWSQgyKbgRo_Bs8QrtomS-3rxFDsIGuQk9qLhRVOK3WagV3HbqWd-oJEmAh7QMft-ZKCzVMdH6A9ORFPTNFHQUV1fWaileyh_guvSs4UbpepU0k_F-ujcRmdhPvnmGHO2JfAEQhzWs9iWiOzlpewieKWEUUA9C-oLHL3lHYw-vP9yDBP3ptouXJ3XLkXVB4Ls5YXFfqqVi-J-olfZ-3mNQBfvE_UijQ5fjRqmpi-5t6Q2rGgeVdJXEj5FFDjTHQnE0_qOEmzaQu8m4NUMn1tszN90wAhrpBDNfV_tkF2EBbEtMrMpZHaXx-LImkTJsqK2VMwZNqnufRo3TBWf5NbyMPt4U9Vn75ME7AbIlb0acTZeMM4uqiIzBAThTXAiOPp4CWDPT0iUj6iEJ-oMC6Mm5GIN-uyYPe0NxGhDI4bIOD2HG8bnr3XAMb8e8nikEe3MJ2RonqH6Hig2AIIoivbqtUZIZ2mtB6ft76gYq0qho5Fvd56Ki-GqTjx7rjQ5TMTeuax33jUuXrn4Y6nKs8zpGX6bsyZ6ivbFS50TJFHDYgWH7hwI0BCRLszahAy_-CC7NNtlZmpfncCzSwr_zjXbrIM1bTdAax8Y7wz85Zt7FCHZTpwiw2WU5BkdwOeiyp6b8d1NJlF56bjHzZsGElvGic0G8jgZNzMYUvGxBtFQXAgZuj02_wm8rjObB39y_qojJWmcq3YW7xqivgfTj_WX0W5uG8M4u3TUdkMLtvVvLLv61Jd2GzNeR4aw67SG31brr2SnsoxhzMxLY21ToKn5LCOrjTGf7AOyXiYgk_tqMwE262Ua_Gqb2sX9akE_iRfVAzL-yjL78sBNIrsO8RQN-dq5atRW246V5YQDEqzphk9fibfhVVsiZOEjZg3x3-J3pTWX_LRzBSsnhI7BtJGcsoUc9AzYS9JwVHzT7OZKsMRsS3Zt5VXW0jJE7E_xwd-Es0Mjj2338miIGr8B1kKJ58OOs5LQqX5coJNgwdduhqePRfwlibDTXljk6Si56LOmUI4TsL6X600B_3wA2XJIQtv2hlRZFhkTq8tw1R0-0CnOOST5YQS5SLvZzUI1j--oR70xK6NA1bpBq7930qNf7bZMoWC3-xbG4lqnqQ7XKk3Y_5cw3lSn65-rq8GE3xEEUN7pS7iBty82O9x6waGuj9WyY0DQpyW1EPNYoa2E1W5ABcaxg-R7FZcfNddIHpOYPfsAMUx3WNQAp8QcmUgDCrYQxgu8WKShpt7L7At1uSL7on754z6UcFq1iwI5J_2kPXI8GL-M8dz_KYBgEXvq8HMFsTjV325GofGLz8yZ6O-CIMXSkzzdCX7bJvUuwyAPflfMjVjcabg_ts6c0xixbtEUaVJ9zOG4DFOlT27cxqGJJTsUCx0mkK0PGRftEn50edbGGpMN7rZBQP0iSWwmxwk4Ddfb0GIeCfjzmQ4XdO3PW8UeLxdllJpmjHvrA_6nOjYlCz9EFKtDL8uO-TaAVUarezpxvVGYNzdG_UCmmOp_mO1HYWOD9nSO1ICMUwCffTMlQZWItVlGc-eQ1xrBSwnVSnmJrT0F5CnbTyjwgVCcmXQgwGNGowQUwvziDfNgGGbFEjUxr5ZJVAX1KZgt7bbZX2ApMI4NAUMnaZmMpla-maFBBCjicZJqb0RTQLnrRfnBzeGvj3NxMvECmr7JNMO0Gn2pwHv7MnftIZPdizXvQvvz3jcv4wD_e0xgaXGw76RIo663N7TrN_DH2bSWaQCy-6b7S_7Sp-JRcHUluzxiSGsMPtbELxUDgBrZuCGY6kuW2iMlAHAZFDeMeUJuZ2rUjon--Y9SgstsCY2zz9S3mRm_7LDV87mygkwfpEtu44TyRQRChQ0DOVXGgy6vnrBkCfxa4kGOX--lgPEWfc70gp2D4vHKlL_-BP_6V4zJ-Vo3qBf4CpkGREzz4mQjP5an8wf1IYK2SWn45E19kFzhMKy45ElKynyb7mRMbpxyHA3YkKWHc-VvA5nKxxKbt7Ds_qcHcJiDV8MGSfsksA0pLqQLkREygY8KS8v_Rp1CnSlTY8Wsj_zIFr9kGmpAiL8pvpOtmriQFONSRzPqvj7gEarp1YfubDrhJ3732pv90YEAtXU1i_VwYRvV6sKtir-6CjHkaYz4Cz39SayHr6YP6rW-_Z46ce380mrVmqU23yV7BJV"),
+}
+local _8d53={1}
+local _b={} for i=1,#_8d53 do _b[i]=_f[_8d53[i]] end
+local _f4,_523a=_70c6(_12(table.concat(_b)))
+if _523a~=3883266993 then error(string.char(51,56,55,53),0) end
+local _b5
+pcall(function() if type(getfenv)=="function" then _b5=getfenv(1) end end)
+if type(_b5)~="table" then pcall(function() _b5=_ENV end) end
+if type(_b5)~="table" then _b5=_G end
+local _8fa,_b00,_2c19=_zn(_f4)
+return _om(_8fa,_b5)
+end)()
+end)()
+if type(_5e341e) ~= "table" or type(_5e341e[1]) ~= "function" or type(_5e341e[2]) ~= "function" then
+  _721f79(string.char(80,114,111,116,101,99,116,105,111,110,32,117,110,97,118,97,105,108,97,98,108,101))
+  return
+end
+local _f82ba7={}
+for i=0,255 do _f82ba7[i]=string.char(i) end
+local _92523d,_5a1826={},{}
+do
+  local ta="7db74df6a208896067d3ff69dbd2e5f74957f882cc3e9a45a5c2298ab2ac9f365085689442a752dc33d9880a92b1355a3a7710611e8c5d6fc3d75c2fee7aec00ea40f2967658be63c4a0bbe12afe146b3151f5873901aeaae922627c251db048d00dd4cf0955813dfd4f211c438495702bf48fd1ef71246a7bdab6282d79aba11fce644c86bf56e74607f3f0bced472e8bb96597fb3b4a384e9d23c0176de493ad37b432040b8d5b6c98b80fcd90755f9c44591bc79e66e003d5a4e278b573deca111a12e39b18fa273cf1a8e6c17fd8b374418ec9eb06153091babdcb0ef98316af204b5ee834265499c51380dd0253c6c8a96e3fa62c197e72d6fcdfa3050c"
+  local tb="8eb2111961621ea109c024903555a5dbb96b20f2b03460f0c11333cdba5098c50ec4e493de9c79cfb8b7fb7f8846c2039616e940b50a74046618b15c8d7537473ea706bc02bd1a27c9d0007d3b4b73d707973987057ca94125087b5bd601286a68721b942f0bc85fff17c7bb14f7c34ea40f951cab6f305a4adde781ce2ce1aee3f5da85cb4d9ef815af91d28467eb44e0863f2977fdd38bca8965fa9a4892438a63acec2e834953beb47a9bf3f4825812df226ec6f1319d2b8f3851429f2a71a876ed10bf69ccaa2d1d4cada63ce5b38023a264d5b66d520c990d263a6c1f3dfe78d9e2f659eee8e6d157ef4f70a32156a07ef93254455dfcea5edcd8368cd4"
+  for i=1,256 do
+    _92523d[tonumber(string.sub(ta,i*2-1,i*2),16)]=i-1
+    _5a1826[tonumber(string.sub(tb,i*2-1,i*2),16)]=i-1
+  end
+end
+local _ed49fb={}
+do
+  local a="U_vZ3jx9nowhukCJHzKBMWyPtX-Op1ml" .. "I5eidLFfTAVaGrRsg8Qc2S604YEq7DNb"
+  for i=1,#a do _ed49fb[string.byte(a,i)]=i-1 end
+end
+local function _0e6ee3(s)
+  local out,n,acc,bits={},0,0,0
+  for i=1,#s do
+    local v=_ed49fb[string.byte(s,i)]
+    if v then
+      acc=acc*64+v
+      bits=bits+6
+      if bits>=8 then
+        bits=bits-8
+        local d=2^bits
+        n=n+1
+        out[n]=_f82ba7[math.floor(acc/d)%256]
+        acc=acc%d
+      end
+    end
+  end
+  return table.concat(out)
+end
+local function _ec58bc(s)
+  local v=0.0
+  for i=1,#s do v=v*16+tonumber(string.sub(s,i,i),16) end
+  return v
+end
+local function _95963a(s)
+  local h=0
+  for i=1,#s do h=(h*33+string.byte(s,i))%4294967296 end
+  return h
+end
+local function _09ac5c(S)
+  local sa,pa=929736553,126
+  local sb,pb=3003492193,49
+  local MA,AA,LA=283825,-2065411123,6242553
+  local MB,AB,LB=293859,-198712133,14188270
+  local KA={173,229,214,221,91,117,173,50,165,206,217,120,201,154,135,133,162,66,193,106,55,147,182,211,157,175,61,43,93,16,195,160}
+  local KB={177,111,71,60,211,113,3,207,50,217,79,67,117,192,236,163,89,59,195,221,51,59,78,0,195,184,29,91,126,148,82,62}
+  local out,n={},0
+  for i=1,#S do
+    local c=string.byte(S,i)
+    sb=(MB*sb+AB)%4294967296
+    local ksb=(sb%256+KB[((i-1)%32)+1]+((i*113+LB)%256)+pb)%256
+    pb=c
+    local mid=(_5a1826[c]-ksb)%256
+    sa=(MA*sa+AA)%4294967296
+    local ksa=(sa%256+KA[((i-1)%32)+1]+((i*113+LA)%256)+pa)%256
+    pa=mid
+    local p=(_92523d[mid]-ksa)%256
+    n=n+1
+    out[n]=_f82ba7[p]
+  end
+  return table.concat(out)
+end
+local _14b368
+do
+  local np = _8c397e
+  local base = (string.char(104,116,116,112,115,58,47,47,107,105,110,103,109,111,114,46,117,112,46,114,97,105,108,119,97,121,46,97,112,112,47,97,112,105,47,108,111,97,100,101,114,47,56,101,51,53,54,55,56,54,55,52,98,50,97,54,46,108,117,97,63,112,97,99)..string.char(107,61,49,38,112,97,114,116,61)) .. "@@PARTNUM@@" .. string.char(38,100,116,111,107,61) .. _d78796
+  local single = (string.char(104,116,116,112,115,58,47,47,107,105,110,103,109,111,114,46,117,112,46,114,97,105,108,119,97,121,46,97,112,112,47,97,112,105,47,108,111,97,100,101,114,47,56,101,51,53,54,55,56,54,55,52,98,50,97,54,46,108,117,97,63,115,105,110)..string.char(103,108,101,61,49,38,100,116,111,107,61)) .. _d78796
+  local function take(res, err)
+    if type(res) ~= "string" or #res < 9 then return nil, tostring(err or res or "empty") end
+    local hx = string.sub(res, 1, 8)
+    local okNum = true
+    pcall(function() if tonumber(hx, 16) == nil then okNum = false end end)
+    if not okNum then return nil, "message" end
+    local want = _ec58bc(hx)
+    local body = string.sub(res, 9)
+    if (_95963a(body) % 4294967296) ~= want then return nil, "checksum" end
+    return body, nil
+  end
+  local function fetchAll()
+    if _897342 == nil then return nil, string.char(110,111,32,108,111,97,100,101,114) end
+    local res, err = _1dd801(single)
+    local body, why = take(res, err)
+    if body == nil then return nil, why end
+    if body ~= "" and (_95963a(body) % 4294967296) ~= _ec58bc(_8a69c6) then
+      return nil, string.char(112,97,121,108,111,97,100,32,104,97,115,104)
+    end
+    return { body }
+  end
+  local got = {}
+  local missing = nil
+  for i = 1, np do
+    local body, lastErr = nil, nil
+    for attempt = 1, 6 do
+      local res, err = _1dd801(string.gsub(base, "@@PARTNUM@@", tostring(i)))
+      if type(res) == "string" and #res == 0 then
+        body = ""
+        break
+      end
+      body, lastErr = take(res, err)
+      if body ~= nil then break end
+      if lastErr == "message" then _721f79(string.char(68,101,108,105,118,101,114,121,32,114,101,106,101,99,116,101,100)) return end
+      nap(0.25 * attempt)
+    end
+    if body == nil then
+      missing = tostring(i)
+      break
+    end
+    got[i] = body
+  end
+  if missing == nil then
+    _14b368 = got
+  else
+    local all, why = fetchAll()
+    if all == nil then
+      _721f79(string.char(68,111,119,110,108,111,97,100,32,102,97,105,108,101,100,32,112,97,114,116,32) .. missing)
+      return
+    end
+    _14b368 = all
+  end
+end
+local ok, plain, why = (function()
+  local sh = _14b368
+  if type(sh) ~= "table" then return false, nil, string.char(110,111,32,112,97,121,108,111,97,100) end
+  local parts = {}
+  for i = 1, #sh do parts[#parts+1] = sh[i] end
+  local joined = table.concat(parts)
+  parts = nil
+  sh = nil
+  _14b368 = nil
+  if #joined == 0 then return false, nil, string.char(101,109,112,116,121,32,112,97,121,108,111,97,100) end
+  local expect = _ec58bc(_8a69c6)
+  if expect ~= nil and (_95963a(joined) % 4294967296) ~= expect then
+    return false, nil, string.char(112,97,121,108,111,97,100,32,99,104,101,99,107,115,117,109,32,109,105,115,109,97,116,99,104)
+  end
+  local raw = _0e6ee3(joined)
+  joined = nil
+  local out = (_09ac5c)(raw)
+  raw = nil
+  if type(out) ~= "string" or #out == 0 then return false, nil, string.char(100,101,99,114,121,112,116,32,102,97,105,108,101,100) end
+  local ph = _ec58bc(_b61a4d)
+  if ph ~= nil and (_95963a(out) % 4294967296) ~= ph then
+    return false, nil, string.char(105,110,116,101,103,114,105,116,121,32,109,105,115,109,97,116,99,104)
+  end
+  return true, out, nil
+end)()
+if not ok then
+  _721f79(string.char(80,97,121,108,111,97,100,32,101,114,114,111,114,58,32) .. tostring(why))
+  return
+end
+do
+  local sess = {ok = true, sid = string.char(56,101,51,53,54,55,56,54,55,52,98,50,97,54), scriptId = string.char(56,101,51,53,54,55,56,54,55,52,98,50,97,54), t = 0}
+  pcall(function() if type(os) == "table" and type(os.clock) == "function" then sess.t = os.clock() end end)
+  local function setg(name, value)
+    pcall(function() if type(getgenv) == "function" then local g = getgenv() if type(g) == "table" then g[name] = value end end end)
+    pcall(function() if type(_G) == "table" then _G[name] = value end end)
+  end
+  setg(string.char(95,75,77,95,65,85,84,72), sess)
+  setg(string.char(95,75,77,95,83,73,68), sess.sid)
+  setg(string.char(95,75,77,95,66,65,83,69), string.char(104,116,116,112,115,58,47,47,107,105,110,103,109,111,114,46,117,112,46,114,97,105,108,119,97,121,46,97,112,112))
+  setg(string.char(95,75,77,95,72,87,73,68), hwid)
+end
+local fn, cerr = _5e341e[1](_897342, plain)
+plain = nil
+if type(fn) ~= "function" then
+  warn(string.char(91,75,105,110,103,109,111,114,93,32,99,111,109,112,105,108,101,58,32) .. tostring(cerr))
+  _721f79(string.char(83,99,114,105,112,116,32,99,111,109,112,105,108,101,32,101,114,114,111,114))
+  return
+end
+local function _e4aa58(...) return {n=select('#', ...), ...} end
+local _198862 = _e4aa58(_5e341e[2](fn, false, ...))
+fn = nil
+pcall(function() if collectgarbage then collectgarbage("collect") end end)
+if not _198862[1] then
+  if _198862[3] then warn(string.char(91,75,105,110,103,109,111,114,93,32,114,117,110,116,105,109,101,58,32) .. tostring(_198862[2])) return end
+  error(_198862[2], 0)
+end
+return (table.unpack or unpack)(_198862, 2, _198862.n)
