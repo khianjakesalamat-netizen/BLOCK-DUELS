@@ -1,0 +1,3837 @@
+-- ======================================================================
+-- HALLOWEEN DUELS - PING LAGGER V14 (Mobile-Optimized)
+-- ======================================================================
+print("[HD] Script loading...")
+
+repeat task.wait() until game:IsLoaded()
+
+if _G.CPL_Connections then
+    for _, c in pairs(_G.CPL_Connections) do pcall(function() c:Disconnect() end) end
+end
+_G.CPL_Connections = {}
+
+local Players           = game:GetService("Players")
+local TweenService      = game:GetService("TweenService")
+local RunService        = game:GetService("RunService")
+local UserInputService  = game:GetService("UserInputService")
+local HttpService       = game:GetService("HttpService")
+local CoreGui           = game:GetService("CoreGui")
+local Lighting          = game:GetService("Lighting")
+local Stats             = game:GetService("Stats")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Debris            = game:GetService("Debris")
+local Workspace         = game:GetService("Workspace")
+local SoundService      = game:GetService("SoundService")
+
+local LocalPlayer = Players.LocalPlayer
+while not LocalPlayer do task.wait() LocalPlayer = Players.LocalPlayer end
+local plr = LocalPlayer
+
+local function getSafeGuiParent()
+    local ok, res = pcall(function() return (gethui and gethui()) or CoreGui end)
+    if ok and res then
+        local tOk = pcall(function()
+            local f = Instance.new("Folder"); f.Parent = res; f:Destroy()
+        end)
+        if tOk then return res end
+    end
+    return plr:WaitForChild("PlayerGui")
+end
+local plrGui = getSafeGuiParent()
+
+local K = {}
+K.isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+K.bgList = { "rbxassetid://101417790514924", "rbxassetid://71657642428119" }
+K.HALLOWEEN_ASSETS = { "rbxassetid://77256919825571", "rbxassetid://95756776306682" }
+K.CONFIG_FILE = "HalloweenDuels_V14.json"
+K.DEFAULT_CFG = {
+    power=100000, interval=0.13, keybindKb="V", keybindGp="ButtonR2",
+    guiScale=70, autoBrainrot=true, bgIndex=1,
+    guiLocked=false, soundIndex=1, clickVolume=1.2, themeIndex=8,
+    antiLag=true, lowGraphics=false, fogRemover=false,
+    particleKiller=false, skyChanger=false,
+    stretchRez=false, fovValue=70,
+    halloweenBg=1, halloweenToggle=true,
+    halloweenSoundIndex=1, antiE01=true,
+    fontIndex=1,
+    effectKiller=false, lightKiller=false, materialReducer=false,
+    cloudRemover=false, textureRemover=false, soundKiller=false,
+    meshSimplifier=false, terrainKiller=false, dynamicFPS=false,
+    shadowKiller=false, reflectionKiller=false,
+    beamKiller=false, sparklesKiller=false, decalKiller=false,
+    waterKiller=false, guiKiller=false,
+    payloadType="NORMAL",
+    smartPayload=false,
+    burstMode="NORMAL",
+    smartBurst=false,
+}
+K.CLICK_SOUNDS = { [1]="rbxassetid://6895079853", [2]="rbxassetid://6042053626" }
+K.TYPING_PITCH = { [1]=1.6, [2]=1.4 }
+K.HALLOWEEN_SOUNDS = { [1]="rbxassetid://6895079853", [2]="rbxassetid://4612375233" }
+K.HALLOWEEN_PITCH = { [1]=0.55, [2]=0.45 }
+K.THEMES = {
+    [1] = { main=Color3.fromRGB(240,240,245), b1=Color3.fromRGB(85,85,95),   b2=Color3.fromRGB(200,200,210) },
+    [2] = { main=Color3.fromRGB(230,80,90),   b1=Color3.fromRGB(120,30,40),  b2=Color3.fromRGB(245,145,155) },
+    [3] = { main=Color3.fromRGB(74,222,128),  b1=Color3.fromRGB(30,120,60),  b2=Color3.fromRGB(145,240,180) },
+    [4] = { main=Color3.fromRGB(96,165,250),  b1=Color3.fromRGB(40,80,180),  b2=Color3.fromRGB(155,200,255) },
+    [5] = { main=Color3.fromRGB(168,85,247),  b1=Color3.fromRGB(90,40,180),  b2=Color3.fromRGB(215,155,255) },
+    [6] = { main=Color3.fromRGB(251,191,36),  b1=Color3.fromRGB(170,120,20), b2=Color3.fromRGB(255,220,120) },
+    [7] = { main=Color3.fromRGB(236,72,153),  b1=Color3.fromRGB(160,40,100), b2=Color3.fromRGB(255,155,205) },
+    [8] = { main=Color3.fromRGB(255,140,0),   b1=Color3.fromRGB(140,40,0),   b2=Color3.fromRGB(255,200,80) },
+}
+K.GUI_FONTS = {
+    [1] = { name = "Gotham",   enum = Enum.Font.GothamBold },
+    [2] = { name = "Fredoka",  enum = Enum.Font.FredokaOne },
+    [3] = { name = "Code",     enum = Enum.Font.Code },
+    [4] = { name = "Creepster",enum = Enum.Font.Creepster },
+}
+K.IGNORE_KEYS = {
+    [Enum.KeyCode.Return]=true, [Enum.KeyCode.Escape]=true, [Enum.KeyCode.Tab]=true,
+    [Enum.KeyCode.Backspace]=true, [Enum.KeyCode.Delete]=true,
+    [Enum.KeyCode.LeftShift]=true, [Enum.KeyCode.RightShift]=true,
+    [Enum.KeyCode.LeftControl]=true, [Enum.KeyCode.RightControl]=true,
+    [Enum.KeyCode.LeftAlt]=true, [Enum.KeyCode.RightAlt]=true,
+    [Enum.KeyCode.Left]=true, [Enum.KeyCode.Right]=true,
+    [Enum.KeyCode.Up]=true, [Enum.KeyCode.Down]=true,
+    [Enum.KeyCode.CapsLock]=true,
+}
+K.BLACKLISTED = {[Enum.KeyCode.Escape]=true, [Enum.KeyCode.LeftControl]=true, [Enum.KeyCode.Unknown]=true}
+K.SECTION_META = {
+    ["MAIN"]                = { icon="rbxassetid://79547021346177", color=Color3.fromRGB(255, 140, 0) },
+    ["FPS & PERFORMANCE"]   = { icon="rbxassetid://79484049372444", color=Color3.fromRGB(96, 165, 250) },
+    ["KEYBINDS"]            = { icon="rbxassetid://86607891579086", color=Color3.fromRGB(168, 85, 247) },
+    ["VISUALS"]             = { icon="rbxassetid://96069750705045", color=Color3.fromRGB(236, 72, 153) },
+    ["HALLOWEEN EVENT GUI"] = { icon="rbxassetid://138980851268006", color=Color3.fromRGB(255, 140, 0) },
+}
+K.KNOWN_NAMES = { "SetPlayerBlockList","UpdatePlayerBlockList","SetBlockList","UpdateBlockList","BlockList","PlayerBlockList","SetBlock","UpdateBlock","Block" }
+K.BASE_W, K.BASE_H, K.MINI_H = 500, 720, 108
+
+local cfg = {}
+for k,v in pairs(K.DEFAULT_CFG) do cfg[k]=v end
+
+local function saveConfig()
+    local ok,e = pcall(function() return HttpService:JSONEncode(cfg) end)
+    if ok and e and writefile then pcall(writefile, K.CONFIG_FILE, e) end
+end
+
+local function loadConfig()
+    if not (isfile and readfile and isfile(K.CONFIG_FILE)) then return end
+    local ok,d = pcall(function() return HttpService:JSONDecode(readfile(K.CONFIG_FILE)) end)
+    if not ok or type(d)~="table" then return end
+    for k,v in pairs(K.DEFAULT_CFG) do
+        if d[k] ~= nil then cfg[k] = d[k] end
+    end
+end
+loadConfig()
+
+cfg.guiScale = math.clamp(tonumber(cfg.guiScale) or 70, 40, 110)
+cfg.soundIndex = math.clamp(tonumber(cfg.soundIndex) or 1, 0, 2)
+cfg.halloweenSoundIndex = math.clamp(tonumber(cfg.halloweenSoundIndex) or 1, 0, 2)
+cfg.bgIndex = math.clamp(tonumber(cfg.bgIndex) or 1, 1, #K.bgList)
+cfg.halloweenBg = math.clamp(tonumber(cfg.halloweenBg) or 1, 1, #K.HALLOWEEN_ASSETS)
+cfg.fontIndex = math.clamp(tonumber(cfg.fontIndex) or 1, 1, #K.GUI_FONTS)
+
+local St = {
+    wasCarrying = false, active = false, listeningFor = nil, remote = nil,
+    brainrotMode = false, lastBrainrotState = false, manualOverride = false,
+    guiLocked = cfg.guiLocked or false, isExpanded = false,
+    halloweenToggleOn = cfg.halloweenToggle or false,
+    originalSky = Lighting:FindFirstChildOfClass("Sky"),
+    originalFOV = 70, stretchedRezApplied = false,
+    particleCache = {}, particleCached = false,
+    currentFPS = 60, currentPing = 0, uiShown = false,
+    originalLighting = {
+        GlobalShadows = Lighting.GlobalShadows, FogEnd = Lighting.FogEnd, FogStart = Lighting.FogStart,
+        ShadowSoftness = Lighting.ShadowSoftness, Brightness = Lighting.Brightness,
+        EnvironmentDiffuseScale = Lighting.EnvironmentDiffuseScale,
+        EnvironmentSpecularScale = Lighting.EnvironmentSpecularScale,
+    },
+    effectCache = {}, lightCache = {}, materialCache = {}, soundCache = {},
+    textureCache = {}, meshCache = {}, decalCache = {}, beamCache = {}, sparklesCache = {},
+    originalAtmosphere = nil, dynamicFPSActive = false,
+    antiLagOpen = false, payloadOpen = false, burstOpen = false,
+}
+
+local U = {}
+
+local function isCarrying()
+    local char = LocalPlayer.Character
+    if not char then return false end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hum then return false end
+    if hum.WalkSpeed <= 0 then return false end
+    for _, child in pairs(char:GetChildren()) do
+        local n = child.Name:lower()
+        if n:find("brainrot") or n:find("brain") or n:find("animal")
+        or n:find("carry") or n:find("stolen") or n:find("held") or n:find("steal") then return true end
+    end
+    for attrName, attrValue in pairs(char:GetAttributes()) do
+        local n = attrName:lower()
+        if (n:find("carrying") or n:find("carry") or n:find("stealing")
+        or n:find("isstealing") or n:find("hasbrainrot")) and attrValue == true then return true end
+    end
+    if hum.WalkSpeed > 0 and hum.WalkSpeed <= 25 and hum.WalkSpeed ~= 16 then return true end
+    return false
+end
+
+local function startE01HeadCountdown()
+    local char = LocalPlayer.Character
+    if not char or not char:FindFirstChild("Head") then return end
+    local head = char.Head
+    if head:FindFirstChild("HeadStealUI") then head.HeadStealUI:Destroy() end
+    local bb = Instance.new("BillboardGui")
+    bb.Name, bb.Adornee = "HeadStealUI", head
+    bb.Size, bb.StudsOffset, bb.AlwaysOnTop = UDim2.new(0,600,0,80), Vector3.new(0,7,0), true
+    bb.Parent = head
+    local tl = Instance.new("TextLabel", bb)
+    tl.Size, tl.BackgroundTransparency = UDim2.new(1,0,1,0), 1
+    tl.TextColor3, tl.TextStrokeColor3, tl.TextStrokeTransparency = Color3.fromRGB(255,60,60), Color3.fromRGB(0,0,0), 0
+    tl.Font, tl.TextSize, tl.Text = Enum.Font.FredokaOne, 28, ""
+    local duration, startTime, finished = 3.0, tick(), false
+    local conn
+    conn = RunService.RenderStepped:Connect(function()
+        if finished then return end
+        local remaining = math.max(0, duration - (tick() - startTime))
+        if not tl.Parent then finished = true conn:Disconnect() return end
+        if remaining > 0 then
+            tl.Text = string.format("⚠️ E01 WARNİNG (%.1fs)", remaining)
+        else
+            finished = true; conn:Disconnect()
+            tl.Text, tl.TextColor3 = "⚡ STEAL NOW!", Color3.fromRGB(50,255,130)
+            task.spawn(function()
+                task.wait(2)
+                if bb.Parent then
+                    local t = TweenService:Create(tl, TweenInfo.new(0.5), {TextTransparency=1, TextStrokeTransparency=1})
+                    t:Play(); t.Completed:Connect(function() pcall(function() bb:Destroy() end) end)
+                end
+            end)
+        end
+    end)
+end
+
+local e01Conn = RunService.Heartbeat:Connect(function()
+    if not cfg.antiE01 then St.wasCarrying = isCarrying() return end
+    local c = isCarrying()
+    if not St.wasCarrying and c then startE01HeadCountdown() end
+    St.wasCarrying = c
+end)
+table.insert(_G.CPL_Connections, e01Conn)
+
+local function resolveKb(n)
+    if not n or n=="" or n=="None" then return nil end
+    local ok,v = pcall(function() return Enum.KeyCode[n] end)
+    return (ok and v) or nil
+end
+
+local function tw(o,p,t)
+    TweenService:Create(o, TweenInfo.new(t or 0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), p):Play()
+end
+
+local function isGamepad(kc)
+    local n = kc.Name
+    return n:sub(1,6)=="Button" or n:sub(1,10)=="Thumbstick" or n:sub(1,4)=="DPad" or n=="ButtonSelect" or n=="ButtonStart"
+end
+
+for _, name in ipairs({"HalloweenDuelsGui", "OnyxVsPingLaggerGui", "CursedPingLaggerGui", "HalloweenDuelsIntroGui"}) do
+    local old = plrGui:FindFirstChild(name)
+    if not old and plr:FindFirstChild("PlayerGui") then old = plr.PlayerGui:FindFirstChild(name) end
+    if old then pcall(function() old:Destroy() end) end
+end
+
+-- ======================== ANTI-LAG ========================
+local function applyAntiLag(state)
+    pcall(function()
+        if state then
+            Lighting.GlobalShadows = false
+            Lighting.ShadowSoftness = 0
+            Lighting.Brightness = 3
+            Lighting.EnvironmentDiffuseScale = 0
+            Lighting.EnvironmentSpecularScale = 0
+            Lighting.Outlines = false
+            pcall(function() Lighting.Technology = Enum.Technology.Compatibility end)
+        else
+            Lighting.GlobalShadows = St.originalLighting.GlobalShadows or true
+            Lighting.ShadowSoftness = St.originalLighting.ShadowSoftness or 0.2
+            Lighting.Brightness = St.originalLighting.Brightness or 2
+            Lighting.EnvironmentDiffuseScale = St.originalLighting.EnvironmentDiffuseScale or 1
+            Lighting.EnvironmentSpecularScale = St.originalLighting.EnvironmentSpecularScale or 1
+        end
+    end)
+end
+
+local function applyLowGraphics(state)
+    task.spawn(function()
+        pcall(function()
+            for _, e in ipairs(Lighting:GetChildren()) do
+                if e:IsA("BlurEffect") or e:IsA("BloomEffect") or e:IsA("SunRaysEffect")
+                or e:IsA("ColorCorrectionEffect") or e:IsA("DepthOfFieldEffect") then
+                    e.Enabled = not state
+                end
+            end
+        end)
+    end)
+end
+
+local function applyFogRemover(state)
+    pcall(function()
+        if state then
+            St.originalLighting.FogEnd = Lighting.FogEnd
+            St.originalLighting.FogStart = Lighting.FogStart
+            Lighting.FogEnd, Lighting.FogStart = 100000, 100000
+        else
+            Lighting.FogEnd = St.originalLighting.FogEnd
+            Lighting.FogStart = St.originalLighting.FogStart
+        end
+    end)
+end
+
+local function applyParticleKiller(state)
+    task.spawn(function()
+        if state then
+            if not St.particleCached then
+                local count = 0
+                for _, obj in ipairs(Workspace:GetDescendants()) do
+                    if obj:IsA("ParticleEmitter") and obj.Enabled then
+                        table.insert(St.particleCache, obj)
+                        count += 1
+                        if count % 50 == 0 then task.wait() end
+                    end
+                end
+                St.particleCached = true
+            end
+            for _, obj in ipairs(St.particleCache) do
+                if obj and obj.Parent then pcall(function() obj.Enabled = false end) end
+            end
+        else
+            for _, obj in ipairs(St.particleCache) do
+                if obj and obj.Parent then pcall(function() obj.Enabled = true end) end
+            end
+        end
+    end)
+end
+
+local function applySkyChanger(state)
+    pcall(function()
+        if state then
+            local existingSky = Lighting:FindFirstChildOfClass("Sky")
+            if existingSky then existingSky:Destroy() end
+            local newSky = Instance.new("Sky")
+            newSky.SkyboxBk = "rbxassetid://159454299"
+            newSky.SkyboxDn = "rbxassetid://159454296"
+            newSky.SkyboxFt = "rbxassetid://159454293"
+            newSky.SkyboxLf = "rbxassetid://159454286"
+            newSky.SkyboxRt = "rbxassetid://159454300"
+            newSky.SkyboxUp = "rbxassetid://159454288"
+            newSky.Parent = Lighting
+        else
+            local s = Lighting:FindFirstChildOfClass("Sky")
+            if s then s:Destroy() end
+            if St.originalSky and St.originalSky.Parent == nil then St.originalSky.Parent = Lighting end
+        end
+    end)
+end
+
+local function applyStretchRez(state)
+    pcall(function()
+        local cam = Workspace.CurrentCamera
+        if cam then
+            if state then St.originalFOV = cam.FieldOfView; cam.FieldOfView = 120
+            else cam.FieldOfView = cfg.fovValue or St.originalFOV end
+        end
+    end)
+    St.stretchedRezApplied = state
+end
+
+local function applyEffectKiller(state)
+    task.spawn(function()
+        if state then
+            if not St.effectCache[1] then
+                local count = 0
+                for _, obj in ipairs(Workspace:GetDescendants()) do
+                    if obj:IsA("Beam") or obj:IsA("Smoke") or obj:IsA("Fire")
+                    or obj:IsA("Sparkles") or obj:IsA("Trail") then
+                        table.insert(St.effectCache, obj)
+                        pcall(function() obj.Enabled = false end)
+                    end
+                    count += 1
+                    if count % 100 == 0 then task.wait() end
+                end
+            else
+                for _, obj in ipairs(St.effectCache) do
+                    if obj and obj.Parent then pcall(function() obj.Enabled = false end) end
+                end
+            end
+        else
+            for _, obj in ipairs(St.effectCache) do
+                if obj and obj.Parent then pcall(function() obj.Enabled = true end) end
+            end
+        end
+    end)
+end
+
+local function applyLightKiller(state)
+    task.spawn(function()
+        if state then
+            if not St.lightCache[1] then
+                local count = 0
+                for _, obj in ipairs(Workspace:GetDescendants()) do
+                    if obj:IsA("PointLight") or obj:IsA("SpotLight") or obj:IsA("SurfaceLight") then
+                        table.insert(St.lightCache, obj)
+                        pcall(function() obj.Enabled = false end)
+                    end
+                    count += 1
+                    if count % 100 == 0 then task.wait() end
+                end
+            else
+                for _, obj in ipairs(St.lightCache) do
+                    if obj and obj.Parent then pcall(function() obj.Enabled = false end) end
+                end
+            end
+        else
+            for _, obj in ipairs(St.lightCache) do
+                if obj and obj.Parent then pcall(function() obj.Enabled = true end) end
+            end
+        end
+    end)
+end
+
+local function applyMaterialReducer(state)
+    task.spawn(function()
+        if state then
+            local count = 0
+            for _, obj in ipairs(Workspace:GetDescendants()) do
+                if obj:IsA("BasePart") and not St.materialCache[obj] then
+                    pcall(function()
+                        St.materialCache[obj] = { mat = obj.Material, ref = obj.Reflectance }
+                        obj.Material = Enum.Material.SmoothPlastic
+                        obj.Reflectance = 0
+                    end)
+                end
+                count += 1
+                if count % 100 == 0 then task.wait() end
+            end
+        else
+            for obj, data in pairs(St.materialCache) do
+                if obj and obj.Parent then
+                    pcall(function() obj.Material = data.mat; obj.Reflectance = data.ref end)
+                end
+            end
+        end
+    end)
+end
+
+local function applyCloudRemover(state)
+    pcall(function()
+        if state then
+            local clouds = Lighting:FindFirstChildOfClass("Clouds")
+            if clouds then clouds:Destroy() end
+            local atmo = Lighting:FindFirstChildOfClass("Atmosphere")
+            if atmo then
+                if not St.originalAtmosphere then
+                    St.originalAtmosphere = { Density = atmo.Density, Haze = atmo.Haze, Glare = atmo.Glare }
+                end
+                atmo.Density = 0; atmo.Haze = 0; atmo.Glare = 0
+            end
+        else
+            if St.originalAtmosphere then
+                local atmo = Lighting:FindFirstChildOfClass("Atmosphere")
+                if atmo then
+                    atmo.Density = St.originalAtmosphere.Density
+                    atmo.Haze = St.originalAtmosphere.Haze
+                    atmo.Glare = St.originalAtmosphere.Glare
+                end
+            end
+        end
+    end)
+end
+
+local function applyTextureRemover(state)
+    task.spawn(function()
+        if state then
+            if not St.textureCache[1] then
+                local count = 0
+                for _, obj in ipairs(Workspace:GetDescendants()) do
+                    if obj:IsA("Texture") then table.insert(St.textureCache, obj) end
+                    count += 1
+                    if count % 100 == 0 then task.wait() end
+                end
+            end
+            for _, obj in ipairs(St.textureCache) do
+                if obj and obj.Parent then pcall(function() obj.Transparency = 1 end) end
+            end
+        else
+            for _, obj in ipairs(St.textureCache) do
+                if obj and obj.Parent then pcall(function() obj.Transparency = 0 end) end
+            end
+        end
+    end)
+end
+
+local function applySoundKiller(state)
+    task.spawn(function()
+        if state then
+            if not St.soundCache[1] then
+                local count = 0
+                for _, obj in ipairs(Workspace:GetDescendants()) do
+                    if obj:IsA("Sound") and obj.Playing then table.insert(St.soundCache, obj) end
+                    count += 1
+                    if count % 100 == 0 then task.wait() end
+                end
+            end
+            for _, obj in ipairs(St.soundCache) do
+                if obj and obj.Parent then pcall(function() obj.Volume = 0 end) end
+            end
+        else
+            for _, obj in ipairs(St.soundCache) do
+                if obj and obj.Parent then pcall(function() obj.Volume = 1 end) end
+            end
+        end
+    end)
+end
+
+local function applyMeshSimplifier(state)
+    task.spawn(function()
+        if state then
+            if not St.meshCache[1] then
+                local count = 0
+                for _, obj in ipairs(Workspace:GetDescendants()) do
+                    if obj:IsA("MeshPart") or obj:IsA("UnionOperation") then table.insert(St.meshCache, obj) end
+                    count += 1
+                    if count % 100 == 0 then task.wait() end
+                end
+            end
+            for _, obj in ipairs(St.meshCache) do
+                if obj and obj.Parent then pcall(function() obj.CastShadow = false end) end
+            end
+        else
+            for _, obj in ipairs(St.meshCache) do
+                if obj and obj.Parent then pcall(function() obj.CastShadow = true end) end
+            end
+        end
+    end)
+end
+
+local function applyTerrainKiller(state)
+    pcall(function()
+        if state then
+            local terrain = Workspace:FindFirstChildOfClass("Terrain")
+            if terrain then
+                pcall(function() terrain.WaterWaveSize = 0 end)
+                pcall(function() terrain.WaterTransparency = 1 end)
+                pcall(function() terrain.WaterReflectance = 0 end)
+                pcall(function() terrain.Decoration = false end)
+            end
+        end
+    end)
+end
+
+local function applyShadowKiller(state)
+    task.spawn(function()
+        if state then
+            local count = 0
+            for _, obj in ipairs(Workspace:GetDescendants()) do
+                if obj:IsA("BasePart") then pcall(function() obj.CastShadow = false end) end
+                count += 1
+                if count % 200 == 0 then task.wait() end
+            end
+        end
+    end)
+end
+
+local function applyReflectionKiller(state)
+    task.spawn(function()
+        if state then
+            local count = 0
+            for _, obj in ipairs(Workspace:GetDescendants()) do
+                if obj:IsA("BasePart") then pcall(function() obj.Reflectance = 0 end) end
+                count += 1
+                if count % 200 == 0 then task.wait() end
+            end
+        end
+    end)
+end
+
+local function applyDynamicFPS(state)
+    if St.dynamicFPSConn then St.dynamicFPSConn:Disconnect() St.dynamicFPSConn = nil end
+    if state then
+        St.dynamicFPSConn = RunService.Heartbeat:Connect(function()
+            if St.currentFPS < 30 and not St.dynamicFPSActive then
+                St.dynamicFPSActive = true
+                if not cfg.antiLag then applyAntiLag(true) end
+                if not cfg.particleKiller then applyParticleKiller(true) end
+                if not cfg.lowGraphics then applyLowGraphics(true) end
+            elseif St.currentFPS > 55 and St.dynamicFPSActive then
+                St.dynamicFPSActive = false
+            end
+        end)
+    end
+end
+
+local function applyBeamKiller(state)
+    task.spawn(function()
+        if state then
+            if not St.beamCache[1] then
+                local count = 0
+                for _, obj in ipairs(Workspace:GetDescendants()) do
+                    if obj:IsA("Beam") then
+                        table.insert(St.beamCache, obj)
+                        pcall(function() obj.Enabled = false end)
+                    end
+                    count += 1
+                    if count % 100 == 0 then task.wait() end
+                end
+            else
+                for _, obj in ipairs(St.beamCache) do
+                    if obj and obj.Parent then pcall(function() obj.Enabled = false end) end
+                end
+            end
+        else
+            for _, obj in ipairs(St.beamCache) do
+                if obj and obj.Parent then pcall(function() obj.Enabled = true end) end
+            end
+        end
+    end)
+end
+
+local function applySparklesKiller(state)
+    task.spawn(function()
+        if state then
+            if not St.sparklesCache[1] then
+                local count = 0
+                for _, obj in ipairs(Workspace:GetDescendants()) do
+                    if obj:IsA("Sparkles") then
+                        table.insert(St.sparklesCache, obj)
+                        pcall(function() obj.Enabled = false end)
+                    end
+                    count += 1
+                    if count % 100 == 0 then task.wait() end
+                end
+            else
+                for _, obj in ipairs(St.sparklesCache) do
+                    if obj and obj.Parent then pcall(function() obj.Enabled = false end) end
+                end
+            end
+        else
+            for _, obj in ipairs(St.sparklesCache) do
+                if obj and obj.Parent then pcall(function() obj.Enabled = true end) end
+            end
+        end
+    end)
+end
+
+local function applyDecalKiller(state)
+    task.spawn(function()
+        if state then
+            if not St.decalCache[1] then
+                local count = 0
+                for _, obj in ipairs(Workspace:GetDescendants()) do
+                    if obj:IsA("Decal") then table.insert(St.decalCache, obj) end
+                    count += 1
+                    if count % 100 == 0 then task.wait() end
+                end
+            end
+            for _, obj in ipairs(St.decalCache) do
+                if obj and obj.Parent then pcall(function() obj.Transparency = 1 end) end
+            end
+        else
+            for _, obj in ipairs(St.decalCache) do
+                if obj and obj.Parent then pcall(function() obj.Transparency = 0 end) end
+            end
+        end
+    end)
+end
+
+local function applyWaterKiller(state)
+    pcall(function()
+        local terrain = Workspace:FindFirstChildOfClass("Terrain")
+        if terrain and state then
+            pcall(function() terrain.WaterWaveSize = 0 end)
+            pcall(function() terrain.WaterTransparency = 1 end)
+            pcall(function() terrain.WaterReflectance = 0 end)
+        end
+    end)
+end
+
+local function applyGuiKiller(state)
+    task.spawn(function()
+        if state then
+            for _, obj in ipairs(plrGui:GetDescendants()) do
+                if obj.Name ~= "HalloweenDuelsGui" and obj:IsA("ScreenGui") then
+                    pcall(function() obj.Enabled = false end)
+                end
+            end
+        end
+    end)
+end
+
+-- ======================== SES ========================
+local function getActiveSoundPair()
+    if St.halloweenToggleOn then
+        local idx = cfg.halloweenSoundIndex or 0
+        if idx == 0 then return nil, nil end
+        return K.HALLOWEEN_SOUNDS[idx], K.HALLOWEEN_PITCH[idx]
+    else
+        local idx = cfg.soundIndex or 0
+        if idx == 0 then return nil, nil end
+        return K.CLICK_SOUNDS[idx], K.TYPING_PITCH[idx]
+    end
+end
+
+local function playClick()
+    local id, pitch = getActiveSoundPair()
+    if not id then return end
+    local s = Instance.new("Sound")
+    s.SoundId = id
+    s.Volume = tonumber(cfg.clickVolume) or 1.2
+    if St.halloweenToggleOn and pitch then s.PlaybackSpeed = pitch end
+    s.Parent = U.screen; s:Play()
+    Debris:AddItem(s, 3)
+end
+
+local function playTyping()
+    local id, pitch = getActiveSoundPair()
+    if not id then return end
+    local s = Instance.new("Sound")
+    s.SoundId = id
+    s.Volume = (tonumber(cfg.clickVolume) or 1.2) * 0.5
+    if St.halloweenToggleOn and pitch then s.PlaybackSpeed = pitch * 1.2
+    else s.PlaybackSpeed = pitch or 1.6 end
+    s.Parent = U.screen; s:Play()
+    Debris:AddItem(s, 1)
+end
+
+local function attachClickSound(btn)
+    if not (btn:IsA("TextButton") or btn:IsA("ImageButton")) then return end
+    if btn:GetAttribute("CPSoundAttached") then return end
+    btn:SetAttribute("CPSoundAttached", true)
+    btn.MouseButton1Click:Connect(function() pcall(playClick) end)
+end
+
+UserInputService.InputBegan:Connect(function(input)
+    if input.UserInputType ~= Enum.UserInputType.Keyboard then return end
+    if not UserInputService:GetFocusedTextBox() then return end
+    if K.IGNORE_KEYS[input.KeyCode] then return end
+    pcall(playTyping)
+end)
+
+local function applyFont(idx)
+    local fontData = K.GUI_FONTS[idx] or K.GUI_FONTS[1]
+    local fontEnum = fontData.enum
+    for _, d in ipairs(U.screen:GetDescendants()) do
+        if (d:IsA("TextLabel") or d:IsA("TextButton") or d:IsA("TextBox")) then
+            if not d:GetAttribute("KeepFont") then pcall(function() d.Font = fontEnum end) end
+        end
+    end
+end
+
+local function initUI()
+    U.screen = Instance.new("ScreenGui")
+    U.screen.Name = "HalloweenDuelsGui"
+    U.screen.ResetOnSpawn = false
+    U.screen.DisplayOrder = 15
+    U.screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    local pOk = pcall(function() U.screen.Parent = plrGui end)
+    if not pOk then U.screen.Parent = plr:WaitForChild("PlayerGui") end
+
+    U.mainFrame = Instance.new("Frame", U.screen)
+    U.mainFrame.Size = UDim2.new(0, K.BASE_W, 0, K.MINI_H)
+    U.mainFrame.Position = UDim2.new(0.5, -K.BASE_W/2, 0.5, -K.MINI_H/2)
+    U.mainFrame.BackgroundColor3 = Color3.fromRGB(15, 12, 18)
+    U.mainFrame.BackgroundTransparency = 0.3
+    U.mainFrame.BorderSizePixel = 0
+    U.mainFrame.ClipsDescendants = true
+    U.mainFrame.Visible = false
+    Instance.new("UICorner", U.mainFrame).CornerRadius = UDim.new(0, 14)
+
+    U.bgImgLabel = Instance.new("ImageLabel", U.mainFrame)
+    U.bgImgLabel.Size = UDim2.new(1, 0, 1, 0)
+    U.bgImgLabel.BackgroundTransparency = 1
+    U.bgImgLabel.ScaleType = Enum.ScaleType.Crop
+    U.bgImgLabel.ZIndex = 1
+    U.bgImgLabel.Image = St.halloweenToggleOn and (K.HALLOWEEN_ASSETS[cfg.halloweenBg] or K.HALLOWEEN_ASSETS[1]) or (K.bgList[cfg.bgIndex] or K.bgList[1])
+
+    U.uiScaleObj = Instance.new("UIScale", U.mainFrame)
+    U.uiScaleObj.Scale = (cfg.guiScale or 70) / 100
+
+    U.outer = Instance.new("UIStroke", U.mainFrame)
+    U.outer.Color, U.outer.Thickness, U.outer.Transparency = Color3.fromRGB(255, 140, 0), 1.6, 0.05
+    U.outer.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    U.grad = Instance.new("UIGradient", U.outer)
+
+    U.topBar = Instance.new("Frame", U.mainFrame)
+    U.topBar.Size, U.topBar.BackgroundTransparency, U.topBar.ZIndex = UDim2.new(1,0,0,52), 1, 10
+
+    U.titleContainer = Instance.new("Frame", U.topBar)
+    U.titleContainer.AnchorPoint = Vector2.new(0.5, 0.5)
+    U.titleContainer.Position = UDim2.new(0.5, 0, 0.5, 0)
+    U.titleContainer.Size = UDim2.new(1, -120, 0, 56)
+    U.titleContainer.BackgroundTransparency = 1
+    U.titleContainer.ZIndex = 11
+
+    U.glowLabel = Instance.new("TextLabel", U.titleContainer)
+    U.glowLabel.Size, U.glowLabel.Position = UDim2.new(1, 0, 0, 34), UDim2.new(0, 0, 0, 0)
+    U.glowLabel.BackgroundTransparency = 1
+    U.glowLabel.Text = "HALLOWEEN DUELS"
+    U.glowLabel.TextColor3 = Color3.fromRGB(255, 110, 0)
+    U.glowLabel.TextStrokeColor3 = Color3.fromRGB(255, 80, 0)
+    U.glowLabel.TextStrokeTransparency = 0.2
+    U.glowLabel.TextTransparency = 0.35
+    U.glowLabel.Font = Enum.Font.Creepster
+    U.glowLabel.TextSize = 33
+    U.glowLabel.TextXAlignment = Enum.TextXAlignment.Center
+    U.glowLabel.ZIndex = 11
+    U.glowLabel:SetAttribute("KeepFont", true)
+
+    U.shadowLabel = Instance.new("TextLabel", U.titleContainer)
+    U.shadowLabel.Size, U.shadowLabel.Position = UDim2.new(1, 0, 0, 34), UDim2.new(0, 2, 0, 3)
+    U.shadowLabel.BackgroundTransparency = 1
+    U.shadowLabel.Text = "HALLOWEEN DUELS"
+    U.shadowLabel.TextColor3 = Color3.fromRGB(40, 10, 0)
+    U.shadowLabel.Font = Enum.Font.Creepster
+    U.shadowLabel.TextSize = 33
+    U.shadowLabel.TextXAlignment = Enum.TextXAlignment.Center
+    U.shadowLabel.ZIndex = 12
+    U.shadowLabel:SetAttribute("KeepFont", true)
+
+    U.titleLabel = Instance.new("TextLabel", U.titleContainer)
+    U.titleLabel.Size, U.titleLabel.Position = UDim2.new(1, 0, 0, 34), UDim2.new(0, 0, 0, 1)
+    U.titleLabel.BackgroundTransparency = 1
+    U.titleLabel.Text = "HALLOWEEN DUELS"
+    U.titleLabel.TextColor3 = Color3.fromRGB(255, 150, 30)
+    U.titleLabel.Font = Enum.Font.Creepster
+    U.titleLabel.TextSize = 33
+    U.titleLabel.TextXAlignment = Enum.TextXAlignment.Center
+    U.titleLabel.ZIndex = 13
+    U.titleLabel:SetAttribute("KeepFont", true)
+
+    U.titleGrad = Instance.new("UIGradient", U.titleLabel)
+    U.titleGrad.Rotation = 90
+    U.titleGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0.0, Color3.fromRGB(255, 175, 45)),
+        ColorSequenceKeypoint.new(1.0, Color3.fromRGB(215, 60, 15))
+    })
+
+    U.titleStroke = Instance.new("UIStroke", U.titleLabel)
+    U.titleStroke.Thickness = 2.0
+    U.titleStroke.Color = Color3.fromRGB(12, 6, 8)
+
+    U.subtitleLabel = Instance.new("TextLabel", U.titleContainer)
+    U.subtitleLabel.Size, U.subtitleLabel.Position = UDim2.new(1, 0, 0, 16), UDim2.new(0, 0, 0, 34)
+    U.subtitleLabel.BackgroundTransparency = 1
+    U.subtitleLabel.Text = "Ping Lagger"
+    U.subtitleLabel.TextColor3 = Color3.fromRGB(255, 190, 80)
+    U.subtitleLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    U.subtitleLabel.TextStrokeTransparency = 0.25
+    U.subtitleLabel.Font = Enum.Font.GothamBlack
+    U.subtitleLabel.TextSize = 12
+    U.subtitleLabel.TextXAlignment = Enum.TextXAlignment.Center
+    U.subtitleLabel.ZIndex = 13
+
+    U.lockBtn = Instance.new("TextButton", U.topBar)
+    U.lockBtn.Size, U.lockBtn.Position = UDim2.new(0, 32, 0, 32), UDim2.new(1, -82, 0, 10)
+    U.lockBtn.BackgroundColor3, U.lockBtn.BackgroundTransparency = Color3.fromRGB(15,15,15), 0.3
+    U.lockBtn.Text = St.guiLocked and "🔒" or "🔓"
+    U.lockBtn.TextColor3, U.lockBtn.Font, U.lockBtn.TextSize, U.lockBtn.ZIndex = Color3.fromRGB(255,255,255), Enum.Font.GothamBold, 18, 12
+    U.lockBtn:SetAttribute("KeepFont", true)
+    Instance.new("UICorner", U.lockBtn).CornerRadius = UDim.new(0, 8)
+
+    U.settingsBtn = Instance.new("TextButton", U.topBar)
+    U.settingsBtn.Size, U.settingsBtn.Position = UDim2.new(0, 32, 0, 32), UDim2.new(1, -44, 0, 10)
+    U.settingsBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    U.settingsBtn.BackgroundTransparency = 0.3
+    U.settingsBtn.Text = "⚙"
+    U.settingsBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    U.settingsBtn.Font = Enum.Font.GothamBold
+    U.settingsBtn.TextSize = 20
+    U.settingsBtn.AutoButtonColor = false
+    U.settingsBtn.ZIndex = 12
+    U.settingsBtn:SetAttribute("KeepFont", true)
+    Instance.new("UICorner", U.settingsBtn).CornerRadius = UDim.new(0, 8)
+
+    U.activateBtn = Instance.new("TextButton", U.mainFrame)
+    U.activateBtn.Size, U.activateBtn.Position = UDim2.new(1,-24,0,50), UDim2.new(0,12,0,56)
+    U.activateBtn.BackgroundColor3, U.activateBtn.BackgroundTransparency = Color3.fromRGB(15,15,15), 0.3
+    U.activateBtn.Text, U.activateBtn.TextColor3 = "ACTIVATE", Color3.fromRGB(255,255,255)
+    U.activateBtn.Font, U.activateBtn.TextSize, U.activateBtn.ZIndex = Enum.Font.FredokaOne, 25, 12
+    U.activateBtn:SetAttribute("KeepFont", true)
+    Instance.new("UICorner", U.activateBtn).CornerRadius = UDim.new(0,8)
+
+    U.contentFrame = Instance.new("Frame", U.mainFrame)
+    U.contentFrame.Size, U.contentFrame.Position = UDim2.new(1,-24,0,610), UDim2.new(0,12,0,116)
+    U.contentFrame.BackgroundTransparency = 1
+    U.contentFrame.Visible = false
+    U.contentFrame.ZIndex = 5
+
+    U.leftCol = Instance.new("ScrollingFrame", U.contentFrame)
+    U.leftCol.Size, U.leftCol.BackgroundTransparency, U.leftCol.BorderSizePixel = UDim2.new(0,280,1,0), 1, 0
+    U.leftCol.CanvasSize = UDim2.new(0,0,0,4000)
+    U.leftCol.ScrollBarThickness = 6
+    U.leftCol.ScrollBarImageColor3 = Color3.fromRGB(180,180,180)
+    U.leftCol.ScrollBarImageTransparency = 0.3
+    U.leftCol.ScrollingDirection = Enum.ScrollingDirection.Y
+    U.leftCol.ZIndex = 6
+
+    U.leftLayout = Instance.new("UIListLayout", U.leftCol)
+    U.leftLayout.SortOrder, U.leftLayout.Padding = Enum.SortOrder.LayoutOrder, UDim.new(0,6)
+    U.leftPad = Instance.new("UIPadding", U.leftCol)
+    U.leftPad.PaddingRight = UDim.new(0, 8)
+    U.leftPad.PaddingBottom = UDim.new(0, 20)
+
+    U.sectionLabels = {}
+    U.sectionLines = {}
+    U.toggleSwitches = {}
+    U.themeButtons = {}
+    U.hAssetButtons = {}
+    U.bgButtons = {}
+    U.soundButtons = {}
+    U.hSoundButtons = {}
+    U.statBoxStrokes = {}
+    U.statTitleLabels = {}
+    U.statValueLabels = {}
+    U.statBoxFrames = {}
+    U.copyModal = nil
+    U.loadModal = nil
+end
+initUI()
+
+local function createSectionHeader(titleText)
+    local meta = K.SECTION_META[titleText] or { icon="◈", color=Color3.fromRGB(255, 140, 0) }
+    local accentColor = meta.color
+    local h = Instance.new("Frame", U.leftCol)
+    h.Size = UDim2.new(1, 0, 0, 44)
+    h.BackgroundColor3 = Color3.fromRGB(15, 12, 20)
+    h.BackgroundTransparency = 0.25
+    h.ZIndex = 6
+    Instance.new("UICorner", h).CornerRadius = UDim.new(0, 10)
+    local hStroke = Instance.new("UIStroke", h)
+    hStroke.Color, hStroke.Thickness, hStroke.Transparency = accentColor, 1.4, 0.3
+    local bgGrad = Instance.new("UIGradient", h)
+    bgGrad.Rotation = 0
+    bgGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(25, 18, 12)),
+        ColorSequenceKeypoint.new(0.7, Color3.fromRGB(15, 12, 20)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(12, 10, 16))
+    })
+    local iconBg = Instance.new("Frame", h)
+    iconBg.Size, iconBg.Position = UDim2.new(0, 30, 0, 30), UDim2.new(0, 8, 0.5, -15)
+    iconBg.BackgroundColor3 = accentColor
+    iconBg.BackgroundTransparency = 0.15
+    iconBg.BorderSizePixel = 0
+    iconBg.ZIndex = 7
+    Instance.new("UICorner", iconBg).CornerRadius = UDim.new(0, 8)
+    local iS = Instance.new("UIStroke", iconBg)
+    iS.Color, iS.Thickness, iS.Transparency = accentColor, 1.5, 0.05
+    local iL = Instance.new("ImageLabel", iconBg)
+    iL.Size = UDim2.new(1, 0, 1, 0)
+    iL.BackgroundTransparency = 1
+    iL.Image = meta.icon
+    iL.ScaleType = Enum.ScaleType.Fit
+    iL.ZIndex = 8
+    local lbl = Instance.new("TextLabel", h)
+    lbl.Size, lbl.Position = UDim2.new(1, -50, 1, 0), UDim2.new(0, 46, 0, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = titleText
+    lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+    lbl.Font = Enum.Font.FredokaOne
+    lbl.TextSize = 17
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.ZIndex = 7
+    lbl:SetAttribute("KeepFont", true)
+    local lG = Instance.new("UIGradient", lbl)
+    lG.Rotation = 0
+    lG.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0.0, Color3.fromRGB(255, 235, 120)),
+        ColorSequenceKeypoint.new(0.5, accentColor),
+        ColorSequenceKeypoint.new(1.0, Color3.fromRGB(255, 255, 255))
+    })
+    local lS = Instance.new("UIStroke", lbl)
+    lS.Color, lS.Thickness, lS.Transparency = Color3.fromRGB(20, 6, 0), 1.3, 0.15
+    local line = Instance.new("Frame", h)
+    line.Size, line.Position = UDim2.new(1, -20, 0, 2), UDim2.new(0, 10, 1, -2)
+    line.BorderSizePixel, line.ZIndex = 0, 7
+    line.BackgroundColor3 = accentColor
+    Instance.new("UICorner", line).CornerRadius = UDim.new(1, 0)
+    table.insert(U.sectionLabels, lbl)
+    table.insert(U.sectionLines, line)
+    return h
+end
+
+local function createRowCard(labelText, parent)
+    local c = Instance.new("Frame", parent or U.leftCol)
+    c.Size = UDim2.new(1,0,0,50)
+    c.BackgroundColor3 = Color3.fromRGB(12, 10, 16)
+    c.BackgroundTransparency = 0.5
+    c.ZIndex = 7
+    Instance.new("UICorner", c).CornerRadius = UDim.new(0,8)
+    if labelText then
+        local lbl = Instance.new("TextLabel", c)
+        lbl.Position, lbl.Size = UDim2.new(0, 12, 0, 0), UDim2.new(1, -114, 1, 0)
+        lbl.BackgroundTransparency, lbl.Text = 1, labelText
+        lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+        lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+        lbl.TextStrokeTransparency = 0.25
+        lbl.Font, lbl.TextSize = Enum.Font.GothamBold, 15
+        lbl.TextXAlignment, lbl.ZIndex = Enum.TextXAlignment.Left, 8
+    end
+    return c
+end
+
+local function createToggleCard(labelText, initial, onChange, cfgKey, forceOnColor, parent)
+    local card = createRowCard(labelText, parent)
+    local sw = Instance.new("TextButton", card)
+    sw.Size = UDim2.new(0, 48, 0, 24)
+    sw.Position = UDim2.new(1, -60, 0.5, -12)
+    sw.Text = ""
+    sw.AutoButtonColor = false
+    sw.ZIndex = 8
+    Instance.new("UICorner", sw).CornerRadius = UDim.new(1, 0)
+    local knob = Instance.new("Frame", sw)
+    knob.Size = UDim2.new(0, 18, 0, 18)
+    knob.BorderSizePixel = 0
+    knob.ZIndex = 9
+    Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
+    sw:SetAttribute("ToggleOn", initial)
+    if cfgKey then sw:SetAttribute("CfgKey", cfgKey) end
+    local function refresh(state, animate)
+        local theme = K.THEMES[cfg.themeIndex] or K.THEMES[8]
+        local onColor = forceOnColor or theme.main
+        local tc = state and onColor or Color3.fromRGB(26, 24, 30)
+        local kc = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(110, 105, 120)
+        local tp = state and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9)
+        if animate then
+            TweenService:Create(sw, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { BackgroundColor3 = tc }):Play()
+            TweenService:Create(knob, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { Position = tp, BackgroundColor3 = kc }):Play()
+        else
+            sw.BackgroundColor3 = tc; knob.Position = tp; knob.BackgroundColor3 = kc
+        end
+    end
+    refresh(initial, false)
+    sw.MouseButton1Click:Connect(function()
+        local ns = not sw:GetAttribute("ToggleOn")
+        sw:SetAttribute("ToggleOn", ns)
+        refresh(ns, true)
+        if onChange then onChange(ns) end
+        saveConfig()
+    end)
+    table.insert(U.toggleSwitches, {
+        track = sw, knob = knob,
+        refresh = function() refresh(sw:GetAttribute("ToggleOn"), false) end
+    })
+    return sw
+end
+
+-- ======================== MAIN ========================
+createSectionHeader("MAIN")
+
+-- ============ POWER PRESETS ============
+;(function()
+local presetHolder = Instance.new("Frame", U.leftCol)
+presetHolder.Size = UDim2.new(1, 0, 0, 78)
+presetHolder.BackgroundColor3 = Color3.fromRGB(12, 10, 16)
+presetHolder.BackgroundTransparency = 0.5
+presetHolder.ZIndex = 7
+Instance.new("UICorner", presetHolder).CornerRadius = UDim.new(0, 8)
+local presetStroke = Instance.new("UIStroke", presetHolder)
+presetStroke.Color = Color3.fromRGB(255, 140, 0)
+presetStroke.Thickness = 1.2
+presetStroke.Transparency = 0.5
+
+local presetLabel = Instance.new("TextLabel", presetHolder)
+presetLabel.Position, presetLabel.Size = UDim2.new(0, 12, 0, 4), UDim2.new(1, -24, 0, 18)
+presetLabel.BackgroundTransparency = 1
+presetLabel.Text = "Presets"
+presetLabel.TextColor3 = Color3.fromRGB(255, 220, 140)
+presetLabel.TextStrokeColor3 = Color3.fromRGB(80, 30, 0)
+presetLabel.TextStrokeTransparency = 0.3
+presetLabel.Font = Enum.Font.GothamBold
+presetLabel.TextSize = 12
+presetLabel.TextXAlignment = Enum.TextXAlignment.Left
+presetLabel.ZIndex = 8
+
+local presetBtnHolder = Instance.new("Frame", presetHolder)
+presetBtnHolder.Position, presetBtnHolder.Size = UDim2.new(0, 12, 0, 26), UDim2.new(1, -24, 0, 46)
+presetBtnHolder.BackgroundTransparency = 1
+presetBtnHolder.ZIndex = 8
+local presetLayout = Instance.new("UIListLayout", presetBtnHolder)
+presetLayout.FillDirection = Enum.FillDirection.Horizontal
+presetLayout.Padding = UDim.new(0, 6)
+presetLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local presets = {
+    { name = "HIGH", power = 100000, interval = 0.13 },
+    { name = "MID",  power = 65000,  interval = 0.1 },
+    { name = "LOW",  power = 40000,  interval = 0.125 },
+}
+local presetButtons = {}
+
+local function refreshPresets()
+    local theme = K.THEMES[cfg.themeIndex] or K.THEMES[8]
+    for i, p in ipairs(presets) do
+        local btn = presetButtons[i]
+        if btn then
+            local active = (cfg.power == p.power and math.abs(cfg.interval - p.interval) < 0.001)
+            local nameLbl = btn:FindFirstChild("NameLbl")
+            local valLbl = btn:FindFirstChild("ValLbl")
+            local bStroke = btn:FindFirstChildOfClass("UIStroke")
+            if active then
+                btn.BackgroundColor3 = theme.main
+                if nameLbl then nameLbl.TextColor3 = Color3.fromRGB(15, 8, 5); nameLbl.TextStrokeTransparency = 1 end
+                if valLbl then valLbl.TextColor3 = Color3.fromRGB(45, 30, 15) end
+                if bStroke then bStroke.Color = theme.b2 or theme.main; bStroke.Transparency = 0.1; bStroke.Thickness = 1.6 end
+            else
+                btn.BackgroundColor3 = Color3.fromRGB(22, 18, 26)
+                if nameLbl then nameLbl.TextColor3 = Color3.fromRGB(255, 255, 255); nameLbl.TextStrokeTransparency = 0.3 end
+                if valLbl then valLbl.TextColor3 = Color3.fromRGB(200, 200, 210) end
+                if bStroke then bStroke.Color = theme.main; bStroke.Transparency = 0.55; bStroke.Thickness = 1 end
+            end
+        end
+    end
+end
+_G.CPL_refreshPresets = refreshPresets
+
+for i, p in ipairs(presets) do
+    local btn = Instance.new("TextButton", presetBtnHolder)
+    btn.Size = UDim2.new(0.333, -4, 1, 0)
+    btn.BackgroundColor3 = Color3.fromRGB(22, 18, 26)
+    btn.Text = ""
+    btn.AutoButtonColor = false
+    btn.ZIndex = 9
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    local bStroke = Instance.new("UIStroke", btn)
+    bStroke.Color = Color3.fromRGB(255, 140, 0)
+    bStroke.Thickness = 1
+    bStroke.Transparency = 0.55
+
+    local nameLbl = Instance.new("TextLabel", btn)
+    nameLbl.Name = "NameLbl"
+    nameLbl.Size = UDim2.new(1, 0, 0, 20)
+    nameLbl.Position = UDim2.new(0, 0, 0, 3)
+    nameLbl.BackgroundTransparency = 1
+    nameLbl.Text = p.name
+    nameLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+    nameLbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    nameLbl.TextStrokeTransparency = 0.3
+    nameLbl.Font = Enum.Font.FredokaOne
+    nameLbl.TextSize = 16
+    nameLbl.TextXAlignment = Enum.TextXAlignment.Center
+    nameLbl.ZIndex = 10
+    nameLbl:SetAttribute("KeepFont", true)
+
+    local valLbl = Instance.new("TextLabel", btn)
+    valLbl.Name = "ValLbl"
+    valLbl.Size = UDim2.new(1, 0, 0, 14)
+    valLbl.Position = UDim2.new(0, 0, 0, 25)
+    valLbl.BackgroundTransparency = 1
+    valLbl.Text = tostring(p.power / 1000) .. "k  •  " .. tostring(p.interval)
+    valLbl.TextColor3 = Color3.fromRGB(200, 200, 210)
+    valLbl.Font = Enum.Font.GothamBold
+    valLbl.TextSize = 10
+    valLbl.TextXAlignment = Enum.TextXAlignment.Center
+    valLbl.ZIndex = 10
+
+    btn.MouseButton1Click:Connect(function()
+        cfg.power = p.power
+        cfg.interval = p.interval
+        if U.pBox then U.pBox.Text = tostring(p.power) end
+        if U.dBox then U.dBox.Text = tostring(p.interval) end
+        saveConfig()
+        refreshPresets()
+        playClick()
+    end)
+    attachClickSound(btn)
+    presetButtons[i] = btn
+end
+refreshPresets()
+end)()
+
+-- Power Card
+local powerCard = createRowCard("Power")
+U.pBox = Instance.new("TextBox", powerCard)
+U.pBox.Size, U.pBox.Position = UDim2.new(0, 94, 0, 32), UDim2.new(1, -102, 0.5, -16)
+U.pBox.BackgroundColor3, U.pBox.BackgroundTransparency = Color3.fromRGB(15,15,20), 0.3
+U.pBox.Text, U.pBox.TextColor3 = tostring(cfg.power), Color3.fromRGB(255,255,255)
+U.pBox.Font, U.pBox.TextSize, U.pBox.ZIndex = Enum.Font.GothamBold, 15, 8
+Instance.new("UICorner", U.pBox).CornerRadius = UDim.new(0,6)
+U.pBox.FocusLost:Connect(function()
+    local n = tonumber(U.pBox.Text)
+    if n then
+        cfg.power = math.max(1,n)
+        saveConfig()
+        if _G.CPL_refreshPresets then _G.CPL_refreshPresets() end
+    else U.pBox.Text = tostring(cfg.power) end
+end)
+
+-- Delay Card
+local delayCard = createRowCard("Delay (secs)")
+U.dBox = Instance.new("TextBox", delayCard)
+U.dBox.Size, U.dBox.Position = UDim2.new(0, 94, 0, 32), UDim2.new(1, -102, 0.5, -16)
+U.dBox.BackgroundColor3, U.dBox.BackgroundTransparency = Color3.fromRGB(15,15,20), 0.3
+U.dBox.Text, U.dBox.TextColor3 = tostring(cfg.interval), Color3.fromRGB(255,255,255)
+U.dBox.Font, U.dBox.TextSize, U.dBox.ZIndex = Enum.Font.GothamBold, 15, 8
+Instance.new("UICorner", U.dBox).CornerRadius = UDim.new(0,6)
+U.dBox.FocusLost:Connect(function()
+    local n = tonumber(U.dBox.Text)
+    if n then
+        cfg.interval = math.max(0.01, n)
+        saveConfig()
+        if _G.CPL_refreshPresets then _G.CPL_refreshPresets() end
+    else U.dBox.Text = tostring(cfg.interval) end
+end)
+
+createToggleCard("Auto Brainrot", cfg.autoBrainrot, function(s) cfg.autoBrainrot = s end, "autoBrainrot")
+createToggleCard("Anti E01", cfg.antiE01, function(s)
+    cfg.antiE01 = s
+    if not s then
+        local char = LocalPlayer.Character
+        if char then
+            local head = char:FindFirstChild("Head")
+            if head then
+                local ui = head:FindFirstChild("HeadStealUI")
+                if ui then ui:Destroy() end
+            end
+        end
+    end
+end, "antiE01")
+
+-- ============ PAYLOAD TYPE ACCORDION ============
+;(function()
+local payloadHeader = Instance.new("Frame", U.leftCol)
+payloadHeader.Size = UDim2.new(1, 0, 0, 50)
+payloadHeader.BackgroundColor3 = Color3.fromRGB(15, 10, 20)
+payloadHeader.BackgroundTransparency = 0.35
+payloadHeader.ZIndex = 7
+Instance.new("UICorner", payloadHeader).CornerRadius = UDim.new(0, 8)
+local ptStroke = Instance.new("UIStroke", payloadHeader)
+ptStroke.Color = Color3.fromRGB(180, 100, 255)
+ptStroke.Thickness = 1.3
+ptStroke.Transparency = 0.4
+
+local ptTitle = Instance.new("TextLabel", payloadHeader)
+ptTitle.Position, ptTitle.Size = UDim2.new(0, 14, 0, 0), UDim2.new(1, -60, 1, 0)
+ptTitle.BackgroundTransparency = 1
+ptTitle.Text = "Payload Type"
+ptTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+ptTitle.TextStrokeColor3 = Color3.fromRGB(50, 20, 80)
+ptTitle.TextStrokeTransparency = 0.2
+ptTitle.Font = Enum.Font.FredokaOne
+ptTitle.TextSize = 17
+ptTitle.TextXAlignment = Enum.TextXAlignment.Left
+ptTitle.ZIndex = 8
+ptTitle:SetAttribute("KeepFont", true)
+
+local ptPlus = Instance.new("TextButton", payloadHeader)
+ptPlus.Size = UDim2.new(0, 36, 0, 36)
+ptPlus.Position = UDim2.new(1, -44, 0.5, -18)
+ptPlus.BackgroundColor3 = Color3.fromRGB(30, 15, 45)
+ptPlus.Text = "+"
+ptPlus.TextColor3 = Color3.fromRGB(200, 140, 255)
+ptPlus.Font = Enum.Font.GothamBold
+ptPlus.TextSize = 24
+ptPlus.AutoButtonColor = false
+ptPlus.ZIndex = 8
+ptPlus:SetAttribute("KeepFont", true)
+Instance.new("UICorner", ptPlus).CornerRadius = UDim.new(0, 8)
+local ptPlusStroke = Instance.new("UIStroke", ptPlus)
+ptPlusStroke.Color = Color3.fromRGB(180, 100, 255)
+ptPlusStroke.Thickness = 1.2
+ptPlusStroke.Transparency = 0.3
+
+local payloadInner = Instance.new("Frame", U.leftCol)
+payloadInner.BackgroundTransparency = 1
+payloadInner.Visible = false
+payloadInner.ZIndex = 6
+payloadInner.Size = UDim2.new(1, 0, 0, 0)
+payloadInner.AutomaticSize = Enum.AutomaticSize.Y
+
+local ptInnerLayout = Instance.new("UIListLayout", payloadInner)
+ptInnerLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ptInnerLayout.Padding = UDim.new(0, 6)
+
+local ptInnerPad = Instance.new("UIPadding", payloadInner)
+ptInnerPad.PaddingLeft = UDim.new(0, 10)
+
+ptPlus.MouseButton1Click:Connect(function()
+    St.payloadOpen = not St.payloadOpen
+    payloadInner.Visible = St.payloadOpen
+    if St.payloadOpen then
+        ptPlus.Text = "−"
+        TweenService:Create(payloadHeader, TweenInfo.new(0.2), { BackgroundColor3 = Color3.fromRGB(28, 15, 40) }):Play()
+        TweenService:Create(ptStroke, TweenInfo.new(0.2), { Transparency = 0.15, Thickness = 1.8 }):Play()
+    else
+        ptPlus.Text = "+"
+        TweenService:Create(payloadHeader, TweenInfo.new(0.2), { BackgroundColor3 = Color3.fromRGB(15, 10, 20) }):Play()
+        TweenService:Create(ptStroke, TweenInfo.new(0.2), { Transparency = 0.4, Thickness = 1.3 }):Play()
+    end
+    playClick()
+end)
+attachClickSound(ptPlus)
+
+local ptBtnHolder = Instance.new("Frame", payloadInner)
+ptBtnHolder.Size = UDim2.new(1, 0, 0, 56)
+ptBtnHolder.BackgroundColor3 = Color3.fromRGB(12, 10, 16)
+ptBtnHolder.BackgroundTransparency = 0.5
+ptBtnHolder.ZIndex = 7
+Instance.new("UICorner", ptBtnHolder).CornerRadius = UDim.new(0, 8)
+
+local ptBtnLayout = Instance.new("UIListLayout", ptBtnHolder)
+ptBtnLayout.FillDirection = Enum.FillDirection.Horizontal
+ptBtnLayout.Padding = UDim.new(0, 5)
+ptBtnLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ptBtnLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+ptBtnLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+
+local ptBtnHolderPad = Instance.new("UIPadding", ptBtnHolder)
+ptBtnHolderPad.PaddingLeft = UDim.new(0, 8)
+ptBtnHolderPad.PaddingRight = UDim.new(0, 8)
+ptBtnHolderPad.PaddingTop = UDim.new(0, 6)
+ptBtnHolderPad.PaddingBottom = UDim.new(0, 6)
+
+local payloadTypes = {
+    { key = "NORMAL", label = "Normal", desc = "Standart" },
+    { key = "HIGH",   label = "High",   desc = "Agresif" },
+    { key = "MID",    label = "Mid",    desc = "Orta" },
+    { key = "LOW",    label = "Low",    desc = "Hafif" },
+}
+local ptButtons = {}
+
+local function refreshPayloadButtons()
+    local theme = K.THEMES[cfg.themeIndex] or K.THEMES[8]
+    local smartActive = cfg.smartPayload
+    for i, p in ipairs(payloadTypes) do
+        local btn = ptButtons[i]
+        if btn then
+            local active = (not smartActive) and (cfg.payloadType == p.key)
+            local nameLbl = btn:FindFirstChild("PLName")
+            local descLbl = btn:FindFirstChild("PLDesc")
+            local bStroke = btn:FindFirstChildOfClass("UIStroke")
+            if smartActive then
+                btn.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+                btn.BackgroundTransparency = 0.5
+                if nameLbl then nameLbl.TextColor3 = Color3.fromRGB(120, 120, 130); nameLbl.TextStrokeTransparency = 1 end
+                if descLbl then descLbl.TextColor3 = Color3.fromRGB(80, 80, 90) end
+                if bStroke then bStroke.Color = Color3.fromRGB(80, 80, 90); bStroke.Transparency = 0.7; bStroke.Thickness = 1 end
+            elseif active then
+                btn.BackgroundColor3 = theme.main
+                btn.BackgroundTransparency = 0
+                if nameLbl then nameLbl.TextColor3 = Color3.fromRGB(15, 8, 5); nameLbl.TextStrokeTransparency = 1 end
+                if descLbl then descLbl.TextColor3 = Color3.fromRGB(45, 30, 15) end
+                if bStroke then bStroke.Color = theme.b2 or theme.main; bStroke.Transparency = 0.1; bStroke.Thickness = 1.6 end
+            else
+                btn.BackgroundColor3 = Color3.fromRGB(22, 18, 28)
+                btn.BackgroundTransparency = 0
+                if nameLbl then nameLbl.TextColor3 = Color3.fromRGB(255, 255, 255); nameLbl.TextStrokeTransparency = 0.3 end
+                if descLbl then descLbl.TextColor3 = Color3.fromRGB(180, 180, 190) end
+                if bStroke then bStroke.Color = theme.main; bStroke.Transparency = 0.55; bStroke.Thickness = 1 end
+            end
+        end
+    end
+end
+_G.CPL_refreshPayloadButtons = refreshPayloadButtons
+
+for i, p in ipairs(payloadTypes) do
+    local btn = Instance.new("TextButton", ptBtnHolder)
+    btn.Size = UDim2.new(0.25, -5, 0, 44)
+    btn.BackgroundColor3 = Color3.fromRGB(22, 18, 28)
+    btn.Text = ""
+    btn.AutoButtonColor = false
+    btn.ZIndex = 9
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    local bStroke = Instance.new("UIStroke", btn)
+    bStroke.Color = Color3.fromRGB(180, 100, 255)
+    bStroke.Thickness = 1
+    bStroke.Transparency = 0.55
+
+    local nameLbl = Instance.new("TextLabel", btn)
+    nameLbl.Name = "PLName"
+    nameLbl.Size = UDim2.new(1, 0, 0, 22)
+    nameLbl.Position = UDim2.new(0, 0, 0, 2)
+    nameLbl.BackgroundTransparency = 1
+    nameLbl.Text = p.label
+    nameLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+    nameLbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    nameLbl.TextStrokeTransparency = 0.3
+    nameLbl.Font = Enum.Font.FredokaOne
+    nameLbl.TextSize = 15
+    nameLbl.TextXAlignment = Enum.TextXAlignment.Center
+    nameLbl.ZIndex = 10
+    nameLbl:SetAttribute("KeepFont", true)
+
+    local descLbl = Instance.new("TextLabel", btn)
+    descLbl.Name = "PLDesc"
+    descLbl.Size = UDim2.new(1, 0, 0, 14)
+    descLbl.Position = UDim2.new(0, 0, 0, 26)
+    descLbl.BackgroundTransparency = 1
+    descLbl.Text = p.desc
+    descLbl.TextColor3 = Color3.fromRGB(180, 180, 190)
+    descLbl.Font = Enum.Font.GothamBold
+    descLbl.TextSize = 10
+    descLbl.TextXAlignment = Enum.TextXAlignment.Center
+    descLbl.ZIndex = 10
+
+    btn.MouseButton1Click:Connect(function()
+        if cfg.smartPayload then return end
+        cfg.payloadType = p.key
+        saveConfig()
+        refreshPayloadButtons()
+        playClick()
+    end)
+    attachClickSound(btn)
+    ptButtons[i] = btn
+end
+refreshPayloadButtons()
+
+local smartCard = Instance.new("Frame", payloadInner)
+smartCard.Size = UDim2.new(1, 0, 0, 50)
+smartCard.BackgroundColor3 = Color3.fromRGB(12, 10, 16)
+smartCard.BackgroundTransparency = 0.5
+smartCard.ZIndex = 7
+Instance.new("UICorner", smartCard).CornerRadius = UDim.new(0, 8)
+
+local smartLbl = Instance.new("TextLabel", smartCard)
+smartLbl.Position, smartLbl.Size = UDim2.new(0, 12, 0, 0), UDim2.new(1, -114, 1, 0)
+smartLbl.BackgroundTransparency = 1
+smartLbl.Text = "Smart Payload"
+smartLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+smartLbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+smartLbl.TextStrokeTransparency = 0.25
+smartLbl.Font, smartLbl.TextSize = Enum.Font.GothamBold, 15
+smartLbl.TextXAlignment, smartLbl.ZIndex = Enum.TextXAlignment.Left, 8
+
+local smartSwitch = Instance.new("TextButton", smartCard)
+smartSwitch.Size = UDim2.new(0, 48, 0, 24)
+smartSwitch.Position = UDim2.new(1, -60, 0.5, -12)
+smartSwitch.Text = ""
+smartSwitch.AutoButtonColor = false
+smartSwitch.ZIndex = 8
+Instance.new("UICorner", smartSwitch).CornerRadius = UDim.new(1, 0)
+local smartKnob = Instance.new("Frame", smartSwitch)
+smartKnob.Size = UDim2.new(0, 18, 0, 18)
+smartKnob.BorderSizePixel = 0
+smartKnob.ZIndex = 9
+Instance.new("UICorner", smartKnob).CornerRadius = UDim.new(1, 0)
+
+local function refreshSmartVisual(state, animate)
+    local theme = K.THEMES[cfg.themeIndex] or K.THEMES[8]
+    local tc = state and theme.main or Color3.fromRGB(26, 24, 30)
+    local kc = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(110, 105, 120)
+    local tp = state and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9)
+    if animate then
+        TweenService:Create(smartSwitch, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { BackgroundColor3 = tc }):Play()
+        TweenService:Create(smartKnob, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { Position = tp, BackgroundColor3 = kc }):Play()
+    else
+        smartSwitch.BackgroundColor3 = tc; smartKnob.Position = tp; smartKnob.BackgroundColor3 = kc
+    end
+end
+refreshSmartVisual(cfg.smartPayload, false)
+_G.CPL_refreshSmartVisual = refreshSmartVisual
+
+smartSwitch.MouseButton1Click:Connect(function()
+    cfg.smartPayload = not cfg.smartPayload
+    refreshSmartVisual(cfg.smartPayload, true)
+    saveConfig()
+    refreshPayloadButtons()
+    playClick()
+end)
+attachClickSound(smartSwitch)
+
+local smartDesc = Instance.new("TextLabel", payloadInner)
+smartDesc.Size = UDim2.new(1, 0, 0, 32)
+smartDesc.BackgroundColor3 = Color3.fromRGB(10, 8, 14)
+smartDesc.BackgroundTransparency = 0.4
+smartDesc.ZIndex = 7
+smartDesc.Text = "Ping'e göre otomatik payload seçer.\nDüşük ping → HIGH, yüksek ping → LOW"
+smartDesc.TextColor3 = Color3.fromRGB(200, 200, 210)
+smartDesc.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+smartDesc.TextStrokeTransparency = 0.4
+smartDesc.Font = Enum.Font.GothamBold
+smartDesc.TextSize = 11
+smartDesc.TextXAlignment = Enum.TextXAlignment.Center
+smartDesc.TextYAlignment = Enum.TextYAlignment.Center
+smartDesc.TextWrapped = true
+smartDesc:SetAttribute("KeepFont", true)
+Instance.new("UICorner", smartDesc).CornerRadius = UDim.new(0, 8)
+
+_G.CPL_ptTitle = ptTitle
+_G.CPL_ptPlus = ptPlus
+_G.CPL_ptPlusStroke = ptPlusStroke
+_G.CPL_ptStroke = ptStroke
+end)()
+
+-- ============ BURST MODE SETTINGS ACCORDION ============
+;(function()
+local burstHeader = Instance.new("Frame", U.leftCol)
+burstHeader.Size = UDim2.new(1, 0, 0, 50)
+burstHeader.BackgroundColor3 = Color3.fromRGB(15, 10, 20)
+burstHeader.BackgroundTransparency = 0.35
+burstHeader.ZIndex = 7
+Instance.new("UICorner", burstHeader).CornerRadius = UDim.new(0, 8)
+local bmStroke = Instance.new("UIStroke", burstHeader)
+bmStroke.Color = Color3.fromRGB(180, 100, 255)
+bmStroke.Thickness = 1.3
+bmStroke.Transparency = 0.4
+
+local bmTitle = Instance.new("TextLabel", burstHeader)
+bmTitle.Position, bmTitle.Size = UDim2.new(0, 14, 0, 0), UDim2.new(1, -60, 1, 0)
+bmTitle.BackgroundTransparency = 1
+bmTitle.Text = "Burst Mode Settings"
+bmTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+bmTitle.TextStrokeColor3 = Color3.fromRGB(50, 20, 80)
+bmTitle.TextStrokeTransparency = 0.2
+bmTitle.Font = Enum.Font.FredokaOne
+bmTitle.TextSize = 17
+bmTitle.TextXAlignment = Enum.TextXAlignment.Left
+bmTitle.ZIndex = 8
+bmTitle:SetAttribute("KeepFont", true)
+
+local bmPlus = Instance.new("TextButton", burstHeader)
+bmPlus.Size = UDim2.new(0, 36, 0, 36)
+bmPlus.Position = UDim2.new(1, -44, 0.5, -18)
+bmPlus.BackgroundColor3 = Color3.fromRGB(30, 15, 45)
+bmPlus.Text = "+"
+bmPlus.TextColor3 = Color3.fromRGB(200, 140, 255)
+bmPlus.Font = Enum.Font.GothamBold
+bmPlus.TextSize = 24
+bmPlus.AutoButtonColor = false
+bmPlus.ZIndex = 8
+bmPlus:SetAttribute("KeepFont", true)
+Instance.new("UICorner", bmPlus).CornerRadius = UDim.new(0, 8)
+local bmPlusStroke = Instance.new("UIStroke", bmPlus)
+bmPlusStroke.Color = Color3.fromRGB(180, 100, 255)
+bmPlusStroke.Thickness = 1.2
+bmPlusStroke.Transparency = 0.3
+
+local burstInner = Instance.new("Frame", U.leftCol)
+burstInner.BackgroundTransparency = 1
+burstInner.Visible = false
+burstInner.ZIndex = 6
+burstInner.Size = UDim2.new(1, 0, 0, 0)
+burstInner.AutomaticSize = Enum.AutomaticSize.Y
+
+local bmInnerLayout = Instance.new("UIListLayout", burstInner)
+bmInnerLayout.SortOrder = Enum.SortOrder.LayoutOrder
+bmInnerLayout.Padding = UDim.new(0, 6)
+
+local bmInnerPad = Instance.new("UIPadding", burstInner)
+bmInnerPad.PaddingLeft = UDim.new(0, 10)
+
+bmPlus.MouseButton1Click:Connect(function()
+    St.burstOpen = not St.burstOpen
+    burstInner.Visible = St.burstOpen
+    if St.burstOpen then
+        bmPlus.Text = "−"
+        TweenService:Create(burstHeader, TweenInfo.new(0.2), { BackgroundColor3 = Color3.fromRGB(28, 15, 40) }):Play()
+        TweenService:Create(bmStroke, TweenInfo.new(0.2), { Transparency = 0.15, Thickness = 1.8 }):Play()
+    else
+        bmPlus.Text = "+"
+        TweenService:Create(burstHeader, TweenInfo.new(0.2), { BackgroundColor3 = Color3.fromRGB(15, 10, 20) }):Play()
+        TweenService:Create(bmStroke, TweenInfo.new(0.2), { Transparency = 0.4, Thickness = 1.3 }):Play()
+    end
+    playClick()
+end)
+attachClickSound(bmPlus)
+
+local bmBtnHolder = Instance.new("Frame", burstInner)
+bmBtnHolder.Size = UDim2.new(1, 0, 0, 56)
+bmBtnHolder.BackgroundColor3 = Color3.fromRGB(12, 10, 16)
+bmBtnHolder.BackgroundTransparency = 0.5
+bmBtnHolder.ZIndex = 7
+Instance.new("UICorner", bmBtnHolder).CornerRadius = UDim.new(0, 8)
+
+local bmBtnLayout = Instance.new("UIListLayout", bmBtnHolder)
+bmBtnLayout.FillDirection = Enum.FillDirection.Horizontal
+bmBtnLayout.Padding = UDim.new(0, 5)
+bmBtnLayout.SortOrder = Enum.SortOrder.LayoutOrder
+bmBtnLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+bmBtnLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+
+local bmBtnHolderPad = Instance.new("UIPadding", bmBtnHolder)
+bmBtnHolderPad.PaddingLeft = UDim.new(0, 8)
+bmBtnHolderPad.PaddingRight = UDim.new(0, 8)
+bmBtnHolderPad.PaddingTop = UDim.new(0, 6)
+bmBtnHolderPad.PaddingBottom = UDim.new(0, 6)
+
+local burstTypes = {
+    { key = "NORMAL", label = "Normal", desc = "1x" },
+    { key = "HIGH",   label = "High",   desc = "8x" },
+    { key = "MID",    label = "Mid",    desc = "4x" },
+    { key = "LOW",    label = "Low",    desc = "2x" },
+}
+local bmButtons = {}
+
+local function refreshBurstButtons()
+    local theme = K.THEMES[cfg.themeIndex] or K.THEMES[8]
+    local smartActive = cfg.smartBurst
+    for i, p in ipairs(burstTypes) do
+        local btn = bmButtons[i]
+        if btn then
+            local active = (not smartActive) and (cfg.burstMode == p.key)
+            local nameLbl = btn:FindFirstChild("BMName")
+            local descLbl = btn:FindFirstChild("BMDesc")
+            local bStroke = btn:FindFirstChildOfClass("UIStroke")
+            if smartActive then
+                btn.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+                btn.BackgroundTransparency = 0.5
+                if nameLbl then nameLbl.TextColor3 = Color3.fromRGB(120, 120, 130); nameLbl.TextStrokeTransparency = 1 end
+                if descLbl then descLbl.TextColor3 = Color3.fromRGB(80, 80, 90) end
+                if bStroke then bStroke.Color = Color3.fromRGB(80, 80, 90); bStroke.Transparency = 0.7; bStroke.Thickness = 1 end
+            elseif active then
+                btn.BackgroundColor3 = theme.main
+                btn.BackgroundTransparency = 0
+                if nameLbl then nameLbl.TextColor3 = Color3.fromRGB(15, 8, 5); nameLbl.TextStrokeTransparency = 1 end
+                if descLbl then descLbl.TextColor3 = Color3.fromRGB(45, 30, 15) end
+                if bStroke then bStroke.Color = theme.b2 or theme.main; bStroke.Transparency = 0.1; bStroke.Thickness = 1.6 end
+            else
+                btn.BackgroundColor3 = Color3.fromRGB(22, 18, 28)
+                btn.BackgroundTransparency = 0
+                if nameLbl then nameLbl.TextColor3 = Color3.fromRGB(255, 255, 255); nameLbl.TextStrokeTransparency = 0.3 end
+                if descLbl then descLbl.TextColor3 = Color3.fromRGB(180, 180, 190) end
+                if bStroke then bStroke.Color = theme.main; bStroke.Transparency = 0.55; bStroke.Thickness = 1 end
+            end
+        end
+    end
+end
+_G.CPL_refreshBurstButtons = refreshBurstButtons
+
+for i, p in ipairs(burstTypes) do
+    local btn = Instance.new("TextButton", bmBtnHolder)
+    btn.Size = UDim2.new(0.25, -5, 0, 44)
+    btn.BackgroundColor3 = Color3.fromRGB(22, 18, 28)
+    btn.Text = ""
+    btn.AutoButtonColor = false
+    btn.ZIndex = 9
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    local bStroke = Instance.new("UIStroke", btn)
+    bStroke.Color = Color3.fromRGB(180, 100, 255)
+    bStroke.Thickness = 1
+    bStroke.Transparency = 0.55
+
+    local nameLbl = Instance.new("TextLabel", btn)
+    nameLbl.Name = "BMName"
+    nameLbl.Size = UDim2.new(1, 0, 0, 22)
+    nameLbl.Position = UDim2.new(0, 0, 0, 2)
+    nameLbl.BackgroundTransparency = 1
+    nameLbl.Text = p.label
+    nameLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+    nameLbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    nameLbl.TextStrokeTransparency = 0.3
+    nameLbl.Font = Enum.Font.FredokaOne
+    nameLbl.TextSize = 15
+    nameLbl.TextXAlignment = Enum.TextXAlignment.Center
+    nameLbl.ZIndex = 10
+    nameLbl:SetAttribute("KeepFont", true)
+
+    local descLbl = Instance.new("TextLabel", btn)
+    descLbl.Name = "BMDesc"
+    descLbl.Size = UDim2.new(1, 0, 0, 14)
+    descLbl.Position = UDim2.new(0, 0, 0, 26)
+    descLbl.BackgroundTransparency = 1
+    descLbl.Text = p.desc
+    descLbl.TextColor3 = Color3.fromRGB(180, 180, 190)
+    descLbl.Font = Enum.Font.GothamBold
+    descLbl.TextSize = 10
+    descLbl.TextXAlignment = Enum.TextXAlignment.Center
+    descLbl.ZIndex = 10
+
+    btn.MouseButton1Click:Connect(function()
+        if cfg.smartBurst then return end
+        cfg.burstMode = p.key
+        saveConfig()
+        refreshBurstButtons()
+        playClick()
+    end)
+    attachClickSound(btn)
+    bmButtons[i] = btn
+end
+refreshBurstButtons()
+
+local smartBurstCard = Instance.new("Frame", burstInner)
+smartBurstCard.Size = UDim2.new(1, 0, 0, 50)
+smartBurstCard.BackgroundColor3 = Color3.fromRGB(12, 10, 16)
+smartBurstCard.BackgroundTransparency = 0.5
+smartBurstCard.ZIndex = 7
+Instance.new("UICorner", smartBurstCard).CornerRadius = UDim.new(0, 8)
+
+local smartBurstLbl = Instance.new("TextLabel", smartBurstCard)
+smartBurstLbl.Position, smartBurstLbl.Size = UDim2.new(0, 12, 0, 0), UDim2.new(1, -114, 1, 0)
+smartBurstLbl.BackgroundTransparency = 1
+smartBurstLbl.Text = "Smart Burst Mode"
+smartBurstLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+smartBurstLbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+smartBurstLbl.TextStrokeTransparency = 0.25
+smartBurstLbl.Font, smartBurstLbl.TextSize = Enum.Font.GothamBold, 15
+smartBurstLbl.TextXAlignment, smartBurstLbl.ZIndex = Enum.TextXAlignment.Left, 8
+
+local smartBurstSwitch = Instance.new("TextButton", smartBurstCard)
+smartBurstSwitch.Size = UDim2.new(0, 48, 0, 24)
+smartBurstSwitch.Position = UDim2.new(1, -60, 0.5, -12)
+smartBurstSwitch.Text = ""
+smartBurstSwitch.AutoButtonColor = false
+smartBurstSwitch.ZIndex = 8
+Instance.new("UICorner", smartBurstSwitch).CornerRadius = UDim.new(1, 0)
+local smartBurstKnob = Instance.new("Frame", smartBurstSwitch)
+smartBurstKnob.Size = UDim2.new(0, 18, 0, 18)
+smartBurstKnob.BorderSizePixel = 0
+smartBurstKnob.ZIndex = 9
+Instance.new("UICorner", smartBurstKnob).CornerRadius = UDim.new(1, 0)
+
+local function refreshSmartBurstVisual(state, animate)
+    local theme = K.THEMES[cfg.themeIndex] or K.THEMES[8]
+    local tc = state and theme.main or Color3.fromRGB(26, 24, 30)
+    local kc = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(110, 105, 120)
+    local tp = state and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9)
+    if animate then
+        TweenService:Create(smartBurstSwitch, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { BackgroundColor3 = tc }):Play()
+        TweenService:Create(smartBurstKnob, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { Position = tp, BackgroundColor3 = kc }):Play()
+    else
+        smartBurstSwitch.BackgroundColor3 = tc; smartBurstKnob.Position = tp; smartBurstKnob.BackgroundColor3 = kc
+    end
+end
+refreshSmartBurstVisual(cfg.smartBurst, false)
+_G.CPL_refreshSmartBurstVisual = refreshSmartBurstVisual
+
+smartBurstSwitch.MouseButton1Click:Connect(function()
+    cfg.smartBurst = not cfg.smartBurst
+    refreshSmartBurstVisual(cfg.smartBurst, true)
+    saveConfig()
+    refreshBurstButtons()
+    playClick()
+end)
+attachClickSound(smartBurstSwitch)
+
+local smartBurstDesc = Instance.new("TextLabel", burstInner)
+smartBurstDesc.Size = UDim2.new(1, 0, 0, 32)
+smartBurstDesc.BackgroundColor3 = Color3.fromRGB(10, 8, 14)
+smartBurstDesc.BackgroundTransparency = 0.4
+smartBurstDesc.ZIndex = 7
+smartBurstDesc.Text = "Ping'e göre otomatik burst seçer.\nMobilde max MID, PC'de HIGH'a kadar"
+smartBurstDesc.TextColor3 = Color3.fromRGB(200, 200, 210)
+smartBurstDesc.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+smartBurstDesc.TextStrokeTransparency = 0.4
+smartBurstDesc.Font = Enum.Font.GothamBold
+smartBurstDesc.TextSize = 11
+smartBurstDesc.TextXAlignment = Enum.TextXAlignment.Center
+smartBurstDesc.TextYAlignment = Enum.TextYAlignment.Center
+smartBurstDesc.TextWrapped = true
+smartBurstDesc:SetAttribute("KeepFont", true)
+Instance.new("UICorner", smartBurstDesc).CornerRadius = UDim.new(0, 8)
+
+_G.CPL_bmTitle = bmTitle
+_G.CPL_bmPlus = bmPlus
+_G.CPL_bmPlusStroke = bmPlusStroke
+_G.CPL_bmStroke = bmStroke
+end)()
+
+-- ==================== FPS & PERFORMANCE (ACCORDION) ====================
+createSectionHeader("FPS & PERFORMANCE")
+
+local antiLagHeader = Instance.new("Frame", U.leftCol)
+antiLagHeader.Size = UDim2.new(1, 0, 0, 50)
+antiLagHeader.BackgroundColor3 = Color3.fromRGB(25, 20, 5)
+antiLagHeader.BackgroundTransparency = 0.35
+antiLagHeader.ZIndex = 7
+Instance.new("UICorner", antiLagHeader).CornerRadius = UDim.new(0, 8)
+local alStroke = Instance.new("UIStroke", antiLagHeader)
+alStroke.Color = Color3.fromRGB(255, 200, 60)
+alStroke.Thickness = 1.3
+alStroke.Transparency = 0.4
+
+local alTitle = Instance.new("TextLabel", antiLagHeader)
+alTitle.Position, alTitle.Size = UDim2.new(0, 14, 0, 0), UDim2.new(1, -60, 1, 0)
+alTitle.BackgroundTransparency = 1
+alTitle.Text = "All Anti Lag"
+alTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+alTitle.TextStrokeColor3 = Color3.fromRGB(60, 40, 0)
+alTitle.TextStrokeTransparency = 0.2
+alTitle.Font = Enum.Font.FredokaOne
+alTitle.TextSize = 17
+alTitle.TextXAlignment = Enum.TextXAlignment.Left
+alTitle.ZIndex = 8
+alTitle:SetAttribute("KeepFont", true)
+
+local alPlus = Instance.new("TextButton", antiLagHeader)
+alPlus.Size = UDim2.new(0, 36, 0, 36)
+alPlus.Position = UDim2.new(1, -44, 0.5, -18)
+alPlus.BackgroundColor3 = Color3.fromRGB(50, 40, 10)
+alPlus.Text = "+"
+alPlus.TextColor3 = Color3.fromRGB(255, 220, 120)
+alPlus.Font = Enum.Font.GothamBold
+alPlus.TextSize = 24
+alPlus.AutoButtonColor = false
+alPlus.ZIndex = 8
+alPlus:SetAttribute("KeepFont", true)
+Instance.new("UICorner", alPlus).CornerRadius = UDim.new(0, 8)
+local alPlusStroke = Instance.new("UIStroke", alPlus)
+alPlusStroke.Color = Color3.fromRGB(255, 200, 60)
+alPlusStroke.Thickness = 1.2
+alPlusStroke.Transparency = 0.3
+
+local antiLagInner = Instance.new("Frame", U.leftCol)
+antiLagInner.BackgroundTransparency = 1
+antiLagInner.Visible = false
+antiLagInner.ZIndex = 6
+antiLagInner.Size = UDim2.new(1, 0, 0, 0)
+antiLagInner.AutomaticSize = Enum.AutomaticSize.Y
+
+local alInnerLayout = Instance.new("UIListLayout", antiLagInner)
+alInnerLayout.SortOrder = Enum.SortOrder.LayoutOrder
+alInnerLayout.Padding = UDim.new(0, 6)
+
+local alInnerPad = Instance.new("UIPadding", antiLagInner)
+alInnerPad.PaddingLeft = UDim.new(0, 10)
+
+alPlus.MouseButton1Click:Connect(function()
+    St.antiLagOpen = not St.antiLagOpen
+    antiLagInner.Visible = St.antiLagOpen
+    if St.antiLagOpen then
+        alPlus.Text = "−"
+        TweenService:Create(antiLagHeader, TweenInfo.new(0.2), { BackgroundColor3 = Color3.fromRGB(40, 32, 8) }):Play()
+        TweenService:Create(alStroke, TweenInfo.new(0.2), { Transparency = 0.15, Thickness = 1.8 }):Play()
+    else
+        alPlus.Text = "+"
+        TweenService:Create(antiLagHeader, TweenInfo.new(0.2), { BackgroundColor3 = Color3.fromRGB(25, 20, 5) }):Play()
+        TweenService:Create(alStroke, TweenInfo.new(0.2), { Transparency = 0.4, Thickness = 1.3 }):Play()
+    end
+    playClick()
+end)
+attachClickSound(alPlus)
+
+createToggleCard("Anti Lag", cfg.antiLag, function(s) cfg.antiLag = s; applyAntiLag(s) end, "antiLag", nil, antiLagInner)
+createToggleCard("Low Graphics", cfg.lowGraphics, function(s) cfg.lowGraphics = s; applyLowGraphics(s) end, "lowGraphics", nil, antiLagInner)
+createToggleCard("Fog Remover", cfg.fogRemover, function(s) cfg.fogRemover = s; applyFogRemover(s) end, "fogRemover", nil, antiLagInner)
+createToggleCard("Particle Killer", cfg.particleKiller, function(s) cfg.particleKiller = s; applyParticleKiller(s) end, "particleKiller", nil, antiLagInner)
+createToggleCard("Sky Changer", cfg.skyChanger, function(s) cfg.skyChanger = s; applySkyChanger(s) end, "skyChanger", nil, antiLagInner)
+createToggleCard("Effect Killer", cfg.effectKiller, function(s) cfg.effectKiller = s; applyEffectKiller(s) end, "effectKiller", nil, antiLagInner)
+createToggleCard("Beam Killer", cfg.beamKiller, function(s) cfg.beamKiller = s; applyBeamKiller(s) end, "beamKiller", nil, antiLagInner)
+createToggleCard("Sparkles Killer", cfg.sparklesKiller, function(s) cfg.sparklesKiller = s; applySparklesKiller(s) end, "sparklesKiller", nil, antiLagInner)
+createToggleCard("Light Killer", cfg.lightKiller, function(s) cfg.lightKiller = s; applyLightKiller(s) end, "lightKiller", nil, antiLagInner)
+createToggleCard("Material Reducer", cfg.materialReducer, function(s) cfg.materialReducer = s; applyMaterialReducer(s) end, "materialReducer", nil, antiLagInner)
+createToggleCard("Cloud Remover", cfg.cloudRemover, function(s) cfg.cloudRemover = s; applyCloudRemover(s) end, "cloudRemover", nil, antiLagInner)
+createToggleCard("Texture Remover", cfg.textureRemover, function(s) cfg.textureRemover = s; applyTextureRemover(s) end, "textureRemover", nil, antiLagInner)
+createToggleCard("Decal Killer", cfg.decalKiller, function(s) cfg.decalKiller = s; applyDecalKiller(s) end, "decalKiller", nil, antiLagInner)
+createToggleCard("Sound Killer", cfg.soundKiller, function(s) cfg.soundKiller = s; applySoundKiller(s) end, "soundKiller", nil, antiLagInner)
+createToggleCard("Mesh Simplifier", cfg.meshSimplifier, function(s) cfg.meshSimplifier = s; applyMeshSimplifier(s) end, "meshSimplifier", nil, antiLagInner)
+createToggleCard("Terrain Killer", cfg.terrainKiller, function(s) cfg.terrainKiller = s; applyTerrainKiller(s) end, "terrainKiller", nil, antiLagInner)
+createToggleCard("Water Killer", cfg.waterKiller, function(s) cfg.waterKiller = s; applyWaterKiller(s) end, "waterKiller", nil, antiLagInner)
+createToggleCard("Shadow Killer", cfg.shadowKiller, function(s) cfg.shadowKiller = s; applyShadowKiller(s) end, "shadowKiller", nil, antiLagInner)
+createToggleCard("Reflection Killer", cfg.reflectionKiller, function(s) cfg.reflectionKiller = s; applyReflectionKiller(s) end, "reflectionKiller", nil, antiLagInner)
+createToggleCard("Gui Killer", cfg.guiKiller, function(s) cfg.guiKiller = s; applyGuiKiller(s) end, "guiKiller", nil, antiLagInner)
+createToggleCard("Dynamic FPS", cfg.dynamicFPS, function(s) cfg.dynamicFPS = s; applyDynamicFPS(s) end, "dynamicFPS", nil, antiLagInner)
+
+local fovCard = createRowCard("FOV Changer")
+U.fovBox = Instance.new("TextBox", fovCard)
+U.fovBox.Size, U.fovBox.Position = UDim2.new(0, 94, 0, 32), UDim2.new(1, -102, 0.5, -16)
+U.fovBox.BackgroundColor3, U.fovBox.BackgroundTransparency = Color3.fromRGB(15,15,20), 0.3
+U.fovBox.Text, U.fovBox.TextColor3 = tostring(cfg.fovValue), Color3.fromRGB(255,255,255)
+U.fovBox.Font, U.fovBox.TextSize, U.fovBox.ZIndex = Enum.Font.GothamBold, 15, 8
+Instance.new("UICorner", U.fovBox).CornerRadius = UDim.new(0,6)
+U.fovBox.FocusLost:Connect(function()
+    local n = tonumber(U.fovBox.Text)
+    if n then
+        cfg.fovValue = math.clamp(n, 20, 120)
+        U.fovBox.Text = tostring(cfg.fovValue)
+        pcall(function()
+            local cam = Workspace.CurrentCamera
+            if cam and not St.stretchedRezApplied then cam.FieldOfView = cfg.fovValue end
+        end)
+        saveConfig()
+    else U.fovBox.Text = tostring(cfg.fovValue) end
+end)
+createToggleCard("Stretch Rez", cfg.stretchRez, function(s) cfg.stretchRez = s; applyStretchRez(s) end, "stretchRez")
+
+-- ========== KEYBINDS ==========
+createSectionHeader("KEYBINDS")
+local kbCard = createRowCard("Keyboard Bind")
+U.kbBtn = Instance.new("TextButton", kbCard)
+U.kbBtn.Size, U.kbBtn.Position = UDim2.new(0, 94, 0, 32), UDim2.new(1, -102, 0.5, -16)
+U.kbBtn.BackgroundColor3, U.kbBtn.BackgroundTransparency = Color3.fromRGB(15,15,20), 0.3
+U.kbBtn.Text, U.kbBtn.TextColor3 = cfg.keybindKb, Color3.fromRGB(255,255,255)
+U.kbBtn.Font, U.kbBtn.TextSize, U.kbBtn.ZIndex = Enum.Font.GothamBold, 14, 8
+Instance.new("UICorner", U.kbBtn).CornerRadius = UDim.new(0,6)
+
+local gpCard = createRowCard("Controller Bind")
+U.gpBtn = Instance.new("TextButton", gpCard)
+U.gpBtn.Size, U.gpBtn.Position = UDim2.new(0, 94, 0, 32), UDim2.new(1, -102, 0.5, -16)
+U.gpBtn.BackgroundColor3, U.gpBtn.BackgroundTransparency = Color3.fromRGB(15,15,20), 0.3
+U.gpBtn.Text, U.gpBtn.TextColor3 = cfg.keybindGp, Color3.fromRGB(255,255,255)
+U.gpBtn.Font, U.gpBtn.TextSize, U.gpBtn.ZIndex = Enum.Font.GothamBold, 14, 8
+Instance.new("UICorner", U.gpBtn).CornerRadius = UDim.new(0,6)
+U.kbBtn.MouseButton1Click:Connect(function()
+    St.listeningFor = (St.listeningFor=="kb") and nil or "kb"
+    U.kbBtn.Text = St.listeningFor and "..." or cfg.keybindKb
+end)
+U.gpBtn.MouseButton1Click:Connect(function()
+    St.listeningFor = (St.listeningFor=="gp") and nil or "gp"
+    U.gpBtn.Text = St.listeningFor and "..." or cfg.keybindGp
+end)
+
+-- ========== VISUALS ==========
+createSectionHeader("VISUALS")
+local themeCard = createRowCard("Theme Color")
+themeCard.Size = UDim2.new(1, 0, 0, 60)
+local themeLabel = themeCard:FindFirstChildOfClass("TextLabel")
+if themeLabel then themeLabel.Size = UDim2.new(0.36, 0, 1, 0) end
+local themeBtnHolder = Instance.new("Frame", themeCard)
+themeBtnHolder.Size, themeBtnHolder.Position = UDim2.new(0, 168, 0, 46), UDim2.new(1, -172, 0.5, -23)
+themeBtnHolder.BackgroundTransparency, themeBtnHolder.ZIndex = 1, 8
+local themeBtnLayout = Instance.new("UIListLayout", themeBtnHolder)
+themeBtnLayout.FillDirection, themeBtnLayout.Padding = Enum.FillDirection.Horizontal, UDim.new(0, 4)
+themeBtnLayout.SortOrder, themeBtnLayout.VerticalAlignment = Enum.SortOrder.LayoutOrder, Enum.VerticalAlignment.Center
+for i, th in ipairs(K.THEMES) do
+    local btn = Instance.new("TextButton", themeBtnHolder)
+    btn.Size, btn.BackgroundColor3 = UDim2.new(0, 17, 0, 32), th.main
+    btn.Text, btn.BorderSizePixel, btn.ZIndex, btn.AutoButtonColor = "", 0, 9, false
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
+    btn.MouseButton1Click:Connect(function()
+        if St.halloweenToggleOn then return end
+        cfg.themeIndex = i
+        if _G.CPL_applyTheme then _G.CPL_applyTheme(i) end
+        saveConfig()
+    end)
+    U.themeButtons[i] = btn
+end
+
+local fontCard = createRowCard("Gui Font")
+fontCard.Size = UDim2.new(1, 0, 0, 50)
+local fontCardLbl = fontCard:FindFirstChildOfClass("TextLabel")
+if fontCardLbl then fontCardLbl.Size = UDim2.new(0.36, 0, 1, 0) end
+
+local fontSelector = Instance.new("Frame", fontCard)
+fontSelector.Size = UDim2.new(0, 160, 0, 34)
+fontSelector.Position = UDim2.new(1, -172, 0.5, -17)
+fontSelector.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+fontSelector.BackgroundTransparency = 0.3
+fontSelector.ZIndex = 8
+Instance.new("UICorner", fontSelector).CornerRadius = UDim.new(0, 8)
+local fsStroke = Instance.new("UIStroke", fontSelector)
+fsStroke.Color = Color3.fromRGB(255, 140, 0)
+fsStroke.Thickness = 1.2
+fsStroke.Transparency = 0.5
+
+local leftArrow = Instance.new("TextButton", fontSelector)
+leftArrow.Size = UDim2.new(0, 32, 1, 0)
+leftArrow.BackgroundTransparency = 1
+leftArrow.Text = "<"
+leftArrow.TextColor3 = Color3.fromRGB(255, 180, 60)
+leftArrow.Font = Enum.Font.GothamBold
+leftArrow.TextSize = 20
+leftArrow.ZIndex = 9
+leftArrow.AutoButtonColor = false
+leftArrow:SetAttribute("KeepFont", true)
+
+U.fontNameLbl = Instance.new("TextLabel", fontSelector)
+U.fontNameLbl.Size = UDim2.new(1, -64, 1, 0)
+U.fontNameLbl.Position = UDim2.new(0, 32, 0, 0)
+U.fontNameLbl.BackgroundTransparency = 1
+U.fontNameLbl.Text = K.GUI_FONTS[cfg.fontIndex].name
+U.fontNameLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+U.fontNameLbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+U.fontNameLbl.TextStrokeTransparency = 0.3
+U.fontNameLbl.Font = K.GUI_FONTS[cfg.fontIndex].enum
+U.fontNameLbl.TextSize = 15
+U.fontNameLbl.ZIndex = 9
+U.fontNameLbl:SetAttribute("KeepFont", true)
+
+local rightArrow = Instance.new("TextButton", fontSelector)
+rightArrow.Size = UDim2.new(0, 32, 1, 0)
+rightArrow.Position = UDim2.new(1, -32, 0, 0)
+rightArrow.BackgroundTransparency = 1
+rightArrow.Text = ">"
+rightArrow.TextColor3 = Color3.fromRGB(255, 180, 60)
+rightArrow.Font = Enum.Font.GothamBold
+rightArrow.TextSize = 20
+rightArrow.ZIndex = 9
+rightArrow.AutoButtonColor = false
+rightArrow:SetAttribute("KeepFont", true)
+
+local function updateFontDisplay()
+    local f = K.GUI_FONTS[cfg.fontIndex]
+    U.fontNameLbl.Text = f.name
+    U.fontNameLbl.Font = f.enum
+    applyFont(cfg.fontIndex)
+end
+
+leftArrow.MouseButton1Click:Connect(function()
+    cfg.fontIndex = cfg.fontIndex - 1
+    if cfg.fontIndex < 1 then cfg.fontIndex = #K.GUI_FONTS end
+    updateFontDisplay()
+    saveConfig()
+end)
+rightArrow.MouseButton1Click:Connect(function()
+    cfg.fontIndex = cfg.fontIndex + 1
+    if cfg.fontIndex > #K.GUI_FONTS then cfg.fontIndex = 1 end
+    updateFontDisplay()
+    saveConfig()
+end)
+
+local scaleCard = createRowCard("Gui Scale")
+scaleCard.Size = UDim2.new(1, 0, 0, 50)
+local scaleHolder = Instance.new("Frame", scaleCard)
+scaleHolder.Size, scaleHolder.Position = UDim2.new(0, 142, 0, 36), UDim2.new(1, -146, 0.5, -18)
+scaleHolder.BackgroundTransparency, scaleHolder.ZIndex = 1, 8
+local scaleLayout = Instance.new("UIListLayout", scaleHolder)
+scaleLayout.FillDirection, scaleLayout.Padding = Enum.FillDirection.Horizontal, UDim.new(0, 5)
+scaleLayout.SortOrder, scaleLayout.VerticalAlignment = Enum.SortOrder.LayoutOrder, Enum.VerticalAlignment.Center
+local scaleMinus = Instance.new("TextButton", scaleHolder)
+scaleMinus.Size, scaleMinus.BackgroundColor3 = UDim2.new(0, 42, 0, 32), Color3.fromRGB(20,20,20)
+scaleMinus.Text, scaleMinus.TextColor3 = "−", Color3.fromRGB(255,80,80)
+scaleMinus.Font, scaleMinus.TextSize, scaleMinus.AutoButtonColor, scaleMinus.ZIndex = Enum.Font.GothamBold, 20, false, 9
+scaleMinus:SetAttribute("KeepFont", true)
+Instance.new("UICorner", scaleMinus).CornerRadius = UDim.new(0, 6)
+U.scaleValLbl = Instance.new("TextLabel", scaleHolder)
+U.scaleValLbl.Size, U.scaleValLbl.BackgroundColor3, U.scaleValLbl.BackgroundTransparency = UDim2.new(0, 48, 0, 32), Color3.fromRGB(10,10,10), 0.3
+U.scaleValLbl.Text = tostring(cfg.guiScale)
+U.scaleValLbl.TextColor3 = Color3.fromRGB(255,255,255)
+U.scaleValLbl.Font, U.scaleValLbl.TextSize, U.scaleValLbl.ZIndex = Enum.Font.GothamBold, 15, 9
+Instance.new("UICorner", U.scaleValLbl).CornerRadius = UDim.new(0, 6)
+local scalePlus = Instance.new("TextButton", scaleHolder)
+scalePlus.Size, scalePlus.BackgroundColor3 = UDim2.new(0, 42, 0, 32), Color3.fromRGB(20,20,20)
+scalePlus.Text, scalePlus.TextColor3 = "+", Color3.fromRGB(80,255,120)
+scalePlus.Font, scalePlus.TextSize, scalePlus.AutoButtonColor, scalePlus.ZIndex = Enum.Font.GothamBold, 20, false, 9
+scalePlus:SetAttribute("KeepFont", true)
+Instance.new("UICorner", scalePlus).CornerRadius = UDim.new(0, 6)
+scaleMinus.MouseButton1Click:Connect(function()
+    cfg.guiScale = math.clamp(cfg.guiScale - 5, 40, 110)
+    U.scaleValLbl.Text = tostring(cfg.guiScale)
+    U.uiScaleObj.Scale = cfg.guiScale / 100
+    saveConfig()
+end)
+scalePlus.MouseButton1Click:Connect(function()
+    cfg.guiScale = math.clamp(cfg.guiScale + 5, 40, 110)
+    U.scaleValLbl.Text = tostring(cfg.guiScale)
+    U.uiScaleObj.Scale = cfg.guiScale / 100
+    saveConfig()
+end)
+
+local optCard = createRowCard("Smart Auto Settings")
+U.optBtn = Instance.new("TextButton", optCard)
+U.optBtn.Size, U.optBtn.Position = UDim2.new(0, 94, 0, 32), UDim2.new(1, -102, 0.5, -16)
+U.optBtn.BackgroundColor3, U.optBtn.Text, U.optBtn.TextColor3 = Color3.fromRGB(255,140,0), "CLICK HERE", Color3.fromRGB(0,0,0)
+U.optBtn.Font, U.optBtn.TextSize, U.optBtn.ZIndex = Enum.Font.GothamBold, 13, 8
+U.optBtn:SetAttribute("IsMainAction", true)
+Instance.new("UICorner", U.optBtn).CornerRadius = UDim.new(0,6)
+
+-- ========== HALLOWEEN EVENT ==========
+createSectionHeader("HALLOWEEN EVENT GUI")
+local hCard = Instance.new("Frame", U.leftCol)
+hCard.Size = UDim2.new(1, 0, 0, 60)
+hCard.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+hCard.BackgroundTransparency = 0.45
+hCard.ZIndex = 7
+Instance.new("UICorner", hCard).CornerRadius = UDim.new(0, 8)
+local hAssetHolder = Instance.new("Frame", hCard)
+hAssetHolder.Size = UDim2.new(0, 96, 0, 46)
+hAssetHolder.Position = UDim2.new(0, 8, 0.5, -23)
+hAssetHolder.BackgroundTransparency, hAssetHolder.ZIndex = 1, 8
+local hAL = Instance.new("UIListLayout", hAssetHolder)
+hAL.FillDirection = Enum.FillDirection.Horizontal
+hAL.Padding = UDim.new(0, 5)
+hAL.SortOrder = Enum.SortOrder.LayoutOrder
+hAL.VerticalAlignment = Enum.VerticalAlignment.Center
+for i, asset in ipairs(K.HALLOWEEN_ASSETS) do
+    local btn = Instance.new("ImageButton", hAssetHolder)
+    btn.Size = UDim2.new(0, 42, 0, 38)
+    btn.Image = asset
+    btn.BackgroundColor3 = Color3.fromRGB(15,15,15)
+    btn.BorderSizePixel = 0
+    btn.ZIndex = 9
+    btn.AutoButtonColor = false
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    local s = Instance.new("UIStroke", btn)
+    s.Color = (i == (cfg.halloweenBg or 1)) and Color3.fromRGB(255, 140, 0) or Color3.fromRGB(90,90,90)
+    s.Thickness = (i == (cfg.halloweenBg or 1)) and 2.2 or 1.2
+    btn.MouseButton1Click:Connect(function()
+        U.bgImgLabel.Image = asset
+        cfg.halloweenBg = i
+        for j, b in pairs(U.hAssetButtons) do
+            local bs = b:FindFirstChildOfClass("UIStroke")
+            if bs then
+                bs.Color = (j == i) and Color3.fromRGB(255, 140, 0) or Color3.fromRGB(90,90,90)
+                bs.Thickness = (j == i) and 2.2 or 1.2
+            end
+        end
+        saveConfig()
+    end)
+    U.hAssetButtons[i] = btn
+end
+
+createToggleCard("Halloween Gui Enable", St.halloweenToggleOn, function(state)
+    St.halloweenToggleOn = state
+    cfg.halloweenToggle = state
+    if state then
+        U.bgImgLabel.Image = K.HALLOWEEN_ASSETS[cfg.halloweenBg or 1]
+        cfg.themeIndex = 8
+        if _G.CPL_applyTheme then _G.CPL_applyTheme(8) end
+    else
+        U.bgImgLabel.Image = K.bgList[cfg.bgIndex] or K.bgList[1]
+        cfg.themeIndex = 1
+        if _G.CPL_applyTheme then _G.CPL_applyTheme(1) end
+    end
+    if _G.CPL_refreshSoundButtons then _G.CPL_refreshSoundButtons() end
+    saveConfig()
+end, "halloweenToggle", Color3.fromRGB(255, 140, 0))
+
+local hSoundCard = Instance.new("Frame", U.leftCol)
+hSoundCard.Size = UDim2.new(1, 0, 0, 60)
+hSoundCard.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+hSoundCard.BackgroundTransparency = 0.45
+hSoundCard.ZIndex = 7
+Instance.new("UICorner", hSoundCard).CornerRadius = UDim.new(0, 8)
+local hSL = Instance.new("TextLabel", hSoundCard)
+hSL.Position, hSL.Size = UDim2.new(0, 12, 0, 0), UDim2.new(0.42, 0, 1, 0)
+hSL.BackgroundTransparency = 1
+hSL.Text = "Halloween Sound"
+hSL.TextColor3 = Color3.fromRGB(255, 255, 255)
+hSL.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+hSL.TextStrokeTransparency = 0.2
+hSL.Font, hSL.TextSize, hSL.ZIndex = Enum.Font.GothamBold, 15, 8
+hSL.TextXAlignment = Enum.TextXAlignment.Left
+local hSBH = Instance.new("Frame", hSoundCard)
+hSBH.Size, hSBH.Position = UDim2.new(0, 138, 0, 46), UDim2.new(1, -144, 0.5, -23)
+hSBH.BackgroundTransparency, hSBH.ZIndex = 1, 8
+local hSBL = Instance.new("UIListLayout", hSBH)
+hSBL.FillDirection, hSBL.Padding = Enum.FillDirection.Horizontal, UDim.new(0, 5)
+hSBL.SortOrder, hSBL.VerticalAlignment = Enum.SortOrder.LayoutOrder, Enum.VerticalAlignment.Center
+local hSoundOptions = {
+    { label = "NONE", value = 0 },
+    { label = "1",    value = 1 },
+    { label = "2",    value = 2 },
+}
+for i, opt in ipairs(hSoundOptions) do
+    local btn = Instance.new("TextButton", hSBH)
+    btn.Size, btn.BackgroundColor3 = UDim2.new(0, 42, 0, 38), Color3.fromRGB(15,15,15)
+    btn.Text, btn.TextColor3 = opt.label, Color3.fromRGB(255,255,255)
+    btn.Font, btn.ZIndex, btn.AutoButtonColor = Enum.Font.GothamBold, 9, false
+    btn.TextSize = (opt.value == 0) and 10 or 17
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    btn.MouseButton1Click:Connect(function()
+        if not St.halloweenToggleOn then return end
+        cfg.halloweenSoundIndex = opt.value
+        if _G.CPL_refreshSoundButtons then _G.CPL_refreshSoundButtons() end
+        if opt.value > 0 then
+            pcall(function()
+                local s = Instance.new("Sound")
+                s.SoundId = K.HALLOWEEN_SOUNDS[opt.value] or K.HALLOWEEN_SOUNDS[1]
+                s.Volume = tonumber(cfg.clickVolume) or 1.2
+                s.PlaybackSpeed = K.HALLOWEEN_PITCH[opt.value] or 0.5
+                s.Parent = U.screen; s:Play()
+                Debris:AddItem(s, 3)
+            end)
+        end
+        saveConfig()
+    end)
+    U.hSoundButtons[i] = btn
+end
+
+local bgCard = createRowCard("Backgrounds")
+bgCard.Size = UDim2.new(1,0,0,60)
+local bgCardLabel = bgCard:FindFirstChildOfClass("TextLabel")
+if bgCardLabel then bgCardLabel.Size = UDim2.new(0.42, 0, 1, 0) end
+local bgBtnHolder = Instance.new("Frame", bgCard)
+bgBtnHolder.Size, bgBtnHolder.Position = UDim2.new(0, 138, 0, 46), UDim2.new(1, -144, 0.5, -23)
+bgBtnHolder.BackgroundTransparency, bgBtnHolder.ZIndex = 1, 8
+local bgBL = Instance.new("UIListLayout", bgBtnHolder)
+bgBL.FillDirection, bgBL.Padding = Enum.FillDirection.Horizontal, UDim.new(0, 5)
+bgBL.SortOrder, bgBL.VerticalAlignment = Enum.SortOrder.LayoutOrder, Enum.VerticalAlignment.Center
+for i, imgId in ipairs(K.bgList) do
+    local btn = Instance.new("ImageButton", bgBtnHolder)
+    btn.Size, btn.Image = UDim2.new(0, 42, 0, 38), imgId
+    btn.BackgroundColor3, btn.BorderSizePixel, btn.ZIndex, btn.AutoButtonColor = Color3.fromRGB(15,15,15), 0, 9, false
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    btn.MouseButton1Click:Connect(function()
+        if St.halloweenToggleOn then return end
+        cfg.bgIndex = i
+        U.bgImgLabel.Image = K.bgList[i]
+        saveConfig()
+    end)
+    U.bgButtons[i] = btn
+end
+
+local soundCard = createRowCard("Click Sound")
+soundCard.Size = UDim2.new(1,0,0,60)
+local soundCardLabel = soundCard:FindFirstChildOfClass("TextLabel")
+if soundCardLabel then soundCardLabel.Size = UDim2.new(0.42, 0, 1, 0) end
+local sBH = Instance.new("Frame", soundCard)
+sBH.Size, sBH.Position = UDim2.new(0, 138, 0, 46), UDim2.new(1, -144, 0.5, -23)
+sBH.BackgroundTransparency, sBH.ZIndex = 1, 8
+local sBL = Instance.new("UIListLayout", sBH)
+sBL.FillDirection, sBL.Padding = Enum.FillDirection.Horizontal, UDim.new(0, 5)
+sBL.SortOrder, sBL.VerticalAlignment = Enum.SortOrder.LayoutOrder, Enum.VerticalAlignment.Center
+local soundOptions = {
+    { label = "NONE", value = 0 },
+    { label = "1",    value = 1 },
+    { label = "2",    value = 2 },
+}
+for i, opt in ipairs(soundOptions) do
+    local btn = Instance.new("TextButton", sBH)
+    btn.Size, btn.BackgroundColor3 = UDim2.new(0, 42, 0, 38), Color3.fromRGB(15,15,15)
+    btn.Text, btn.TextColor3 = opt.label, Color3.fromRGB(255,255,255)
+    btn.Font, btn.ZIndex, btn.AutoButtonColor = Enum.Font.GothamBold, 9, false
+    btn.TextSize = (opt.value == 0) and 10 or 17
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    btn.MouseButton1Click:Connect(function()
+        if St.halloweenToggleOn then return end
+        cfg.soundIndex = opt.value
+        if _G.CPL_refreshSoundButtons then _G.CPL_refreshSoundButtons() end
+        if opt.value > 0 then
+            pcall(function()
+                local s = Instance.new("Sound")
+                s.SoundId = K.CLICK_SOUNDS[opt.value] or K.CLICK_SOUNDS[1]
+                s.Volume = tonumber(cfg.clickVolume) or 1.2
+                s.Parent = U.screen; s:Play()
+                Debris:AddItem(s, 3)
+            end)
+        end
+        saveConfig()
+    end)
+    U.soundButtons[i] = btn
+end
+
+function _G.CPL_refreshSoundButtons()
+    local theme = K.THEMES[cfg.themeIndex] or K.THEMES[8]
+    for i, b in pairs(U.soundButtons) do
+        local opt = soundOptions[i]
+        local isActive = (opt and opt.value == cfg.soundIndex)
+        if St.halloweenToggleOn then
+            b.BackgroundColor3 = Color3.fromRGB(18,18,18)
+            b.BackgroundTransparency = 0.4
+            b.TextColor3 = Color3.fromRGB(90,90,90)
+        elseif isActive then
+            b.BackgroundColor3 = theme.main
+            b.BackgroundTransparency = 0
+            b.TextColor3 = Color3.fromRGB(0,0,0)
+        else
+            b.BackgroundColor3 = Color3.fromRGB(15,15,15)
+            b.BackgroundTransparency = 0
+            b.TextColor3 = Color3.fromRGB(255,255,255)
+        end
+    end
+    for i, b in pairs(U.hSoundButtons) do
+        local opt = hSoundOptions[i]
+        local isActive = (opt and opt.value == cfg.halloweenSoundIndex)
+        if not St.halloweenToggleOn then
+            b.BackgroundColor3 = Color3.fromRGB(18,18,18)
+            b.BackgroundTransparency = 0.4
+            b.TextColor3 = Color3.fromRGB(90,90,90)
+        elseif isActive then
+            b.BackgroundColor3 = Color3.fromRGB(255,140,0)
+            b.BackgroundTransparency = 0
+            b.TextColor3 = Color3.fromRGB(0,0,0)
+        else
+            b.BackgroundColor3 = Color3.fromRGB(15,15,15)
+            b.BackgroundTransparency = 0
+            b.TextColor3 = Color3.fromRGB(255,255,255)
+        end
+    end
+end
+
+-- ========== VOLUME ==========
+local volCard = createRowCard()
+volCard.Size = UDim2.new(1, 0, 0, 80)
+local volLbl = Instance.new("TextLabel", volCard)
+volLbl.Position, volLbl.Size = UDim2.new(0, 12, 0, 4), UDim2.new(1, -24, 0, 22)
+volLbl.BackgroundTransparency, volLbl.Text = 1, "Click Volume"
+volLbl.TextColor3 = Color3.fromRGB(255,255,255)
+volLbl.TextStrokeColor3, volLbl.TextStrokeTransparency = Color3.fromRGB(0, 0, 0), 0.2
+volLbl.Font, volLbl.TextSize, volLbl.ZIndex = Enum.Font.GothamBold, 15, 8
+volLbl.TextXAlignment = Enum.TextXAlignment.Left
+local volHolder = Instance.new("Frame", volCard)
+volHolder.Size, volHolder.Position = UDim2.new(1, -24, 0, 40), UDim2.new(0, 12, 0, 32)
+volHolder.BackgroundTransparency, volHolder.ZIndex = 1, 8
+local volLayout = Instance.new("UIListLayout", volHolder)
+volLayout.FillDirection, volLayout.Padding = Enum.FillDirection.Horizontal, UDim.new(0, 8)
+volLayout.SortOrder, volLayout.VerticalAlignment = Enum.SortOrder.LayoutOrder, Enum.VerticalAlignment.Center
+local minusBtn = Instance.new("TextButton", volHolder)
+minusBtn.Size, minusBtn.BackgroundColor3 = UDim2.new(0, 44, 0, 36), Color3.fromRGB(20,20,20)
+minusBtn.Text, minusBtn.TextColor3 = "−", Color3.fromRGB(255,80,80)
+minusBtn.Font, minusBtn.TextSize, minusBtn.AutoButtonColor, minusBtn.ZIndex = Enum.Font.GothamBold, 22, false, 9
+minusBtn:SetAttribute("KeepFont", true)
+Instance.new("UICorner", minusBtn).CornerRadius = UDim.new(0, 8)
+U.volValLbl = Instance.new("TextLabel", volHolder)
+U.volValLbl.Size, U.volValLbl.BackgroundColor3, U.volValLbl.BackgroundTransparency = UDim2.new(0, 100, 0, 36), Color3.fromRGB(10,10,10), 0.3
+U.volValLbl.Text = string.format("%.1f", cfg.clickVolume)
+U.volValLbl.TextColor3 = Color3.fromRGB(255,255,255)
+U.volValLbl.Font, U.volValLbl.TextSize, U.volValLbl.ZIndex = Enum.Font.GothamBold, 17, 9
+Instance.new("UICorner", U.volValLbl).CornerRadius = UDim.new(0, 8)
+local plusBtn = Instance.new("TextButton", volHolder)
+plusBtn.Size, plusBtn.BackgroundColor3 = UDim2.new(0, 44, 0, 36), Color3.fromRGB(20,20,20)
+plusBtn.Text, plusBtn.TextColor3 = "+", Color3.fromRGB(80,255,120)
+plusBtn.Font, plusBtn.TextSize, plusBtn.AutoButtonColor, plusBtn.ZIndex = Enum.Font.GothamBold, 22, false, 9
+plusBtn:SetAttribute("KeepFont", true)
+Instance.new("UICorner", plusBtn).CornerRadius = UDim.new(0, 8)
+minusBtn.MouseButton1Click:Connect(function()
+    cfg.clickVolume = math.clamp((cfg.clickVolume or 1.2) - 0.2, 0, 3)
+    U.volValLbl.Text = string.format("%.1f", cfg.clickVolume); saveConfig()
+end)
+plusBtn.MouseButton1Click:Connect(function()
+    cfg.clickVolume = math.clamp((cfg.clickVolume or 1.2) + 0.2, 0, 3)
+    U.volValLbl.Text = string.format("%.1f", cfg.clickVolume); saveConfig()
+end)
+
+-- ========== BACKUP ==========
+local backupCard = createRowCard()
+backupCard.Size = UDim2.new(1, 0, 0, 165)
+backupCard.BackgroundTransparency = 0.4
+backupCard.ZIndex = 7
+local backupTitle = Instance.new("TextLabel", backupCard)
+backupTitle.Position, backupTitle.Size = UDim2.new(0, 14, 0, 10), UDim2.new(1, -28, 0, 24)
+backupTitle.BackgroundTransparency = 1
+backupTitle.Text = "Backup & Restore"
+backupTitle.TextColor3 = Color3.fromRGB(255, 220, 140)
+backupTitle.TextStrokeColor3 = Color3.fromRGB(100, 40, 0)
+backupTitle.TextStrokeTransparency = 0.1
+backupTitle.Font = Enum.Font.FredokaOne
+backupTitle.TextSize = 18
+backupTitle.TextXAlignment = Enum.TextXAlignment.Left
+backupTitle.ZIndex = 8
+backupTitle:SetAttribute("KeepFont", true)
+local btGlow = Instance.new("UIStroke", backupTitle)
+btGlow.Color = Color3.fromRGB(255, 160, 30)
+btGlow.Thickness = 1.2
+btGlow.Transparency = 0.55
+local backupHelp = Instance.new("TextLabel", backupCard)
+backupHelp.Position, backupHelp.Size = UDim2.new(0, 14, 0, 38), UDim2.new(1, -28, 0, 52)
+backupHelp.BackgroundTransparency = 1
+backupHelp.Text = "Save your setup as a code and share it.\nPaste a code and tap APPLY to restore."
+backupHelp.TextColor3 = Color3.fromRGB(220, 220, 228)
+backupHelp.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+backupHelp.TextStrokeTransparency = 0.35
+backupHelp.Font = Enum.Font.GothamBold
+backupHelp.TextSize = 11
+backupHelp.TextXAlignment = Enum.TextXAlignment.Left
+backupHelp.TextYAlignment = Enum.TextYAlignment.Top
+backupHelp.TextWrapped = true
+backupHelp.ZIndex = 8
+local backupBtnHolder = Instance.new("Frame", backupCard)
+backupBtnHolder.Size, backupBtnHolder.Position = UDim2.new(1, -28, 0, 50), UDim2.new(0, 14, 0, 100)
+backupBtnHolder.BackgroundTransparency, backupBtnHolder.ZIndex = 1, 8
+local bBL = Instance.new("UIListLayout", backupBtnHolder)
+bBL.FillDirection, bBL.Padding = Enum.FillDirection.Horizontal, UDim.new(0, 8)
+bBL.SortOrder, bBL.VerticalAlignment = Enum.SortOrder.LayoutOrder, Enum.VerticalAlignment.Center
+
+U.copyBtn = Instance.new("TextButton", backupBtnHolder)
+U.copyBtn.Size, U.copyBtn.BackgroundColor3 = UDim2.new(0.5, -4, 1, 0), Color3.fromRGB(255, 140, 0)
+U.copyBtn.Text, U.copyBtn.TextColor3 = "", Color3.fromRGB(255,255,255)
+U.copyBtn.Font, U.copyBtn.TextSize, U.copyBtn.AutoButtonColor, U.copyBtn.ZIndex = Enum.Font.FredokaOne, 16, false, 9
+U.copyBtn:SetAttribute("IsMainAction", true)
+Instance.new("UICorner", U.copyBtn).CornerRadius = UDim.new(0, 10)
+U.cGlow = Instance.new("UIStroke", U.copyBtn)
+U.cGlow.Color, U.cGlow.Thickness, U.cGlow.Transparency = Color3.fromRGB(255, 220, 120), 1.4, 0.4
+U.cIcon = Instance.new("ImageLabel", U.copyBtn)
+U.cIcon.Size = UDim2.new(0, 22, 0, 22)
+U.cIcon.Position = UDim2.new(0, 12, 0.5, -11)
+U.cIcon.BackgroundTransparency = 1
+U.cIcon.Image = "rbxassetid://77839253340442"
+U.cIcon.ScaleType = Enum.ScaleType.Fit
+U.cIcon.ZIndex = 10
+U.cIcon.ImageColor3 = Color3.fromRGB(15, 8, 5)
+U.cLbl = Instance.new("TextLabel", U.copyBtn)
+U.cLbl.Size = UDim2.new(1, -42, 1, 0)
+U.cLbl.Position = UDim2.new(0, 40, 0, 0)
+U.cLbl.BackgroundTransparency = 1
+U.cLbl.Text = "COPY"
+U.cLbl.TextColor3 = Color3.fromRGB(15, 8, 5)
+U.cLbl.TextStrokeColor3 = Color3.fromRGB(255, 240, 180)
+U.cLbl.TextStrokeTransparency = 0.35
+U.cLbl.Font, U.cLbl.TextSize, U.cLbl.ZIndex = Enum.Font.FredokaOne, 17, 10
+U.cLbl.TextXAlignment = Enum.TextXAlignment.Center
+U.cLbl.TextYAlignment = Enum.TextYAlignment.Center
+U.cLbl:SetAttribute("KeepFont", true)
+
+U.loadBtn = Instance.new("TextButton", backupBtnHolder)
+U.loadBtn.Size, U.loadBtn.BackgroundColor3 = UDim2.new(0.5, -4, 1, 0), Color3.fromRGB(22, 18, 28)
+U.loadBtn.Text, U.loadBtn.TextColor3 = "", Color3.fromRGB(255,255,255)
+U.loadBtn.Font, U.loadBtn.TextSize, U.loadBtn.AutoButtonColor, U.loadBtn.ZIndex = Enum.Font.FredokaOne, 16, false, 9
+Instance.new("UICorner", U.loadBtn).CornerRadius = UDim.new(0, 10)
+U.lGlow = Instance.new("UIStroke", U.loadBtn)
+U.lGlow.Color, U.lGlow.Thickness, U.lGlow.Transparency = Color3.fromRGB(255, 160, 40), 1.6, 0.25
+U.lIconBg = Instance.new("Frame", U.loadBtn)
+U.lIconBg.Size = UDim2.new(0, 28, 0, 28)
+U.lIconBg.Position = UDim2.new(0, 9, 0.5, -14)
+U.lIconBg.BackgroundColor3 = Color3.fromRGB(255, 180, 60)
+U.lIconBg.BackgroundTransparency = 0.1
+U.lIconBg.BorderSizePixel = 0
+U.lIconBg.ZIndex = 9
+Instance.new("UICorner", U.lIconBg).CornerRadius = UDim.new(1, 0)
+local lBgStroke = Instance.new("UIStroke", U.lIconBg)
+lBgStroke.Color = Color3.fromRGB(255, 230, 160)
+lBgStroke.Thickness = 1.5
+lBgStroke.Transparency = 0.1
+
+U.lIcon = Instance.new("ImageLabel", U.lIconBg)
+U.lIcon.Size = UDim2.new(0.75, 0, 0.75, 0)
+U.lIcon.Position = UDim2.new(0.125, 0, 0.125, 0)
+U.lIcon.BackgroundTransparency = 1
+U.lIcon.Image = "rbxassetid://122541701197656"
+U.lIcon.ScaleType = Enum.ScaleType.Fit
+U.lIcon.ZIndex = 10
+U.lIcon.ImageColor3 = Color3.fromRGB(20, 10, 0)
+
+U.lLbl = Instance.new("TextLabel", U.loadBtn)
+U.lLbl.Size = UDim2.new(1, -52, 1, 0)
+U.lLbl.Position = UDim2.new(0, 46, 0, 0)
+U.lLbl.BackgroundTransparency = 1
+U.lLbl.Text = "APPLY"
+U.lLbl.TextColor3 = Color3.fromRGB(255, 190, 80)
+U.lLbl.TextStrokeColor3 = Color3.fromRGB(80, 30, 0)
+U.lLbl.TextStrokeTransparency = 0.2
+U.lLbl.Font, U.lLbl.TextSize, U.lLbl.ZIndex = Enum.Font.FredokaOne, 17, 10
+U.lLbl.TextXAlignment = Enum.TextXAlignment.Center
+U.lLbl.TextYAlignment = Enum.TextYAlignment.Center
+U.lLbl:SetAttribute("KeepFont", true)
+
+-- ========== MODAL YARDIMCILARI ==========
+local function copyToClipboard(text)
+    if setclipboard then pcall(setclipboard, text); return true end
+    if toclipboard then pcall(toclipboard, text); return true end
+    return false
+end
+
+local function makeFullscreenModal(theme)
+    local overlay = Instance.new("Frame", U.screen)
+    overlay.Size = UDim2.new(1, 0, 1, 0)
+    overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    overlay.BackgroundTransparency = 1
+    overlay.BorderSizePixel = 0
+    overlay.ZIndex = 100
+    overlay.Active = true
+
+    local card = Instance.new("Frame", overlay)
+    card.AnchorPoint = Vector2.new(0.5, 0.5)
+    card.Position = UDim2.new(0.5, 0, 0.5, 0)
+    card.Size = UDim2.new(0, 0, 0, 0)
+    card.BackgroundColor3 = Color3.fromRGB(14, 11, 20)
+    card.BackgroundTransparency = 0.05
+    card.BorderSizePixel = 0
+    card.ZIndex = 101
+
+    local sc = Instance.new("UISizeConstraint", card)
+    sc.MaxSize = Vector2.new(620, 480)
+    sc.MinSize = Vector2.new(280, 300)
+
+    Instance.new("UICorner", card).CornerRadius = UDim.new(0, 20)
+    TweenService:Create(card, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Size = UDim2.new(0.9, 0, 0.85, 0)
+    }):Play()
+
+    local cardStroke = Instance.new("UIStroke", card)
+    cardStroke.Color = theme.main
+    cardStroke.Thickness = 2.4
+    cardStroke.Transparency = 0.15
+    local cardGrad = Instance.new("UIGradient", cardStroke)
+    cardGrad.Rotation = 90
+    cardGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0.0, theme.main),
+        ColorSequenceKeypoint.new(0.5, theme.b2 or theme.main),
+        ColorSequenceKeypoint.new(1.0, theme.main),
+    })
+
+    local inner = Instance.new("Frame", card)
+    inner.Size = UDim2.new(1, -24, 1, -24)
+    inner.Position = UDim2.new(0, 12, 0, 12)
+    inner.BackgroundColor3 = Color3.fromRGB(20, 16, 28)
+    inner.BackgroundTransparency = 0.4
+    inner.BorderSizePixel = 0
+    inner.ZIndex = 102
+    Instance.new("UICorner", inner).CornerRadius = UDim.new(0, 14)
+    return overlay, card, inner
+end
+
+local function makeModalHeader(parent, letter, titleText, subtitleText, theme)
+    local badge = Instance.new("Frame", parent)
+    badge.Size, badge.Position = UDim2.new(0, 46, 0, 46), UDim2.new(0, 20, 0, 18)
+    badge.BackgroundColor3 = theme.main
+    badge.BackgroundTransparency = 0.1
+    badge.BorderSizePixel = 0
+    badge.ZIndex = 103
+    Instance.new("UICorner", badge).CornerRadius = UDim.new(0, 12)
+    local badgeStroke = Instance.new("UIStroke", badge)
+    badgeStroke.Color = theme.main
+    badgeStroke.Thickness = 2
+    badgeStroke.Transparency = 0
+    local bl = Instance.new("TextLabel", badge)
+    bl.Size = UDim2.new(1, 0, 1, 0)
+    bl.BackgroundTransparency = 1
+    bl.Text = letter
+    bl.TextColor3 = Color3.fromRGB(15, 8, 5)
+    bl.Font = Enum.Font.FredokaOne
+    bl.TextSize = 24
+    bl.ZIndex = 104
+    bl.TextStrokeColor3 = theme.b2 or theme.main
+    bl.TextStrokeTransparency = 0.5
+    bl:SetAttribute("KeepFont", true)
+
+    local t = Instance.new("TextLabel", parent)
+    t.Size, t.Position = UDim2.new(1, -160, 0, 26), UDim2.new(0, 78, 0, 16)
+    t.BackgroundTransparency = 1
+    t.Text = titleText
+    t.TextColor3 = Color3.fromRGB(255, 245, 230)
+    t.TextStrokeColor3 = theme.b1 or theme.main
+    t.TextStrokeTransparency = 0.2
+    t.Font = Enum.Font.FredokaOne
+    t.TextSize = 22
+    t.TextXAlignment = Enum.TextXAlignment.Left
+    t.ZIndex = 103
+    t:SetAttribute("KeepFont", true)
+    local titleGlow = Instance.new("UIStroke", t)
+    titleGlow.Color = theme.main
+    titleGlow.Thickness = 1.2
+    titleGlow.Transparency = 0.6
+
+    local s = Instance.new("TextLabel", parent)
+    s.Size, s.Position = UDim2.new(1, -160, 0, 16), UDim2.new(0, 78, 0, 42)
+    s.BackgroundTransparency = 1
+    s.Text = subtitleText
+    s.TextColor3 = theme.b2 or Color3.fromRGB(180, 180, 190)
+    s.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    s.TextStrokeTransparency = 0.5
+    s.Font = Enum.Font.GothamBold
+    s.TextSize = 11
+    s.TextXAlignment = Enum.TextXAlignment.Left
+    s.ZIndex = 103
+end
+
+local function makeModalCloseBtn(parent, theme)
+    local btn = Instance.new("TextButton", parent)
+    btn.Size, btn.Position = UDim2.new(0, 38, 0, 38), UDim2.new(1, -58, 0, 22)
+    btn.BackgroundColor3 = Color3.fromRGB(35, 28, 45)
+    btn.BackgroundTransparency = 0.1
+    btn.Text = "X"
+    btn.AutoButtonColor = false
+    btn.ZIndex = 103
+    btn.TextColor3 = Color3.fromRGB(255, 200, 200)
+    btn.Font = Enum.Font.GothamBlack
+    btn.TextSize = 18
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
+    local stroke = Instance.new("UIStroke", btn)
+    stroke.Color = Color3.fromRGB(255, 90, 90)
+    stroke.Thickness = 1.6
+    stroke.Transparency = 0.3
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.15), { BackgroundColor3 = Color3.fromRGB(180, 40, 50) }):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.15), { BackgroundColor3 = Color3.fromRGB(35, 28, 45) }):Play()
+    end)
+    return btn
+end
+
+local function showCopyModal(encodedCode)
+    if U.copyModal and U.copyModal.Parent then U.copyModal:Destroy() end
+    local theme = K.THEMES[cfg.themeIndex] or K.THEMES[8]
+    local overlay, card, inner = makeFullscreenModal(theme)
+    U.copyModal = overlay
+
+    local closeM = makeModalCloseBtn(card, theme)
+    closeM.MouseButton1Click:Connect(function()
+        if U.copyModal and U.copyModal.Parent then U.copyModal:Destroy() end
+    end)
+    attachClickSound(closeM)
+
+    makeModalHeader(card, "C", "Copy Settings", "Share your configuration with friends", theme)
+
+    local codeHolder = Instance.new("Frame", inner)
+    codeHolder.Position = UDim2.new(0, 0, 0, 72)
+    codeHolder.Size = UDim2.new(1, 0, 1, -144)
+    codeHolder.BackgroundColor3 = Color3.fromRGB(8, 6, 12)
+    codeHolder.BorderSizePixel = 0
+    codeHolder.ZIndex = 104
+    Instance.new("UICorner", codeHolder).CornerRadius = UDim.new(0, 12)
+    local chStroke = Instance.new("UIStroke", codeHolder)
+    chStroke.Color = theme.main
+    chStroke.Thickness = 1.4
+    chStroke.Transparency = 0.5
+
+    local codeScroll = Instance.new("ScrollingFrame", codeHolder)
+    codeScroll.Size, codeScroll.Position = UDim2.new(1, -16, 1, -16), UDim2.new(0, 8, 0, 8)
+    codeScroll.BackgroundTransparency = 1
+    codeScroll.BorderSizePixel = 0
+    codeScroll.ScrollBarThickness = 6
+    codeScroll.ScrollBarImageColor3 = theme.main
+    codeScroll.ScrollBarImageTransparency = 0.2
+    codeScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    codeScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    codeScroll.ZIndex = 105
+
+    local codeLbl = Instance.new("TextLabel", codeScroll)
+    codeLbl.Size, codeLbl.Position = UDim2.new(1, -16, 0, 0), UDim2.new(0, 6, 0, 6)
+    codeLbl.AutomaticSize = Enum.AutomaticSize.Y
+    codeLbl.BackgroundTransparency = 1
+    codeLbl.Text = encodedCode
+    codeLbl.TextColor3 = Color3.fromRGB(240, 235, 255)
+    codeLbl.Font = Enum.Font.Code
+    codeLbl.TextSize = 13
+    codeLbl.TextXAlignment = Enum.TextXAlignment.Left
+    codeLbl.TextYAlignment = Enum.TextYAlignment.Top
+    codeLbl.TextWrapped = true
+    codeLbl.ZIndex = 105
+    codeLbl.LineHeight = 1.15
+    codeLbl:SetAttribute("KeepFont", true)
+
+    local copyIcon = Instance.new("TextButton", inner)
+    copyIcon.Position = UDim2.new(0, 0, 1, -60)
+    copyIcon.Size = UDim2.new(1, 0, 0, 56)
+    copyIcon:SetAttribute("IsMainAction", true)
+    copyIcon.BackgroundColor3 = theme.main
+    copyIcon.Text = "COPY TO CLIPBOARD"
+    copyIcon.TextColor3 = Color3.fromRGB(15, 8, 5)
+    copyIcon.Font = Enum.Font.FredokaOne
+    copyIcon.TextSize = 18
+    copyIcon.TextStrokeColor3 = theme.b2 or theme.main
+    copyIcon.TextStrokeTransparency = 0.55
+    copyIcon.ZIndex = 105
+    copyIcon.AutoButtonColor = false
+    copyIcon:SetAttribute("KeepFont", true)
+    Instance.new("UICorner", copyIcon).CornerRadius = UDim.new(0, 12)
+    local copyStroke = Instance.new("UIStroke", copyIcon)
+    copyStroke.Color = theme.b2 or theme.main
+    copyStroke.Thickness = 2
+    copyStroke.Transparency = 0.2
+
+    copyIcon.MouseButton1Click:Connect(function()
+        if copyToClipboard(encodedCode) then
+            copyIcon.Text = "✅ COPIED!"
+            copyIcon.BackgroundColor3 = Color3.fromRGB(80, 220, 130)
+            task.delay(1.5, function()
+                if copyIcon and copyIcon.Parent then
+                    copyIcon.Text = "COPY TO CLIPBOARD"
+                    copyIcon.BackgroundColor3 = theme.main
+                end
+            end)
+        else
+            copyIcon.Text = "❌ COPY FAILED"
+            copyIcon.BackgroundColor3 = Color3.fromRGB(220, 80, 80)
+        end
+    end)
+    attachClickSound(copyIcon)
+end
+
+local function showLoadModal(prefill)
+    if U.loadModal and U.loadModal.Parent then U.loadModal:Destroy() end
+    local theme = K.THEMES[cfg.themeIndex] or K.THEMES[8]
+    local overlay, card, inner = makeFullscreenModal(theme)
+    U.loadModal = overlay
+
+    local closeM = makeModalCloseBtn(card, theme)
+    closeM.MouseButton1Click:Connect(function()
+        if U.loadModal and U.loadModal.Parent then U.loadModal:Destroy() end
+    end)
+    attachClickSound(closeM)
+
+    makeModalHeader(card, "A", "Apply Settings", "Restore from a saved code", theme)
+
+    local inputHolder = Instance.new("Frame", inner)
+    inputHolder.Position = UDim2.new(0, 0, 0, 72)
+    inputHolder.Size = UDim2.new(1, 0, 1, -144)
+    inputHolder.BackgroundColor3 = Color3.fromRGB(8, 6, 12)
+    inputHolder.BorderSizePixel = 0
+    inputHolder.ZIndex = 104
+    Instance.new("UICorner", inputHolder).CornerRadius = UDim.new(0, 12)
+    local ihStroke = Instance.new("UIStroke", inputHolder)
+    ihStroke.Color = theme.main
+    ihStroke.Thickness = 1.4
+    ihStroke.Transparency = 0.5
+
+    local inputBox = Instance.new("TextBox", inputHolder)
+    inputBox.Size, inputBox.Position = UDim2.new(1, -16, 1, -16), UDim2.new(0, 8, 0, 8)
+    inputBox.BackgroundTransparency = 1
+    inputBox.Text = prefill or ""
+    inputBox.PlaceholderText = "Paste your settings code here..."
+    inputBox.PlaceholderColor3 = Color3.fromRGB(120, 115, 140)
+    inputBox.TextColor3 = Color3.fromRGB(240, 235, 255)
+    inputBox.Font = Enum.Font.Code
+    inputBox.TextSize = 13
+    inputBox.TextXAlignment = Enum.TextXAlignment.Left
+    inputBox.TextYAlignment = Enum.TextYAlignment.Top
+    inputBox.MultiLine = true
+    inputBox.TextWrapped = true
+    inputBox.ClearTextOnFocus = false
+    inputBox.ZIndex = 105
+    inputBox.LineHeight = 1.15
+    inputBox:SetAttribute("KeepFont", true)
+
+    local applyBtn = Instance.new("TextButton", inner)
+    applyBtn.Position = UDim2.new(0, 0, 1, -60)
+    applyBtn.Size = UDim2.new(1, 0, 0, 56)
+    applyBtn:SetAttribute("IsMainAction", true)
+    applyBtn.BackgroundColor3 = theme.main
+    applyBtn.Text = "APPLY SETTINGS"
+    applyBtn.TextColor3 = Color3.fromRGB(15, 8, 5)
+    applyBtn.Font = Enum.Font.FredokaOne
+    applyBtn.TextSize = 18
+    applyBtn.TextStrokeColor3 = theme.b2 or theme.main
+    applyBtn.TextStrokeTransparency = 0.55
+    applyBtn.ZIndex = 105
+    applyBtn.AutoButtonColor = false
+    applyBtn:SetAttribute("KeepFont", true)
+    Instance.new("UICorner", applyBtn).CornerRadius = UDim.new(0, 12)
+    local apStroke = Instance.new("UIStroke", applyBtn)
+    apStroke.Color = theme.b2 or theme.main
+    apStroke.Thickness = 2
+    apStroke.Transparency = 0.2
+
+    applyBtn.MouseButton1Click:Connect(function()
+        local raw = inputBox.Text
+        if not raw or raw == "" then
+            applyBtn.Text = "⚠️ PASTE A CODE FIRST"
+            task.delay(1.4, function() applyBtn.Text = "APPLY SETTINGS" end)
+            return
+        end
+        local ok, data = pcall(function() return HttpService:JSONDecode(raw) end)
+        if not ok or type(data) ~= "table" then
+            applyBtn.Text = "❌ INVALID CODE"
+            task.delay(1.4, function() applyBtn.Text = "APPLY SETTINGS" end)
+            return
+        end
+        for k, v in pairs(K.DEFAULT_CFG) do
+            if data[k] ~= nil then cfg[k] = data[k] end
+        end
+        saveConfig()
+        pcall(function() U.pBox.Text = tostring(cfg.power) end)
+        pcall(function() U.dBox.Text = tostring(cfg.interval) end)
+        pcall(function() U.scaleValLbl.Text = tostring(cfg.guiScale) end)
+        pcall(function() U.uiScaleObj.Scale = cfg.guiScale / 100 end)
+        pcall(function() U.volValLbl.Text = string.format("%.1f", cfg.clickVolume) end)
+        pcall(function() U.fovBox.Text = tostring(cfg.fovValue) end)
+        pcall(function() U.kbBtn.Text = cfg.keybindKb end)
+        pcall(function() U.gpBtn.Text = cfg.keybindGp end)
+        St.halloweenToggleOn = cfg.halloweenToggle or false
+        if St.halloweenToggleOn then
+            pcall(function() U.bgImgLabel.Image = K.HALLOWEEN_ASSETS[cfg.halloweenBg or 1] end)
+        else
+            pcall(function() U.bgImgLabel.Image = K.bgList[cfg.bgIndex] end)
+        end
+        pcall(function()
+            for _, sw in ipairs(U.toggleSwitches) do
+                if sw.track and sw.track:GetAttribute("CfgKey") then
+                    local key = sw.track:GetAttribute("CfgKey")
+                    if cfg[key] ~= nil then
+                        sw.track:SetAttribute("ToggleOn", cfg[key])
+                        if sw.refresh then sw.refresh() end
+                    end
+                end
+            end
+        end)
+        pcall(function() applyAntiLag(cfg.antiLag) end)
+        pcall(function() applyLowGraphics(cfg.lowGraphics) end)
+        pcall(function() applyFogRemover(cfg.fogRemover) end)
+        pcall(function() applySkyChanger(cfg.skyChanger) end)
+        pcall(function() applyStretchRez(cfg.stretchRez) end)
+        pcall(function() applyParticleKiller(cfg.particleKiller) end)
+        pcall(function() applyEffectKiller(cfg.effectKiller) end)
+        pcall(function() applyBeamKiller(cfg.beamKiller) end)
+        pcall(function() applySparklesKiller(cfg.sparklesKiller) end)
+        pcall(function() applyLightKiller(cfg.lightKiller) end)
+        pcall(function() applyMaterialReducer(cfg.materialReducer) end)
+        pcall(function() applyCloudRemover(cfg.cloudRemover) end)
+        pcall(function() applyTextureRemover(cfg.textureRemover) end)
+        pcall(function() applyDecalKiller(cfg.decalKiller) end)
+        pcall(function() applySoundKiller(cfg.soundKiller) end)
+        pcall(function() applyMeshSimplifier(cfg.meshSimplifier) end)
+        pcall(function() applyTerrainKiller(cfg.terrainKiller) end)
+        pcall(function() applyWaterKiller(cfg.waterKiller) end)
+        pcall(function() applyShadowKiller(cfg.shadowKiller) end)
+        pcall(function() applyReflectionKiller(cfg.reflectionKiller) end)
+        pcall(function() applyGuiKiller(cfg.guiKiller) end)
+        pcall(function() applyDynamicFPS(cfg.dynamicFPS) end)
+        pcall(function() updateFontDisplay() end)
+        if _G.CPL_refreshPresets then _G.CPL_refreshPresets() end
+        if _G.CPL_refreshPayloadButtons then _G.CPL_refreshPayloadButtons() end
+        if _G.CPL_refreshBurstButtons then _G.CPL_refreshBurstButtons() end
+        if _G.CPL_refreshSmartVisual then _G.CPL_refreshSmartVisual(cfg.smartPayload or false, false) end
+        if _G.CPL_refreshSmartBurstVisual then _G.CPL_refreshSmartBurstVisual(cfg.smartBurst or false, false) end
+        if _G.CPL_applyTheme then _G.CPL_applyTheme(cfg.themeIndex) end
+        if _G.CPL_refreshSoundButtons then _G.CPL_refreshSoundButtons() end
+        applyBtn.Text = "✅ SETTINGS APPLIED!"
+        applyBtn.BackgroundColor3 = Color3.fromRGB(80, 220, 130)
+        task.delay(1.4, function()
+            if U.loadModal and U.loadModal.Parent then U.loadModal:Destroy() end
+        end)
+    end)
+    attachClickSound(applyBtn)
+end
+
+U.copyBtn.MouseButton1Click:Connect(function()
+    local ok, encoded = pcall(function() return HttpService:JSONEncode(cfg) end)
+    if ok and encoded then showCopyModal(encoded) end
+end)
+U.loadBtn.MouseButton1Click:Connect(function() showLoadModal("") end)
+
+-- ========== STAT BOXES ==========
+U.rightCol = Instance.new("Frame", U.contentFrame)
+U.rightCol.Size, U.rightCol.Position = UDim2.new(0,180,1,0), UDim2.new(1,-180,0,0)
+U.rightCol.BackgroundTransparency, U.rightCol.ZIndex = 1, 6
+local rightLayout = Instance.new("UIListLayout", U.rightCol)
+rightLayout.SortOrder, rightLayout.Padding = Enum.SortOrder.LayoutOrder, UDim.new(0,10)
+
+local function createBigStatBox(titleText)
+    local box = Instance.new("Frame", U.rightCol)
+    box.Size, box.BackgroundColor3, box.BackgroundTransparency = UDim2.new(1,0,0,175), Color3.fromRGB(10,10,15), 0.45
+    box.ZIndex = 7
+    Instance.new("UICorner", box).CornerRadius = UDim.new(0,8)
+    local s = Instance.new("UIStroke", box); s.Color, s.Thickness = Color3.fromRGB(255,140,0), 1.2
+    table.insert(U.statBoxStrokes, s)
+    table.insert(U.statBoxFrames, box)
+    local t = Instance.new("TextLabel", box)
+    t.Size, t.Position = UDim2.new(1,0,0,28), UDim2.new(0,0,0,14)
+    t.BackgroundTransparency, t.Text, t.TextColor3 = 1, titleText, Color3.fromRGB(255,255,255)
+    t.TextStrokeColor3, t.TextStrokeTransparency = Color3.fromRGB(0, 0, 0), 0.3
+    t.Font, t.TextSize, t.ZIndex = Enum.Font.Creepster, 22, 8
+    t:SetAttribute("BaseText", titleText)
+    t:SetAttribute("KeepFont", true)
+    table.insert(U.statTitleLabels, t)
+    local v = Instance.new("TextLabel", box)
+    v.Size, v.Position = UDim2.new(1,0,0,72), UDim2.new(0,0,0,60)
+    v.BackgroundTransparency, v.Text, v.TextColor3 = 1, "--", Color3.fromRGB(255,140,0)
+    v.TextStrokeColor3, v.TextStrokeTransparency = Color3.fromRGB(0, 0, 0), 0.25
+    v.Font, v.TextSize, v.ZIndex = Enum.Font.Creepster, 54, 8
+    v:SetAttribute("KeepFont", true)
+    table.insert(U.statValueLabels, v)
+    return v
+end
+
+U.fpsValueLbl  = createBigStatBox("FPS")
+U.pingValueLbl = createBigStatBox("PING (MS)")
+
+-- ========== THEME APPLY ==========
+function _G.CPL_applyTheme(idx)
+    local theme = K.THEMES[idx] or K.THEMES[8]
+    if U.grad then
+        U.grad.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0.00, theme.b1),
+            ColorSequenceKeypoint.new(0.50, theme.main),
+            ColorSequenceKeypoint.new(1.00, theme.b1),
+        })
+        U.grad.Rotation = 135
+    end
+    if U.titleGrad then
+        if St.halloweenToggleOn then
+            U.titleGrad.Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0.0, Color3.fromRGB(255, 235, 120)),
+                ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 140, 0)),
+                ColorSequenceKeypoint.new(1.0, Color3.fromRGB(180, 45, 0))
+            })
+            U.titleLabel.TextColor3 = Color3.fromRGB(255, 150, 30)
+            U.subtitleLabel.TextColor3 = Color3.fromRGB(255, 190, 80)
+        else
+            U.titleGrad.Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0.0, theme.b2),
+                ColorSequenceKeypoint.new(0.5, theme.main),
+                ColorSequenceKeypoint.new(1.0, theme.b1)
+            })
+            U.titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+            U.subtitleLabel.TextColor3 = theme.b2
+        end
+    end
+    U.glowLabel.TextColor3 = theme.b1
+    U.glowLabel.TextStrokeColor3 = theme.main
+    if St.halloweenToggleOn then
+        for _, t in ipairs(U.statTitleLabels) do
+            if t and t.Parent then
+                t.TextColor3 = Color3.fromRGB(255, 140, 0)
+                local base = t:GetAttribute("BaseText") or t.Text
+                t.Text = "🎃 " .. base .. " 🎃"
+            end
+        end
+        for _, v in ipairs(U.statValueLabels) do
+            if v and v.Parent then v.TextColor3 = Color3.fromRGB(255, 200, 80) end
+        end
+        for _, s in ipairs(U.statBoxStrokes) do
+            if s and s.Parent then
+                s.Color = Color3.fromRGB(255, 140, 0)
+                s.Thickness = 2.0
+                s.Transparency = 0.15
+            end
+        end
+        for _, b in ipairs(U.statBoxFrames) do
+            if b and b.Parent then
+                b.BackgroundColor3 = Color3.fromRGB(20, 10, 5)
+                b.BackgroundTransparency = 0.35
+            end
+        end
+    else
+        for _, t in ipairs(U.statTitleLabels) do
+            if t and t.Parent then
+                t.TextColor3 = Color3.fromRGB(255, 255, 255)
+                local base = t:GetAttribute("BaseText")
+                if base then t.Text = base end
+            end
+        end
+        for _, v in ipairs(U.statValueLabels) do
+            if v and v.Parent then v.TextColor3 = theme.main end
+        end
+        for _, s in ipairs(U.statBoxStrokes) do
+            if s and s.Parent then
+                s.Color = theme.main; s.Thickness = 1.2; s.Transparency = 0
+            end
+        end
+        for _, b in ipairs(U.statBoxFrames) do
+            if b and b.Parent then
+                b.BackgroundColor3 = Color3.fromRGB(10,10,15)
+                b.BackgroundTransparency = 0.45
+            end
+        end
+    end
+    for _, sw in ipairs(U.toggleSwitches) do
+        if sw and sw.refresh then sw.refresh() end
+    end
+    if _G.CPL_refreshSoundButtons then _G.CPL_refreshSoundButtons() end
+    if _G.CPL_refreshPresets then _G.CPL_refreshPresets() end
+    if _G.CPL_refreshPayloadButtons then _G.CPL_refreshPayloadButtons() end
+    if _G.CPL_refreshBurstButtons then _G.CPL_refreshBurstButtons() end
+    if _G.CPL_refreshSmartVisual then _G.CPL_refreshSmartVisual(cfg.smartPayload or false, false) end
+    if _G.CPL_refreshSmartBurstVisual then _G.CPL_refreshSmartBurstVisual(cfg.smartBurst or false, false) end
+    if _G.CPL_ptTitle then _G.CPL_ptTitle.TextColor3 = theme.main end
+    if _G.CPL_ptPlus then _G.CPL_ptPlus.TextColor3 = theme.main end
+    if _G.CPL_ptPlusStroke then _G.CPL_ptPlusStroke.Color = theme.main end
+    if _G.CPL_ptStroke then _G.CPL_ptStroke.Color = theme.main end
+    if _G.CPL_bmTitle then _G.CPL_bmTitle.TextColor3 = theme.main end
+    if _G.CPL_bmPlus then _G.CPL_bmPlus.TextColor3 = theme.main end
+    if _G.CPL_bmPlusStroke then _G.CPL_bmPlusStroke.Color = theme.main end
+    if _G.CPL_bmStroke then _G.CPL_bmStroke.Color = theme.main end
+    for _, d in ipairs(U.screen:GetDescendants()) do
+        if d:IsA("TextButton") and d:GetAttribute("IsMainAction") then
+            for _, child in ipairs(d:GetChildren()) do
+                if child:IsA("UIStroke") and d ~= U.copyBtn and not d:GetAttribute("KeepStroke") then child:Destroy() end
+                if child:IsA("UIGradient") then child:Destroy() end
+            end
+            d.BackgroundColor3 = theme.main
+            d.BackgroundTransparency = 0
+            if d == U.copyBtn then
+                if U.cLbl then U.cLbl.TextColor3 = Color3.fromRGB(15, 8, 5) end
+                if U.cIcon then U.cIcon.ImageColor3 = Color3.fromRGB(15, 8, 5) end
+                if U.cGlow then U.cGlow.Color = theme.b2 or theme.main end
+            else
+                d.TextColor3 = Color3.fromRGB(15, 8, 5)
+            end
+            d.AutoButtonColor = false
+            if not d:GetAttribute("HoverBound") then
+                d:SetAttribute("HoverBound", true)
+                d.MouseEnter:Connect(function()
+                    if not d or not d.Parent then return end
+                    local t = K.THEMES[cfg.themeIndex] or K.THEMES[8]
+                    TweenService:Create(d, TweenInfo.new(0.15), { BackgroundColor3 = t.b2 }):Play()
+                end)
+                d.MouseLeave:Connect(function()
+                    if not d or not d.Parent then return end
+                    local t = K.THEMES[cfg.themeIndex] or K.THEMES[8]
+                    TweenService:Create(d, TweenInfo.new(0.15), { BackgroundColor3 = t.main }):Play()
+                end)
+            end
+        end
+    end
+    for i, b in pairs(U.hAssetButtons) do
+        if b and b.Parent then
+            local bs = b:FindFirstChildOfClass("UIStroke")
+            if bs then
+                bs.Color = (i == cfg.halloweenBg) and theme.main or Color3.fromRGB(90,90,90)
+                bs.Thickness = (i == cfg.halloweenBg) and 2.2 or 1.2
+            end
+        end
+    end
+    if fontSelector then
+        local fs = fontSelector:FindFirstChildOfClass("UIStroke")
+        if fs then fs.Color = theme.main end
+    end
+    if U.fontNameLbl then U.fontNameLbl.TextColor3 = Color3.fromRGB(255, 255, 255) end
+    if alTitle then alTitle.TextColor3 = Color3.fromRGB(255, 255, 255) end
+    if alPlus then alPlus.TextColor3 = theme.main end
+    if alPlusStroke then alPlusStroke.Color = theme.main end
+    local locked = (St.halloweenToggleOn == true)
+    for i, b in pairs(U.themeButtons) do
+        if b and b.Parent then
+            b.BackgroundTransparency = locked and 0.75 or 0
+            b.Active = not locked
+            b.AutoButtonColor = false
+        end
+    end
+    for i, b in pairs(U.bgButtons) do
+        if b and b.Parent then
+            b.ImageTransparency = locked and 0.75 or 0
+            b.Active = not locked
+            b.AutoButtonColor = false
+        end
+    end
+    if St.guiLocked then
+        U.lockBtn.BackgroundColor3 = Color3.fromRGB(60, 15, 15)
+    else
+        U.lockBtn.BackgroundColor3 = Color3.fromRGB(15,15,15)
+    end
+    if St.isExpanded then
+        U.settingsBtn.BackgroundColor3 = theme.main
+        U.settingsBtn.TextColor3 = Color3.fromRGB(15, 8, 5)
+    else
+        U.settingsBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+        U.settingsBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end
+    if St.active then
+        U.activateBtn.BackgroundColor3, U.activateBtn.TextColor3 = theme.main, Color3.fromRGB(0,0,0)
+    end
+    if U.lGlow then
+        U.lGlow.Color = theme.main
+        U.lGlow.Transparency = 0.25
+    end
+end
+_G.CPL_applyTheme(cfg.themeIndex)
+_G.CPL_refreshSoundButtons()
+applyFont(cfg.fontIndex)
+
+-- ========== LOCK & SETTINGS ==========
+U.lockBtn.MouseButton1Click:Connect(function()
+    St.guiLocked = not St.guiLocked
+    cfg.guiLocked = St.guiLocked
+    U.lockBtn.Text = St.guiLocked and "🔒" or "🔓"
+    U.lockBtn.BackgroundColor3 = St.guiLocked and Color3.fromRGB(60, 15, 15) or Color3.fromRGB(15,15,15)
+    saveConfig()
+end)
+
+U.settingsBtn.MouseButton1Click:Connect(function()
+    St.isExpanded = not St.isExpanded
+    if St.isExpanded then
+        U.contentFrame.Visible = true
+        local theme = K.THEMES[cfg.themeIndex] or K.THEMES[8]
+        U.settingsBtn.BackgroundColor3 = theme.main
+        U.settingsBtn.TextColor3 = Color3.fromRGB(15, 8, 5)
+        tw(U.mainFrame, {Size = UDim2.new(0, K.BASE_W, 0, K.BASE_H)}, 0.3)
+    else
+        U.contentFrame.Visible = false
+        U.settingsBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+        U.settingsBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        tw(U.mainFrame, {Size = UDim2.new(0, K.BASE_W, 0, K.MINI_H)}, 0.3)
+    end
+end)
+
+-- ========== DRAG ==========
+local function makeDraggable(topbar, main)
+    local dragging, dragInput, dragStart, startPos
+    topbar.InputBegan:Connect(function(input)
+        if St.guiLocked then return end
+        if input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch then
+            dragging=true; dragStart=input.Position; startPos=main.Position
+            input.Changed:Connect(function()
+                if input.UserInputState==Enum.UserInputState.End then dragging=false end
+            end)
+        end
+    end)
+    topbar.InputChanged:Connect(function(input)
+        if St.guiLocked then return end
+        if input.UserInputType==Enum.UserInputType.MouseMovement or input.UserInputType==Enum.UserInputType.Touch then
+            dragInput=input
+        end
+    end)
+    local c = UserInputService.InputChanged:Connect(function(input)
+        if St.guiLocked then return end
+        if input==dragInput and dragging then
+            local d = input.Position - dragStart
+            main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset+d.X, startPos.Y.Scale, startPos.Y.Offset+d.Y)
+        end
+    end)
+    table.insert(_G.CPL_Connections, c)
+end
+makeDraggable(U.topBar, U.mainFrame)
+
+-- ========== SMART MODAL ==========
+U.modalFrame = Instance.new("Frame", U.mainFrame)
+U.modalFrame.Size, U.modalFrame.Position = UDim2.new(1,-16,1,-16), UDim2.new(0,8,0,8)
+U.modalFrame.BackgroundColor3, U.modalFrame.BackgroundTransparency = Color3.fromRGB(12,12,12), 0.15
+U.modalFrame.BorderSizePixel, U.modalFrame.Visible, U.modalFrame.ZIndex = 0, false, 50
+Instance.new("UICorner", U.modalFrame).CornerRadius = UDim.new(0,10)
+
+U.modalTitle = Instance.new("TextLabel", U.modalFrame)
+U.modalTitle.Size, U.modalTitle.Position = UDim2.new(1,-70,0,36), UDim2.new(0,18,0,14)
+U.modalTitle.BackgroundTransparency, U.modalTitle.Text = 1, "SMART AUTO SETTINGS"
+U.modalTitle.TextColor3, U.modalTitle.Font, U.modalTitle.TextSize = Color3.fromRGB(255,255,255), Enum.Font.FredokaOne, 22
+U.modalTitle.TextXAlignment, U.modalTitle.ZIndex = Enum.TextXAlignment.Left, 51
+U.modalTitle:SetAttribute("KeepFont", true)
+
+U.modalCloseBtn = Instance.new("TextButton", U.modalFrame)
+U.modalCloseBtn.Size, U.modalCloseBtn.Position = UDim2.new(0,36,0,36), UDim2.new(1,-46,0,14)
+U.modalCloseBtn.BackgroundColor3, U.modalCloseBtn.Text, U.modalCloseBtn.TextColor3 = Color3.fromRGB(25,25,25), "X", Color3.fromRGB(255,255,255)
+U.modalCloseBtn.Font, U.modalCloseBtn.TextSize, U.modalCloseBtn.ZIndex = Enum.Font.GothamBold, 18, 52
+Instance.new("UICorner", U.modalCloseBtn).CornerRadius = UDim.new(0,8)
+
+U.autoDetectBtn = Instance.new("TextButton", U.modalFrame)
+U.autoDetectBtn.Size, U.autoDetectBtn.Position = UDim2.new(1,-36,0,40), UDim2.new(0,18,0,66)
+U.autoDetectBtn.BackgroundColor3, U.autoDetectBtn.Text, U.autoDetectBtn.TextColor3 = Color3.fromRGB(24,24,24), "📡 FETCH LIVE STATS", Color3.fromRGB(255,255,255)
+U.autoDetectBtn.Font, U.autoDetectBtn.TextSize, U.autoDetectBtn.ZIndex = Enum.Font.GothamBold, 13, 51
+Instance.new("UICorner", U.autoDetectBtn).CornerRadius = UDim.new(0,8)
+
+U.fpsInput = Instance.new("TextBox", U.modalFrame)
+U.fpsInput.Size, U.fpsInput.Position = UDim2.new(1,-36,0,46), UDim2.new(0,18,0,120)
+U.fpsInput.BackgroundColor3, U.fpsInput.PlaceholderText = Color3.fromRGB(22,22,22), "FPS (e.g. 60)"
+U.fpsInput.PlaceholderColor3, U.fpsInput.Text, U.fpsInput.TextColor3 = Color3.fromRGB(120,120,120), "", Color3.fromRGB(255,255,255)
+U.fpsInput.Font, U.fpsInput.TextSize, U.fpsInput.ZIndex = Enum.Font.GothamBold, 17, 51
+Instance.new("UICorner", U.fpsInput).CornerRadius = UDim.new(0,8)
+
+U.msInput = Instance.new("TextBox", U.modalFrame)
+U.msInput.Size, U.msInput.Position = UDim2.new(1,-36,0,46), UDim2.new(0,18,0,180)
+U.msInput.BackgroundColor3, U.msInput.PlaceholderText = Color3.fromRGB(22,22,22), "Ping MS (e.g. 80)"
+U.msInput.PlaceholderColor3, U.msInput.Text, U.msInput.TextColor3 = Color3.fromRGB(120,120,120), "", Color3.fromRGB(255,255,255)
+U.msInput.Font, U.msInput.TextSize, U.msInput.ZIndex = Enum.Font.GothamBold, 17, 51
+Instance.new("UICorner", U.msInput).CornerRadius = UDim.new(0,8)
+
+U.submitBtn = Instance.new("TextButton", U.modalFrame)
+U.submitBtn.Size, U.submitBtn.Position = UDim2.new(1,-36,0,54), UDim2.new(0,18,1,-72)
+U.submitBtn.BackgroundColor3, U.submitBtn.Text, U.submitBtn.TextColor3 = Color3.fromRGB(255,140,0), "SUBMIT", Color3.fromRGB(0,0,0)
+U.submitBtn.Font, U.submitBtn.TextSize, U.submitBtn.ZIndex = Enum.Font.FredokaOne, 25, 51
+U.submitBtn:SetAttribute("IsMainAction", true)
+U.submitBtn:SetAttribute("KeepFont", true)
+Instance.new("UICorner", U.submitBtn).CornerRadius = UDim.new(0,10)
+
+U.optBtn.MouseButton1Click:Connect(function()
+    U.fpsInput.Text, U.msInput.Text = "", ""
+    U.modalFrame.Visible = true
+end)
+U.modalCloseBtn.MouseButton1Click:Connect(function() U.modalFrame.Visible = false end)
+U.autoDetectBtn.MouseButton1Click:Connect(function()
+    U.fpsInput.Text = tostring(math.max(30, St.currentFPS))
+    U.msInput.Text = tostring(math.max(10, St.currentPing))
+    U.autoDetectBtn.Text = "✅ FETCHED! PRESS SUBMIT"
+    task.delay(1.2, function() U.autoDetectBtn.Text = "📡 FETCH LIVE STATS" end)
+end)
+U.submitBtn.MouseButton1Click:Connect(function()
+    local uf, um = tonumber(U.fpsInput.Text), tonumber(U.msInput.Text)
+    if not uf or not um then
+        U.submitBtn.Text = "⚠️ INVALID NUMBERS"
+        task.delay(1.2, function() U.submitBtn.Text = "SUBMIT" end)
+        return
+    end
+    local pw, dl = 100000, 0.13
+    if uf >= 120 then pw, dl = 120000, 0.115
+    elseif uf >= 60 then pw, dl = 100000, 0.13
+    else pw, dl = 75000, 0.135 end
+    cfg.power, cfg.interval = pw, dl
+    U.pBox.Text, U.dBox.Text = tostring(pw), tostring(dl)
+    saveConfig()
+    if _G.CPL_refreshPresets then _G.CPL_refreshPresets() end
+    U.submitBtn.Text = "✅ APPLIED!"
+    task.delay(1.2, function() U.submitBtn.Text = "SUBMIT" U.modalFrame.Visible = false end)
+end)
+
+for _, d in ipairs(U.screen:GetDescendants()) do attachClickSound(d) end
+U.screen.DescendantAdded:Connect(function(d) attachClickSound(d) end)
+
+-- ========== REMOTE + PAYLOAD ==========
+local function tryFind(container)
+    if not container then return nil end
+    for _,name in ipairs(K.KNOWN_NAMES) do
+        local r = container:FindFirstChild(name)
+        if r and r:IsA("RemoteEvent") then return r end
+    end
+    for _,c in ipairs(container:GetChildren()) do
+        if c:IsA("RemoteEvent") and c.Name:lower():find("block") then return c end
+    end
+    return nil
+end
+local function findRemote()
+    local rrs
+    pcall(function() rrs = game:GetService("RobloxReplicatedStorage") end)
+    local r = tryFind(rrs) if r then return r end
+    r = tryFind(ReplicatedStorage) if r then return r end
+    for _,c in ipairs(game:GetDescendants()) do
+        if c:IsA("RemoteEvent") and c.Name:lower():find("block") then return c end
+    end
+    return nil
+end
+St.remote = findRemote()
+
+local cachedFullPayload, cachedIdlePayload = nil, nil
+local lastPower = -1
+local lastPayloadType = "NORMAL"
+
+local function buildPayload(depth, rep)
+    local main = {}
+    local nested = {{}}
+    local cur = nested[1]
+    for _ = 1, depth do
+        local n = {}
+        cur[1] = n
+        cur = n
+    end
+    for _ = 1, rep do main[#main+1] = nested end
+    return main
+end
+
+local PAYLOAD_MULT = {
+    NORMAL = { d = 1.0,  r = 1.0 },
+    HIGH   = { d = 1.6,  r = 1.5 },
+    MID    = { d = 1.3,  r = 1.25 },
+    LOW    = { d = 0.7,  r = 0.7 },
+}
+
+local BURST_COUNT = { NORMAL = 1, LOW = 2, MID = 4, HIGH = 8 }
+
+local function getEffectivePayloadType()
+    if not cfg.smartPayload then return cfg.payloadType end
+    if K.isMobile and cfg.smartPayload and cfg.smartBurst then
+        return "LOW"
+    end
+    local p = St.currentPing
+    if p < 200 then return "HIGH"
+    elseif p < 600 then return "MID"
+    elseif p < 1200 then return "NORMAL"
+    else return "LOW" end
+end
+_G.CPL_getEffectivePayloadType = getEffectivePayloadType
+
+local function getEffectiveBurstType()
+    if not cfg.smartBurst then return cfg.burstMode end
+    local p = St.currentPing
+    if K.isMobile then
+        if p < 200 then return "MID"
+        elseif p < 600 then return "LOW"
+        else return "NORMAL" end
+    end
+    if p < 200 then return "HIGH"
+    elseif p < 600 then return "MID"
+    elseif p < 1200 then return "NORMAL"
+    else return "LOW" end
+end
+_G.CPL_getEffectiveBurstType = getEffectiveBurstType
+
+local function getPayload(isCarryingNow)
+    local effectiveType = getEffectivePayloadType()
+    if lastPower ~= cfg.power or lastPayloadType ~= effectiveType then
+        cachedFullPayload, cachedIdlePayload = nil, nil
+        lastPower = cfg.power
+        lastPayloadType = effectiveType
+    end
+    local mult = PAYLOAD_MULT[effectiveType] or PAYLOAD_MULT.NORMAL
+
+    if isCarryingNow then
+        if not cachedFullPayload then
+            local baseDepth = K.isMobile and 42 or 150
+            local baseRep   = math.min(math.floor(cfg.power / (K.isMobile and 70 or 200)), K.isMobile and 2200 or 8000)
+            local depth = math.floor(baseDepth * mult.d)
+            local rep   = math.floor(baseRep * mult.r)
+            cachedFullPayload = buildPayload(depth, rep)
+        end
+        return cachedFullPayload
+    else
+        if not cachedIdlePayload then
+            local ip    = math.min(cfg.power, 30000)
+            local baseDepth = K.isMobile and 30 or 100
+            local baseRep   = math.min(math.floor(ip / (K.isMobile and 90 or 260)), K.isMobile and 1200 or 4000)
+            local depth = math.floor(baseDepth * mult.d)
+            local rep   = math.floor(baseRep * mult.r)
+            cachedIdlePayload = buildPayload(depth, rep)
+        end
+        return cachedIdlePayload
+    end
+end
+
+local loopId = 0
+local function runPingLoop()
+    loopId += 1
+    local myId = loopId
+    local failCount = 0
+    while St.active and loopId == myId do
+        if not St.remote then
+            St.remote = findRemote()
+            if not St.remote then task.wait(0.5) continue end
+        end
+        local carrying = isCarrying()
+        local payload = getPayload(carrying)
+        local burstCount = BURST_COUNT[getEffectiveBurstType()] or 1
+        local ok = true
+        for _ = 1, burstCount do
+            local success = pcall(function() St.remote:FireServer(payload) end)
+            if not success then ok = false; break end
+        end
+        if ok then failCount = 0
+        else
+            failCount += 1
+            if failCount >= 3 then
+                St.remote = findRemote()
+                failCount = 0
+                task.wait(0.3)
+            end
+        end
+        local delay = cfg.interval
+        if St.currentPing > 1400 then delay = delay * 2
+        elseif St.currentPing > 1000 then delay = delay * 1.5 end
+        task.wait(delay)
+    end
+end
+
+local function flipLag(state, isManual)
+    if isManual then St.manualOverride = state end
+    if St.active == state then return end
+    St.active = state
+    local theme = K.THEMES[cfg.themeIndex] or K.THEMES[8]
+    if St.active then
+        U.activateBtn.Text, U.activateBtn.TextColor3 = "DEACTIVATE", Color3.fromRGB(0,0,0)
+        U.activateBtn.BackgroundColor3 = theme.main
+        if not St.remote then St.remote = findRemote() end
+        if St.remote then task.spawn(runPingLoop) end
+    else
+        U.activateBtn.Text, U.activateBtn.TextColor3 = "ACTIVATE", Color3.fromRGB(255,255,255)
+        tw(U.activateBtn, {BackgroundColor3 = Color3.fromRGB(15,15,15)}, 0.2)
+    end
+end
+U.activateBtn.MouseButton1Click:Connect(function() flipLag(not St.active, true) end)
+
+local autoBR = RunService.Heartbeat:Connect(function()
+    if not cfg.autoBrainrot then
+        if St.brainrotMode then St.brainrotMode, St.lastBrainrotState = false, false end
+        return
+    end
+    if St.manualOverride then return end
+    local carryingNow = isCarrying()
+    if carryingNow and not St.lastBrainrotState then
+        St.brainrotMode, St.lastBrainrotState = true, true
+        flipLag(true, false)
+    elseif not carryingNow and St.lastBrainrotState then
+        St.brainrotMode, St.lastBrainrotState = false, false
+        flipLag(false, false)
+    end
+end)
+table.insert(_G.CPL_Connections, autoBR)
+
+LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(1)
+    St.brainrotMode, St.lastBrainrotState, St.manualOverride = false, false, false
+end)
+
+local lastStatTick, frameCount = tick(), 0
+local statsConn = RunService.RenderStepped:Connect(function()
+    frameCount += 1
+    if tick() - lastStatTick >= 1 then
+        St.currentFPS = frameCount
+        frameCount = 0
+        lastStatTick = tick()
+        local ping = 0
+        pcall(function() ping = Stats.Network.ServerStatsItem["Data Ping"]:GetValue() end)
+        if not ping or ping == 0 then
+            pcall(function() ping = LocalPlayer:GetNetworkPing() * 1000 end)
+        end
+        St.currentPing = math.floor(ping or 0)
+        U.fpsValueLbl.Text  = tostring(St.currentFPS)
+        U.pingValueLbl.Text = St.currentPing .. " ms"
+    end
+end)
+table.insert(_G.CPL_Connections, statsConn)
+
+local lastInputTick = 0
+local inputConn = UserInputService.InputBegan:Connect(function(input, processed)
+    local kc = input.KeyCode
+    if kc == Enum.KeyCode.Unknown then return end
+    local isGp = isGamepad(kc)
+    local isKb = input.UserInputType == Enum.UserInputType.Keyboard
+    if St.listeningFor then
+        if kc == Enum.KeyCode.Escape then
+            St.listeningFor = nil
+            U.kbBtn.Text, U.gpBtn.Text = cfg.keybindKb, cfg.keybindGp
+            return
+        end
+        if St.listeningFor == "kb" and isKb and not K.BLACKLISTED[kc] then
+            cfg.keybindKb = kc.Name St.listeningFor = nil U.kbBtn.Text = kc.Name saveConfig() return
+        end
+        if St.listeningFor == "gp" and isGp then
+            cfg.keybindGp = kc.Name St.listeningFor = nil U.gpBtn.Text = kc.Name saveConfig() return
+        end
+        return
+    end
+    if processed then return end
+    local kbEnum = resolveKb(cfg.keybindKb)
+    local gpEnum = resolveKb(cfg.keybindGp)
+    if (kbEnum and kc == kbEnum and isKb) or (gpEnum and kc == gpEnum and isGp) then
+        if tick() - lastInputTick > 0.2 then
+            lastInputTick = tick()
+            flipLag(not St.active, true)
+        end
+    end
+end)
+table.insert(_G.CPL_Connections, inputConn)
+
+task.spawn(function()
+    task.wait(1)
+    if cfg.antiLag then applyAntiLag(true) end
+    if cfg.lowGraphics then applyLowGraphics(true) end
+    if cfg.fogRemover then applyFogRemover(true) end
+    if cfg.skyChanger then applySkyChanger(true) end
+    if cfg.stretchRez then applyStretchRez(true) end
+    if cfg.particleKiller then applyParticleKiller(true) end
+    if cfg.effectKiller then applyEffectKiller(true) end
+    if cfg.beamKiller then applyBeamKiller(true) end
+    if cfg.sparklesKiller then applySparklesKiller(true) end
+    if cfg.lightKiller then applyLightKiller(true) end
+    if cfg.materialReducer then applyMaterialReducer(true) end
+    if cfg.cloudRemover then applyCloudRemover(true) end
+    if cfg.textureRemover then applyTextureRemover(true) end
+    if cfg.decalKiller then applyDecalKiller(true) end
+    if cfg.soundKiller then applySoundKiller(true) end
+    if cfg.meshSimplifier then applyMeshSimplifier(true) end
+    if cfg.terrainKiller then applyTerrainKiller(true) end
+    if cfg.waterKiller then applyWaterKiller(true) end
+    if cfg.shadowKiller then applyShadowKiller(true) end
+    if cfg.reflectionKiller then applyReflectionKiller(true) end
+    if cfg.dynamicFPS then applyDynamicFPS(true) end
+    if cfg.halloweenToggle then
+        U.bgImgLabel.Image = K.HALLOWEEN_ASSETS[cfg.halloweenBg or 1]
+    end
+    pcall(function()
+        local cam = Workspace.CurrentCamera
+        if cam and cam.FieldOfView and not St.stretchedRezApplied then
+            cam.FieldOfView = cfg.fovValue or 70
+        end
+    end)
+    if _G.CPL_refreshSoundButtons then _G.CPL_refreshSoundButtons() end
+    applyFont(cfg.fontIndex)
+    if _G.CPL_refreshPresets then _G.CPL_refreshPresets() end
+    if _G.CPL_refreshPayloadButtons then _G.CPL_refreshPayloadButtons() end
+    if _G.CPL_refreshBurstButtons then _G.CPL_refreshBurstButtons() end
+    if _G.CPL_applyTheme then _G.CPL_applyTheme(cfg.themeIndex) end
+end)
+
+local function showMainUI()
+    if St.uiShown then return end
+    St.uiShown = true
+    pcall(function()
+        U.mainFrame.Visible = true
+        U.mainFrame.Size = UDim2.new(0, K.BASE_W, 0, 0)
+        TweenService:Create(U.mainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, K.BASE_W, 0, K.MINI_H)
+        }):Play()
+    end)
+end
+
+-- ======================================================================
+-- INTRO
+-- ======================================================================
+local Intro = {
+    VideoId = "pTNGxYu7tz4",
+    SongTitle = "Timsahlar X Tuesday 2.0",
+    StartSecond = 28,
+    Duration = 9,
+    BackgroundAssetId = "rbxassetid://77256919825571",
+    MusicIconAssetId = "rbxassetid://10734905958",
+    ColorSeq = ColorSequence.new({
+        ColorSequenceKeypoint.new(0.0, Color3.fromRGB(255, 175, 45)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 115, 15)),
+        ColorSequenceKeypoint.new(1.0, Color3.fromRGB(210, 50, 10))
+    }),
+}
+Intro.customAsset = getcustomasset or getsynasset
+Intro.folder = "YouTube Music Player/Musics"
+Intro.filePath = Intro.folder .. "/" .. Intro.VideoId .. ".mp3"
+
+pcall(function()
+    if not isfolder("YouTube Music Player") then makefolder("YouTube Music Player") end
+    if not isfolder(Intro.folder) then makefolder(Intro.folder) end
+end)
+
+local function introBuildUI(IU, IS)
+    IU.blur = Instance.new("BlurEffect")
+    IU.blur.Size = 0
+    IU.blur.Parent = Lighting
+    TweenService:Create(IU.blur, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = 24 }):Play()
+
+    IU.introGui = Instance.new("ScreenGui")
+    IU.introGui.Name = "HalloweenDuelsIntroGui"
+    IU.introGui.IgnoreGuiInset = true
+    IU.introGui.ResetOnSpawn = false
+    IU.introGui.DisplayOrder = 999
+    IU.introGui.Parent = plrGui
+
+    IU.overlay = Instance.new("Frame", IU.introGui)
+    IU.overlay.Size = UDim2.new(1, 0, 1, 0)
+    IU.overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    IU.overlay.BackgroundTransparency = 1
+    IU.overlay.BorderSizePixel = 0
+    TweenService:Create(IU.overlay, TweenInfo.new(0.4), { BackgroundTransparency = 0.55 }):Play()
+
+    IU.card = Instance.new("CanvasGroup", IU.introGui)
+    IU.card.AnchorPoint = Vector2.new(0.5, 0.5)
+    IU.card.Position = UDim2.new(0.5, 0, 0.5, 0)
+    IU.card.Size = UDim2.new(0, 0, 0, 0)
+    IU.card.BackgroundColor3 = Color3.fromRGB(15, 12, 18)
+    IU.card.BorderSizePixel = 0
+    Instance.new("UICorner", IU.card).CornerRadius = UDim.new(0, 18)
+
+    IU.stroke = Instance.new("UIStroke", IU.card)
+    IU.stroke.Thickness = 2.5
+    IU.stroke.Color = Color3.fromRGB(255, 255, 255)
+    IU.stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    IU.strokeGrad = Instance.new("UIGradient", IU.stroke)
+    IU.strokeGrad.Color = Intro.ColorSeq
+
+    IU.cardBgImage = Instance.new("ImageLabel", IU.card)
+    IU.cardBgImage.Size = UDim2.new(1, 0, 1, 0)
+    IU.cardBgImage.BackgroundTransparency = 1
+    IU.cardBgImage.Image = Intro.BackgroundAssetId
+    IU.cardBgImage.ScaleType = Enum.ScaleType.Crop
+    Instance.new("UICorner", IU.cardBgImage).CornerRadius = UDim.new(0, 18)
+
+    IU.imgShade = Instance.new("Frame", IU.card)
+    IU.imgShade.Size = UDim2.new(1, 0, 1, 0)
+    IU.imgShade.BackgroundColor3 = Color3.fromRGB(10, 8, 14)
+    IU.imgShade.BackgroundTransparency = 0.72
+    IU.imgShade.BorderSizePixel = 0
+    Instance.new("UICorner", IU.imgShade).CornerRadius = UDim.new(0, 18)
+
+    IU.skipBtn = Instance.new("TextButton", IU.card)
+    IU.skipBtn.AnchorPoint = Vector2.new(1, 0)
+    IU.skipBtn.Position = UDim2.new(1, -16, 0, 16)
+    IU.skipBtn.Size = UDim2.new(0, 116, 0, 28)
+    IU.skipBtn.BackgroundColor3 = Color3.fromRGB(25, 18, 22)
+    IU.skipBtn.BackgroundTransparency = 0.25
+    IU.skipBtn.Text = "Skip Intro ▶"
+    IU.skipBtn.TextColor3 = Color3.fromRGB(255, 235, 215)
+    IU.skipBtn.Font = Enum.Font.FredokaOne
+    IU.skipBtn.TextSize = 12
+    IU.skipBtn.AutoButtonColor = false
+    IU.skipBtn.ZIndex = 5
+    Instance.new("UICorner", IU.skipBtn).CornerRadius = UDim.new(1, 0)
+
+    IU.skipStroke = Instance.new("UIStroke", IU.skipBtn)
+    IU.skipStroke.Thickness = 1.3
+    IU.skipStroke.Color = Color3.fromRGB(255, 255, 255)
+    IU.skipGrad = Instance.new("UIGradient", IU.skipStroke)
+    IU.skipGrad.Color = Intro.ColorSeq
+
+    IU.pulseRing = Instance.new("Frame", IU.card)
+    IU.pulseRing.AnchorPoint = Vector2.new(0.5, 0.5)
+    IU.pulseRing.Position = UDim2.new(0, 46, 0, 46)
+    IU.pulseRing.Size = UDim2.new(0, 52, 0, 52)
+    IU.pulseRing.BackgroundTransparency = 1
+    IU.pulseRing.ZIndex = 1
+    Instance.new("UICorner", IU.pulseRing).CornerRadius = UDim.new(1, 0)
+    IU.pulseStroke = Instance.new("UIStroke", IU.pulseRing)
+    IU.pulseStroke.Thickness = 1.5
+    IU.pulseStroke.Color = Color3.fromRGB(255, 150, 30)
+    IU.pulseStroke.Transparency = 1
+
+    IU.auraFrame = Instance.new("Frame", IU.card)
+    IU.auraFrame.Size = UDim2.new(0, 58, 0, 58)
+    IU.auraFrame.Position = UDim2.new(0, 17, 0, 17)
+    IU.auraFrame.BackgroundTransparency = 1
+    IU.auraFrame.ZIndex = 2
+    Instance.new("UICorner", IU.auraFrame).CornerRadius = UDim.new(1, 0)
+    IU.auraStroke = Instance.new("UIStroke", IU.auraFrame)
+    IU.auraStroke.Thickness = 2.4
+    IU.auraStroke.Color = Color3.fromRGB(255, 255, 255)
+    IU.auraGradient = Instance.new("UIGradient", IU.auraStroke)
+    IU.auraGradient.Color = Intro.ColorSeq
+
+    IU.avatar = Instance.new("ImageLabel", IU.card)
+    IU.avatar.Size = UDim2.new(0, 0, 0, 0)
+    IU.avatar.Position = UDim2.new(0, 46, 0, 46)
+    IU.avatar.AnchorPoint = Vector2.new(0.5, 0.5)
+    IU.avatar.BackgroundColor3 = Color3.fromRGB(20, 18, 24)
+    IU.avatar.BackgroundTransparency = 0.2
+    IU.avatar.ZIndex = 3
+    Instance.new("UICorner", IU.avatar).CornerRadius = UDim.new(1, 0)
+
+    task.spawn(function()
+        local thumb, ready = Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+        if ready then IU.avatar.Image = thumb end
+    end)
+
+    IU.mainTitle = Instance.new("TextLabel", IU.card)
+    IU.mainTitle.Size = UDim2.new(1, -210, 0, 34)
+    IU.mainTitle.Position = UDim2.new(0, 82, 0, 10)
+    IU.mainTitle.BackgroundTransparency = 1
+    IU.mainTitle.TextTransparency = 0
+    IU.mainTitle.Text = "HALLOWEEN DUELS"
+    IU.mainTitle.TextColor3 = Color3.fromRGB(255, 150, 30)
+    IU.mainTitle.Font = Enum.Font.Creepster
+    IU.mainTitle.TextSize = 32
+    IU.mainTitle.TextXAlignment = Enum.TextXAlignment.Left
+    IU.mainTitle.ZIndex = 3
+    IU.titleStroke = Instance.new("UIStroke", IU.mainTitle)
+    IU.titleStroke.Thickness = 2.0
+    IU.titleStroke.Color = Color3.fromRGB(12, 6, 8)
+    IU.titleGradient = Instance.new("UIGradient", IU.mainTitle)
+    IU.titleGradient.Rotation = 90
+    IU.titleGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0.0, Color3.fromRGB(255, 175, 45)),
+        ColorSequenceKeypoint.new(1.0, Color3.fromRGB(215, 60, 15))
+    })
+
+    IU.welcomeText = Instance.new("TextLabel", IU.card)
+    IU.welcomeText.Size = UDim2.new(1, -210, 0, 20)
+    IU.welcomeText.Position = UDim2.new(0, 82, 0, 58)
+    IU.welcomeText.BackgroundTransparency = 1
+    IU.welcomeText.TextTransparency = 1
+    IU.welcomeText.RichText = true
+    IU.welcomeText.Text = 'Welcome! <font color="#FFA025">' .. LocalPlayer.DisplayName .. '</font>'
+    IU.welcomeText.TextColor3 = Color3.fromRGB(245, 240, 235)
+    IU.welcomeText.Font = Enum.Font.FredokaOne
+    IU.welcomeText.TextSize = 15
+    IU.welcomeText.TextXAlignment = Enum.TextXAlignment.Left
+    IU.welcomeText.ZIndex = 3
+    IU.welcomeStroke = Instance.new("UIStroke", IU.welcomeText)
+    IU.welcomeStroke.Thickness = 1.3
+    IU.welcomeStroke.Color = Color3.fromRGB(15, 8, 10)
+
+    IU.statusLabel = Instance.new("TextLabel", IU.card)
+    IU.statusLabel.Size = UDim2.new(1, -110, 0, 18)
+    IU.statusLabel.Position = UDim2.new(0, 22, 0, 94)
+    IU.statusLabel.BackgroundTransparency = 1
+    IU.statusLabel.Text = "Loading Your Script..."
+    IU.statusLabel.TextColor3 = Color3.fromRGB(255, 175, 45)
+    IU.statusLabel.Font = Enum.Font.FredokaOne
+    IU.statusLabel.TextSize = 14
+    IU.statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+    IU.statusLabel.ZIndex = 3
+
+    IU.percentLabel = Instance.new("TextLabel", IU.card)
+    IU.percentLabel.Size = UDim2.new(0, 60, 0, 18)
+    IU.percentLabel.Position = UDim2.new(1, -82, 0, 94)
+    IU.percentLabel.BackgroundTransparency = 1
+    IU.percentLabel.Text = "%0"
+    IU.percentLabel.TextColor3 = Color3.fromRGB(255, 175, 45)
+    IU.percentLabel.Font = Enum.Font.FredokaOne
+    IU.percentLabel.TextSize = 13
+    IU.percentLabel.TextXAlignment = Enum.TextXAlignment.Right
+    IU.percentLabel.ZIndex = 3
+
+    IU.barContainer = Instance.new("Frame", IU.card)
+    IU.barContainer.Size = UDim2.new(1, -44, 0, 10)
+    IU.barContainer.Position = UDim2.new(0, 22, 0, 120)
+    IU.barContainer.BackgroundColor3 = Color3.fromRGB(20, 18, 24)
+    IU.barContainer.BackgroundTransparency = 0.2
+    IU.barContainer.BorderSizePixel = 0
+    IU.barContainer.ZIndex = 3
+    Instance.new("UICorner", IU.barContainer).CornerRadius = UDim.new(1, 0)
+
+    IU.barFill = Instance.new("Frame", IU.barContainer)
+    IU.barFill.Size = UDim2.new(0, 0, 1, 0)
+    IU.barFill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    IU.barFill.BorderSizePixel = 0
+    IU.barFill.ZIndex = 4
+    Instance.new("UICorner", IU.barFill).CornerRadius = UDim.new(1, 0)
+    IU.fillGradient = Instance.new("UIGradient", IU.barFill)
+    IU.fillGradient.Color = Intro.ColorSeq
+
+    IU.barTipGlow = Instance.new("Frame", IU.barFill)
+    IU.barTipGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+    IU.barTipGlow.Position = UDim2.new(1, 0, 0.5, 0)
+    IU.barTipGlow.Size = UDim2.new(0, 14, 0, 14)
+    IU.barTipGlow.BackgroundColor3 = Color3.fromRGB(255, 200, 70)
+    IU.barTipGlow.BorderSizePixel = 0
+    IU.barTipGlow.ZIndex = 6
+    Instance.new("UICorner", IU.barTipGlow).CornerRadius = UDim.new(1, 0)
+
+    IU.songContainer = Instance.new("Frame", IU.card)
+    IU.songContainer.Size = UDim2.new(1, -44, 0, 36)
+    IU.songContainer.Position = UDim2.new(0, 22, 1, -50)
+    IU.songContainer.BackgroundColor3 = Color3.fromRGB(18, 14, 20)
+    IU.songContainer.BackgroundTransparency = 0.35
+    IU.songContainer.BorderSizePixel = 0
+    IU.songContainer.ZIndex = 3
+    Instance.new("UICorner", IU.songContainer).CornerRadius = UDim.new(0, 10)
+    IU.songStroke = Instance.new("UIStroke", IU.songContainer)
+    IU.songStroke.Thickness = 1.2
+    IU.songStroke.Color = Color3.fromRGB(255, 255, 255)
+    IU.songGrad = Instance.new("UIGradient", IU.songStroke)
+    IU.songGrad.Color = Intro.ColorSeq
+
+    IU.musicIcon = Instance.new("ImageLabel", IU.songContainer)
+    IU.musicIcon.Size = UDim2.new(0, 18, 0, 18)
+    IU.musicIcon.Position = UDim2.new(0, 12, 0.5, -9)
+    IU.musicIcon.BackgroundTransparency = 1
+    IU.musicIcon.Image = Intro.MusicIconAssetId
+    IU.musicIcon.ImageColor3 = Color3.fromRGB(255, 175, 45)
+    IU.musicIcon.ScaleType = Enum.ScaleType.Fit
+    IU.musicIcon.ZIndex = 4
+
+    IU.songLabel = Instance.new("TextLabel", IU.songContainer)
+    IU.songLabel.Size = UDim2.new(1, -85, 1, 0)
+    IU.songLabel.Position = UDim2.new(0, 38, 0, 0)
+    IU.songLabel.BackgroundTransparency = 1
+    IU.songLabel.Text = "Now Playing: " .. Intro.SongTitle
+    IU.songLabel.TextColor3 = Color3.fromRGB(235, 225, 215)
+    IU.songLabel.Font = Enum.Font.GothamMedium
+    IU.songLabel.TextSize = 12
+    IU.songLabel.TextXAlignment = Enum.TextXAlignment.Left
+    IU.songLabel.TextTruncate = Enum.TextTruncate.AtEnd
+    IU.songLabel.ZIndex = 4
+
+    IU.eqContainer = Instance.new("Frame", IU.songContainer)
+    IU.eqContainer.AnchorPoint = Vector2.new(1, 0.5)
+    IU.eqContainer.Position = UDim2.new(1, -12, 0.5, 0)
+    IU.eqContainer.Size = UDim2.new(0, 26, 0, 16)
+    IU.eqContainer.BackgroundTransparency = 1
+    IU.eqContainer.ZIndex = 4
+
+    IU.eqBars = {}
+    for i = 1, 4 do
+        local bar = Instance.new("Frame", IU.eqContainer)
+        bar.Size = UDim2.new(0, 3, 0, 6)
+        bar.Position = UDim2.new(0, (i - 1) * 7, 1, 0)
+        bar.AnchorPoint = Vector2.new(0, 1)
+        bar.BackgroundColor3 = Color3.fromRGB(255, 160, 35)
+        bar.BorderSizePixel = 0
+        bar.ZIndex = 5
+        Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
+        IU.eqBars[i] = bar
+    end
+
+    IS.sound = Instance.new("Sound")
+    IS.sound.Parent = SoundService
+    IS.sound.Volume = 1
+    if isfile and isfile(Intro.filePath) and Intro.customAsset then
+        pcall(function() IS.sound.SoundId = Intro.customAsset(Intro.filePath) end)
+    end
+end
+
+local function introSetupEvents(IU, IS, closeIntro)
+    TweenService:Create(IU.card, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Size = UDim2.new(0, 460, 0, 225)
+    }):Play()
+    task.delay(0.12, function()
+        TweenService:Create(IU.avatar, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, 52, 0, 52)
+        }):Play()
+    end)
+    task.delay(0.2, function()
+        TweenService:Create(IU.mainTitle, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Position = UDim2.new(0, 82, 0, 16)
+        }):Play()
+        TweenService:Create(IU.welcomeText, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Position = UDim2.new(0, 82, 0, 52),
+            TextTransparency = 0
+        }):Play()
+    end)
+    IU.skipBtn.MouseEnter:Connect(function()
+        TweenService:Create(IU.skipBtn, TweenInfo.new(0.2), {
+            BackgroundColor3 = Color3.fromRGB(50, 25, 30),
+            Size = UDim2.new(0, 120, 0, 30)
+        }):Play()
+        IU.skipStroke.Thickness = 1.8
+    end)
+    IU.skipBtn.MouseLeave:Connect(function()
+        TweenService:Create(IU.skipBtn, TweenInfo.new(0.2), {
+            BackgroundColor3 = Color3.fromRGB(25, 18, 22),
+            Size = UDim2.new(0, 116, 0, 28)
+        }):Play()
+        IU.skipStroke.Thickness = 1.3
+    end)
+    IU.skipBtn.MouseButton1Click:Connect(closeIntro)
+    task.spawn(function()
+        while not IS.isClosing do
+            IU.pulseRing.Size = UDim2.new(0, 52, 0, 52)
+            IU.pulseStroke.Transparency = 0.2
+            local pT = TweenService:Create(IU.pulseRing, TweenInfo.new(1.6, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), { Size = UDim2.new(0, 78, 0, 78) })
+            local fT = TweenService:Create(IU.pulseStroke, TweenInfo.new(1.6, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), { Transparency = 1 })
+            pT:Play(); fT:Play()
+            task.wait(1.8)
+        end
+    end)
+    IS.renderConn = RunService.RenderStepped:Connect(function()
+        if IS.isClosing then return end
+        local t = tick()
+        local loudness = 0
+        pcall(function() loudness = IS.sound.PlaybackLoudness end)
+        local beat = 0
+        if loudness and loudness > 15 then beat = math.clamp((loudness - 30) / 320, 0, 1)
+        else beat = math.clamp(math.abs(math.sin(t * 7.2)) ^ 2.8, 0, 1) end
+        IU.mainTitle.TextTransparency = (1 - beat) * 0.35
+        IU.titleStroke.Thickness = 1.8 + (beat * 1.0)
+        IU.strokeGrad.Rotation = (t * 60) % 360
+        IU.auraGradient.Rotation = (t * 90) % 360
+        IU.imgShade.BackgroundTransparency = 0.72 + math.sin(t * 1.5) * 0.04
+        local tip = 12 + math.sin(t * 8) * 3
+        IU.barTipGlow.Size = UDim2.new(0, tip, 0, tip)
+        local b4 = beat * 4
+        IU.musicIcon.Size = UDim2.new(0, 18 + b4, 0, 18 + b4)
+        IU.musicIcon.Position = UDim2.new(0, 12 - (b4 / 2), 0.5, -9 - (b4 / 2))
+        IU.songStroke.Thickness = 1.2 + (b4 / 4)
+        for i, b in ipairs(IU.eqBars) do
+            local val = math.clamp(math.abs(math.sin(t * 8 + (i * 1.5))) * 16 * math.max(beat, 0.4), 3, 16)
+            b.Size = UDim2.new(0, 3, 0, val)
+            b.BackgroundColor3 = Color3.fromRGB(255, math.floor(140 + (val / 16) * 65), math.floor(25 + (val / 16) * 30))
+        end
+    end)
+end
+
+local function introClose(IU, IS, finishOnce)
+    if IS.isClosing then return end
+    IS.isClosing = true
+    if IS.renderConn then IS.renderConn:Disconnect() end
+    task.spawn(function()
+        local ff = TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        pcall(function() TweenService:Create(IS.sound, ff, { Volume = 0 }):Play() end)
+        pcall(function() TweenService:Create(IU.blur, ff, { Size = 0 }):Play() end)
+        pcall(function() TweenService:Create(IU.overlay, ff, { BackgroundTransparency = 1 }):Play() end)
+        local cY = TweenService:Create(IU.card, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+            Size = UDim2.new(0, 460, 0, 3), GroupTransparency = 0.15
+        })
+        cY:Play()
+        task.wait(0.08)
+        finishOnce()
+        cY.Completed:Wait()
+        local cX = TweenService:Create(IU.card, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+            Size = UDim2.new(0, 0, 0, 3), GroupTransparency = 1
+        })
+        cX:Play()
+        cX.Completed:Wait()
+        pcall(function() IS.sound:Stop(); IS.sound:Destroy() end)
+        pcall(function() IU.blur:Destroy() end)
+        pcall(function() IU.introGui:Destroy() end)
+    end)
+end
+
+local function introRunProgress(IU, IS, closeIntro)
+    pcall(function()
+        IS.sound.TimePosition = Intro.StartSecond
+        IS.sound:Play()
+    end)
+    TweenService:Create(IU.barFill, TweenInfo.new(Intro.Duration, Enum.EasingStyle.Linear), {
+        Size = UDim2.new(1, 0, 1, 0)
+    }):Play()
+    local startTime = tick()
+    while true do
+        local elapsed = tick() - startTime
+        local alpha = math.clamp(elapsed / Intro.Duration, 0, 1)
+        IU.percentLabel.Text = "%" .. tostring(math.floor(alpha * 100))
+        if alpha < 0.55 then IU.statusLabel.Text = "Loading Your Script..."
+        elseif alpha < 0.90 then IU.statusLabel.Text = "Almost there!"
+        else
+            IU.statusLabel.Text = "Ready! ✨"
+            IU.statusLabel.TextColor3 = Color3.fromRGB(255, 185, 50)
+            IU.percentLabel.TextColor3 = Color3.fromRGB(255, 185, 50)
+        end
+        if alpha >= 1 or IS.isClosing then break end
+        task.wait(0.03)
+    end
+    task.wait(0.2)
+    closeIntro()
+end
+
+local function playIntro(onComplete)
+    local finished = false
+    local function finishOnce()
+        if finished then return end
+        finished = true
+        if onComplete then task.spawn(onComplete) end
+    end
+    local IU = {}
+    local IS = { isClosing = false, sound = nil, renderConn = nil }
+    local ok, err = pcall(function()
+        introBuildUI(IU, IS)
+        local closeIntro
+        closeIntro = function() introClose(IU, IS, finishOnce) end
+        introSetupEvents(IU, IS, closeIntro)
+        introRunProgress(IU, IS, closeIntro)
+    end)
+    if not ok then
+        warn("[Intro] Error: " .. tostring(err))
+        finishOnce()
+    end
+end
+
+task.spawn(function()
+    local ok, err = pcall(function() playIntro(showMainUI) end)
+    if not ok then
+        warn("[Intro] Fatal: " .. tostring(err))
+        showMainUI()
+    end
+end)
+
+task.delay(4,  function() if not St.uiShown then showMainUI() end end)
+task.delay(8,  function() if not St.uiShown then showMainUI() end end)
+task.delay(12, function() if not St.uiShown then showMainUI() end end)
+
+print("[HD] ✅ Script loaded successfully!")
